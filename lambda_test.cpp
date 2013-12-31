@@ -1,7 +1,9 @@
-#include <string>
 #include <iostream>
+#include <string>
 #include <vector>
+
 #include "node.hpp"
+#include "parse.hpp"
 
 using namespace std;
 
@@ -19,14 +21,17 @@ public:
       errorCount++;
     }
   }
-  /*
+
   void assertParse(const string& program, const Node *expectedParseTree) {
     const Node *actualParseTree = parse(program);
-    const string errorMessage = "Unexpected parse tree for program: " + program;
+    const string errorMessage = "Unexpected parse tree for program.\nProgram text: " + 
+      (program.empty() ? "<empty>" : program) + "\nExpected parse tree: " +
+      expectedParseTree->getName() + "\nActual parse tree: " +
+      actualParseTree->getName();
     assert(*actualParseTree == *expectedParseTree, errorMessage);
     delete actualParseTree;
   }
-  */
+
   void printReport() const {
     if (errorCount == 0) {
       cout << "All tests passed." << endl;
@@ -117,29 +122,61 @@ int main() {
     const Node *terminalNode = factory->buildNode("A");
     string nodeName = terminalNode->getName();
     nodeName += "more stuff";
-    tester->assert(terminalNode->getName() == "A", "Expected name of node A to be immutable");
+    tester->assert(terminalNode->getName() == "A",
+                   "Expected name of node A to be immutable");
     factory->deleteNodes();
   }
 
   { // Test accessors of apply node
     const Node *child1 = factory->buildNode("A");
     const Node *child2 = factory->buildNode("B");
-    const Node *parent = factory->buildNode(*child1, *child2);
+    const Node *parent12 = factory->buildNode(*child1, *child2);
+    const Node *parent21 = factory->buildNode(*child2, *child1);
 
-    tester->assert(parent->getName() == "(A B)", "Expected name of node `A B to be (A B)");
+    tester->assert(parent12->getName() == "(A B)",
+                   "Expected name of node `A B to be (A B)");
+    tester->assert(parent21->getName() == "(B A)",
+                   "Expected name of node `B A to be (B A)");
+    tester->assert(!parent12->isTerminal(),
+                   "Expected node `A B not to be terminal");
+    tester->assert(parent12->getApplicator() == *child1,
+                   "Expected the applicator of `A B to be A");
+    tester->assert(parent12->getInput() == *child2,
+                   "Expected the applicator of `A B to be B");
     factory->deleteNodes();
   }
-  /*
-  { // Test equality of ApplyNode
+  
+  { // Test inequality of name nodes and apply nodes
+    const Node *childless = factory->buildNode("(A B)");
+    const Node *childA = factory->buildNode("A");
+    const Node *childB = factory->buildNode("B");
+    const Node *parentAB = factory->buildNode(*childA, *childB);
+    const Node *grandparentABC = factory->buildNode(*parentAB, *childless);
+    const Node *grandparentCAB = factory->buildNode(*childless, *parentAB);
+
+    tester->assert(*childless != *parentAB,
+                   "Expected node `A B to be != to terminal node whose name is (A B)");
+    tester->assert(*parentAB != *childless,
+                   "Expected terminal node whose name is (A B) to be != to node `A B");
+    tester->assert(*grandparentABC != *grandparentCAB,
+                   "Expected Node::operator== to test equality of child nodes");
+    factory->deleteNodes();
+  }
+
+  { // Test copy constructor
     const Node *child1 = factory->buildNode("A");
     const Node *child2 = factory->buildNode("B");
+    const Node *original = factory->buildNode(*child1, *child2);
+    const Node *copy = new Node(*original);
+    factory->deleteNodes();
 
-    const Node *aParent = factory->buildNode(child1, child2);
-    const Node *identicalParent = factory->buildNode(child1, child2);
-    const Node *swapParent = factory->buildNode(child2, child1);
-
-    tester->assert(*aParent == *identicalParent, "Expected (A B) == (A B) to be true");
-    tester->assert(*aParent != *swapParent, "Expected (A B) != (B A) to be true");
+    tester->assert(copy->getName() == "(A B)",
+                   "Expected copy constructor to deep copy name string");
+    tester->assert(copy->getApplicator() == *(factory->buildNode("A")),
+                   "Expected copy constructor to deep copy applicator");
+    tester->assert(copy->getInput() == *(factory->buildNode("B")),
+                   "Expected copy constructor to deep copy input");
+    delete copy;
   }
 
   { // Test parsing empty program
@@ -147,7 +184,57 @@ int main() {
     tester->assertParse("", expected);
     factory->deleteNodes();
   }
-  */
+  
+  { // Test parsing single node
+    const Node *nodeA = factory->buildNode("A");
+    const Node *nodeB = factory->buildNode("B");
+    const Node *nodeNode = factory->buildNode("Node");
+    tester->assertParse("A", nodeA);
+    tester->assertParse("B", nodeB);
+    tester->assertParse("Node", nodeNode);
+    factory->deleteNodes();
+  }
+  
+  { // Test parsing two nodes
+    const Node *nodeA = factory->buildNode("Aa");
+    const Node *nodeB = factory->buildNode("B");
+    const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
+    const Node *nodeBA = factory->buildNode(*nodeB, *nodeA);
+    tester->assertParse("Aa B", nodeAB);
+    tester->assertParse("B Aa", nodeBA);
+    factory->deleteNodes();
+  }
+  
+  { // Test parsing three nodes sans parentheses
+    const Node *nodeA = factory->buildNode("Aa");
+    const Node *nodeB = factory->buildNode("Bb");
+    const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
+    const Node *nodeC = factory->buildNode("Cc");
+    const Node *nodeABC = factory->buildNode(*nodeAB, *nodeC);
+    tester->assertParse("Aa Bb Cc", nodeABC);
+    factory->deleteNodes();
+  }
+
+  { // Test parsing three nodes with first two nodes grouped
+    const Node *nodeA = factory->buildNode("Aa");
+    const Node *nodeB = factory->buildNode("Bb");
+    const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
+    const Node *nodeC = factory->buildNode("Cc");
+    const Node *nodeABC = factory->buildNode(*nodeAB, *nodeC);
+    tester->assertParse("(Aa Bb) Cc", nodeABC);
+    factory->deleteNodes();
+  }
+
+  { // Test parsing three nodes with last two nodes grouped
+    const Node *nodeA = factory->buildNode("Aa");
+    const Node *nodeB = factory->buildNode("Bb");
+    const Node *nodeC = factory->buildNode("Cc");
+    const Node *nodeBC = factory->buildNode(*nodeB, *nodeC);
+    const Node *nodeABC = factory->buildNode(*nodeA, *nodeBC);
+    tester->assertParse("Aa (Bb Cc)", nodeABC);
+    factory->deleteNodes();
+  }
+
   tester->printReport();
 
   delete factory;
