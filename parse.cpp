@@ -3,6 +3,8 @@
 #include "parse.hpp"
 
 // Helper function prototypes
+const Node* constructParseTree(const string& program);
+void validate(const string&);
 vector<string> splitAtLastToken(const string&);
 string trim(const string&);
 bool isWrapped(const string&);
@@ -15,6 +17,11 @@ char firstChar(const string&);
 const string WHITESPACE = "\t ";
 
 const Node* parse(const string& program) {
+ validate(program);
+ return constructParseTree(program);
+}
+
+const Node* constructParseTree(const string& program) {
   if (program.empty()) {
     return new Node("I");
   }
@@ -25,14 +32,28 @@ const Node* parse(const string& program) {
     return new Node(tokens[0]);
   }
 
-  const Node *input = parse(tokens[1]);
-  const Node *applicator = parse(tokens[0]);
+  const Node *input = constructParseTree(tokens[1]);
+  const Node *applicator = constructParseTree(tokens[0]);
   const Node *composed = new Node(*applicator, *input);
   delete applicator;
   delete input;
   return composed;
 }
 
+void validate(const string& expression) {
+  int nestLevel = 0;
+  for (int i = 0; i < expression.length() && nestLevel <= 0; i++) {
+    if (expression[i] == '(') {
+      nestLevel--;
+    } else if (expression[i] == ')') {
+      nestLevel++;
+    }
+  }
+
+  if (nestLevel != 0) {
+    throw ParenthesesDoNotMatch();
+  }
+}
 
 // Identifies last token in expression, as delimited by space or parens
 // Splits expression at delimiter and returns 2 subexpressions

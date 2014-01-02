@@ -34,6 +34,16 @@ public:
     delete actualParseTree;
   }
 
+  void assertParseError(const string& program) {
+    bool badExpression = false;
+    try {
+      parse(program);
+    } catch (ParenthesesDoNotMatch e) {
+      badExpression = true;
+    }
+    assert(badExpression, "Expected program '(A' to cause parse exception");
+  }
+
   void printReport() const {
     if (errorCount == 0) {
       cout << "All tests passed." << endl;
@@ -263,6 +273,11 @@ int main() {
     tester->assertParse("A ((B))", nodeAB);
     tester->assertParse("(\t A  )\t\t( ((B)  )\t)", nodeAB);
     factory->deleteNodes();
+  }
+
+  { // Test parsing with mismatched parens
+    tester->assertParseError("(");
+    tester->assertParseError(")(");
   }
 
   tester->printReport();

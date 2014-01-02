@@ -5,4 +5,6 @@
 
 const Node* parse(const string&);
 
+class ParenthesesDoNotMatch {};
+
 #endif
