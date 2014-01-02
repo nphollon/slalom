@@ -5,19 +5,22 @@
 // Helper function prototypes
 const Node* constructParseTree(const string& program);
 void validate(const string&);
-void validateWhitespaceAt(const string&, const int&);
+void validateNoNameAt(const string&, const int&);
 vector<string> splitAtLastToken(const string&);
 string trim(const string&);
 bool isWrapped(const string&);
 int findLastOpenParen(const string&);
 
 const string WHITESPACE = "\t ";
+const string NON_NAME_CHARS = WHITESPACE + "()";
 
 const Node* parse(const string& program) {
   validate(program);
   return constructParseTree(program);
 }
 
+// Recursively construct parse tree
+// Assumes valid program syntax
 const Node* constructParseTree(const string& program) {
   if (program.empty()) {
     return new Node("I");
@@ -37,14 +40,16 @@ const Node* constructParseTree(const string& program) {
   return composed;
 }
 
+// Throws ParenthesesDoNotMatch if expression has mismatched parens
+// Throws MissingWhitespace if parens touch node name characters
 void validate(const string& expression) {
   int nestLevel = 0;
   for (int i = 0; i < expression.length() && nestLevel <= 0; i++) {
     if (expression[i] == '(') {
-      validateWhitespaceAt(expression, i-1);
+      validateNoNameAt(expression, i-1);
       nestLevel--;
     } else if (expression[i] == ')') {
-      validateWhitespaceAt(expression, i+1);
+      validateNoNameAt(expression, i+1);
       nestLevel++;
     }
   }
@@ -54,14 +59,16 @@ void validate(const string& expression) {
   }
 }
 
-void validateWhitespaceAt(const string& expression, const int& pos) {
-  if (pos < 0 || pos >= expression.length()) return;
-  if ((WHITESPACE + "()").find(expression[pos]) == string::npos) {
+// Throws MissingWhitespace if expression[pos] is a node name character
+void validateNoNameAt(const string& expression, const int& pos) {
+  if (pos >= 0 &&
+      pos < expression.length() &&
+      NON_NAME_CHARS.find(expression[pos]) == string::npos) {
     throw MissingWhitespace();
   }
 }
 
-// Identifies last token in expression, as delimited by space or parens
+// Identifies last token in expression, as delimited by whitespace or parens
 // Splits expression at delimiter and returns 2 subexpressions
 // Returns full expression if only one token exists
 // -- Examples --
@@ -69,7 +76,6 @@ void validateWhitespaceAt(const string& expression, const int& pos) {
 // "A (B C)" returns {"A", "(B C)"}
 // "A" returns {"A"}
 // "(A (B C))" returns {"(A (B C))"}
-
 vector<string> splitAtLastToken(const string& expression) {
   int lastTokenPos = findLastOpenParen(expression);
   
@@ -88,6 +94,7 @@ vector<string> splitAtLastToken(const string& expression) {
   return tokens;
 }
 
+// Returns expression without leading/trailing whitespace and wrapping parens
 string trim(const string& expression) {
   string trimmed = string(expression);
 
@@ -102,6 +109,7 @@ string trim(const string& expression) {
   return trimmed;
 }
 
+// Returns true if expression is wrapped in parens
 bool isWrapped(const string& expression) {
   return findLastOpenParen(expression) == 0;
 }
