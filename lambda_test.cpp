@@ -1,44 +1,8 @@
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "node.hpp"
 #include "parse.hpp"
 #include "tester.hpp"
 
 using namespace std;
-
-class NodeFactory {
-private:
-  vector<Node *> *nodes;
-public:
-  NodeFactory() {
-    nodes = new vector<Node *>();
-  }
-
-  const Node* buildNode(const string& name) const {
-    nodes->push_back(new Node(name));
-    return nodes->back();
-  }
-
-  const Node* buildNode(const Node& applicator, const Node& input) const {
-    nodes->push_back(new Node(applicator, input));
-    return nodes->back();
-  }
-
-  void deleteNodes() const {
-    while (!nodes->empty()) {
-      delete nodes->back();
-      nodes->pop_back();
-    }
-  }
-
-  ~NodeFactory() {
-    deleteNodes();
-    delete nodes;
-    }
-};
-
 
 int main() {
   Tester *tester = new Tester();

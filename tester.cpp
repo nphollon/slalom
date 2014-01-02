@@ -6,7 +6,7 @@
 Tester::Tester() {}
 Tester::~Tester() {}
 
-void Tester::assert(const bool testExpression, const string errorMessage) {
+void Tester::assert(const bool& testExpression, const string& errorMessage) {
   if (!testExpression) {
     cout << "Failure. " << errorMessage << endl;
     errorCount++;

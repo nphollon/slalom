@@ -9,7 +9,7 @@ private:
 public:
   Tester();
   ~Tester();
-  void assert(const bool, const string);
+  void assert(const bool&, const string&);
   void assertParse(const string&, const Node*);
   void assertParseError(const string& program);
   void printReport() const;

@@ -2,6 +2,7 @@
 #define H_NODE
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -26,5 +27,16 @@ public:
 };
 
 class NodeDoesNotExist {};
+
+class NodeFactory {
+private:
+  vector<Node *> *nodes;
+public:
+  NodeFactory();
+  ~NodeFactory();
+  const Node* buildNode(const string&) const;
+  const Node* buildNode(const Node&, const Node&) const;
+  void deleteNodes() const;
+};
 
 #endif

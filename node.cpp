@@ -33,7 +33,6 @@ Node::~Node() {
   }
 }
 
-
 bool Node::isTerminal() const {
   return applicator == NULL;
 }
@@ -56,7 +55,6 @@ const Node Node::getInput() const {
   return *input;
 }
 
-
 bool Node::operator==(const Node& n) const {
   if (isTerminal()) {
     return n.isTerminal() && *name == n.getName();
@@ -69,4 +67,32 @@ bool Node::operator==(const Node& n) const {
 
 bool Node::operator!=(const Node& n) const {
   return !(*this == n);
+}
+
+
+
+NodeFactory::NodeFactory() {
+  nodes = new vector<Node *>();
+}
+
+NodeFactory::~NodeFactory() {
+  deleteNodes();
+  delete nodes;
+}
+
+const Node* NodeFactory::buildNode(const string& name) const {
+  nodes->push_back(new Node(name));
+  return nodes->back();
+}
+
+const Node* NodeFactory::buildNode(const Node& applicator, const Node& input) const {
+  nodes->push_back(new Node(applicator, input));
+  return nodes->back();
+}
+
+void NodeFactory::deleteNodes() const {
+  while (!nodes->empty()) {
+    delete nodes->back();
+    nodes->pop_back();
+  }
 }
