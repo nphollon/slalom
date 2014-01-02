@@ -10,6 +10,5 @@ const Node* parse(const string&);
 
 class ParseError {};
 class ParenthesesDoNotMatch : public ParseError {};
-class MissingWhitespace : public ParseError {};
 
 #endif

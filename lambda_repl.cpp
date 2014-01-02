@@ -32,9 +32,7 @@ void processLine(const string& line) {
     delete parseTree;
   } catch (ParenthesesDoNotMatch e) {
     cout << "ERROR: Parentheses do not match" << endl;
-  } catch (MissingWhitespace e) {
-    cout << "ERROR: Tokens must be separated by whitespace" << endl;
-  } 
+  }
 }
 
 void printInstructions() {

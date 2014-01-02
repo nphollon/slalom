@@ -4,10 +4,6 @@
 
 using namespace std;
 
-// Known parsing defects:
-// () -> std::out_of_range
-// (A)(B) -> ((A.B)
-
 int main() {
   Tester *tester = new Tester();
   const NodeFactory *factory = new NodeFactory();
@@ -183,18 +179,22 @@ int main() {
     factory->deleteNodes();
   }
 
-  { // Test parsing with extra whitespace and parens
+  { // Test parsing with unusual whitespace and parens
     const Node *nodeI = factory->buildNode("I");
     const Node *nodeA = factory->buildNode("A");
     const Node *nodeB = factory->buildNode("B");
     const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
     tester->assertParse("()", nodeI);
+    tester->assertParse(" ", nodeI);
     tester->assertParse(" A", nodeA);
     tester->assertParse("A ", nodeA);
     tester->assertParse("\tA", nodeA);
     tester->assertParse("( A )", nodeA);
     tester->assertParse("A\tB", nodeAB);
     tester->assertParse("A ((B))", nodeAB);
+    tester->assertParse("(A)(B)", nodeAB);
+    tester->assertParse("A(B)", nodeAB);
+    tester->assertParse("(A)B", nodeAB);
     tester->assertParse("(\t A  )\t\t( ((B)  )\t)", nodeAB);
     factory->deleteNodes();
   }
@@ -202,8 +202,6 @@ int main() {
   { // Test parsing erroneous programs
     tester->assertParseError("(");
     tester->assertParseError(") (");
-    tester->assertParseError("A(B)");
-    tester->assertParseError("(A)B");
   }
 
   tester->printReport();

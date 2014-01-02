@@ -43,30 +43,18 @@ const Node* constructParseTree(const string& expression) {
 }
 
 // Throws ParenthesesDoNotMatch if expression has mismatched parens
-// Throws MissingWhitespace if parens touch node name characters
 void validate(const string& expression) {
   int nestLevel = 0;
   for (int i = 0; i < expression.length() && nestLevel <= 0; i++) {
     if (expression[i] == '(') {
-      validateNoNameAt(expression, i-1);
       nestLevel--;
     } else if (expression[i] == ')') {
-      validateNoNameAt(expression, i+1);
       nestLevel++;
     }
   }
 
   if (nestLevel != 0) {
     throw ParenthesesDoNotMatch();
-  }
-}
-
-// Throws MissingWhitespace if expression[pos] is a node name character
-void validateNoNameAt(const string& expression, const int& pos) {
-  if (pos >= 0 &&
-      pos < expression.length() &&
-      NON_NAME_CHARS.find(expression[pos]) == string::npos) {
-    throw MissingWhitespace();
   }
 }
 
@@ -82,14 +70,14 @@ vector<string> splitAtLastToken(const string& expression) {
   int lastTokenPos = findLastOpenParen(expression);
   
   if (lastTokenPos == expression.length()) {
-    lastTokenPos = expression.find_last_of(WHITESPACE) + 1;
+    lastTokenPos = expression.find_last_of(NON_NAME_CHARS) + 1;
   }
 
   string lastToken = expression.substr(lastTokenPos);
 
   vector<string> tokens;
   if (lastToken != expression) {
-    string firstToken = expression.substr(0, lastTokenPos - 1);
+    string firstToken = expression.substr(0, lastTokenPos);
     tokens.push_back(firstToken);
   }
   tokens.push_back(lastToken);
@@ -98,15 +86,14 @@ vector<string> splitAtLastToken(const string& expression) {
 
 // Returns expression without leading/trailing whitespace and wrapping parens
 string trim(const string& expression) {
-  if (expression.empty()) {
-    return expression;
+  size_t firstCharPos = expression.find_first_not_of(WHITESPACE);
+
+  if (expression.empty() || firstCharPos == string::npos) {
+    return "";
   }
 
-  string trimmed = string(expression);
-
-  size_t firstCharPos = trimmed.find_first_not_of(WHITESPACE);
-  size_t lastCharPos = trimmed.find_last_not_of(WHITESPACE);
-  trimmed = substrFromStart(trimmed, firstCharPos, lastCharPos);
+  size_t lastCharPos = expression.find_last_not_of(WHITESPACE);
+  string trimmed = substrFromStart(expression, firstCharPos, lastCharPos);
 
   if (isWrapped(trimmed)) {
     return trim(substrFromEnds(trimmed, 1, 1));
