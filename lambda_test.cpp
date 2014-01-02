@@ -184,9 +184,11 @@ int main() {
   }
 
   { // Test parsing with extra whitespace and parens
+    const Node *nodeI = factory->buildNode("I");
     const Node *nodeA = factory->buildNode("A");
     const Node *nodeB = factory->buildNode("B");
     const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
+    tester->assertParse("()", nodeI);
     tester->assertParse(" A", nodeA);
     tester->assertParse("A ", nodeA);
     tester->assertParse("\tA", nodeA);

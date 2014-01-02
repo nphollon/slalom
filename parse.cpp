@@ -1,5 +1,5 @@
 #include "parse.hpp"
-
+#include <iostream>
 #include "strutil.hpp"
 
 // Helper function prototypes
@@ -21,12 +21,14 @@ const Node* parse(const string& program) {
 
 // Recursively construct parse tree
 // Assumes valid program syntax
-const Node* constructParseTree(const string& program) {
-  if (program.empty()) {
+const Node* constructParseTree(const string& expression) {
+  string trimmed = trim(expression);
+
+  if (trimmed.empty()) {
     return new Node("I");
   }
 
-  const vector<string> tokens = splitAtLastToken(trim(program));
+  const vector<string> tokens = splitAtLastToken(trimmed);
 
   if (tokens.size() == 1) {
     return new Node(tokens[0]);
@@ -83,7 +85,7 @@ vector<string> splitAtLastToken(const string& expression) {
     lastTokenPos = expression.find_last_of(WHITESPACE) + 1;
   }
 
-  string lastToken = substrFromEnds(expression, lastTokenPos, 0);
+  string lastToken = expression.substr(lastTokenPos);
 
   vector<string> tokens;
   if (lastToken != expression) {
@@ -96,6 +98,10 @@ vector<string> splitAtLastToken(const string& expression) {
 
 // Returns expression without leading/trailing whitespace and wrapping parens
 string trim(const string& expression) {
+  if (expression.empty()) {
+    return expression;
+  }
+
   string trimmed = string(expression);
 
   size_t firstCharPos = trimmed.find_first_not_of(WHITESPACE);
@@ -103,7 +109,7 @@ string trim(const string& expression) {
   trimmed = substrFromStart(trimmed, firstCharPos, lastCharPos);
 
   if (isWrapped(trimmed)) {
-    trimmed = trim(substrFromEnds(trimmed, 1, 1));
+    return trim(substrFromEnds(trimmed, 1, 1));
   }
 
   return trimmed;
@@ -111,7 +117,7 @@ string trim(const string& expression) {
 
 // Returns true if expression is wrapped in parens
 bool isWrapped(const string& expression) {
-  return findLastOpenParen(expression) == 0;
+  return (expression.length() > 0) && (findLastOpenParen(expression) == 0);
 }
 
 // If last character of expression is not ')',
