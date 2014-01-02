@@ -4,6 +4,10 @@
 
 using namespace std;
 
+// Known parsing defects:
+// () -> std::out_of_range
+// (A)(B) -> ((A.B)
+
 int main() {
   Tester *tester = new Tester();
   const NodeFactory *factory = new NodeFactory();
