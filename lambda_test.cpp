@@ -4,55 +4,9 @@
 
 #include "node.hpp"
 #include "parse.hpp"
+#include "tester.hpp"
 
 using namespace std;
-
-class Tester {
-private:
-  int errorCount;
-
-public:
-  Tester() {}
-  ~Tester() {}
-
-  void assert(const bool testExpression, const string errorMessage) {
-    if (!testExpression) {
-      cout << "Failure. " << errorMessage << endl;
-      errorCount++;
-    }
-  }
-
-  void assertParse(const string& program, const Node *expectedParseTree) {
-    const Node *actualParseTree = parse(program);
-
-    const string errorMessage = "Unexpected parse tree for program.\nProgram text: " + 
-      (program.empty() ? "<empty>" : program) + "\nExpected parse tree: " +
-      expectedParseTree->getName() + "\nActual parse tree: " +
-      actualParseTree->getName();
-
-    assert(*actualParseTree == *expectedParseTree, errorMessage);
-    delete actualParseTree;
-  }
-
-  void assertParseError(const string& program) {
-    bool badExpression = false;
-    try {
-      parse(program);
-    } catch (ParenthesesDoNotMatch e) {
-      badExpression = true;
-    }
-    assert(badExpression, "Expected program '(A' to cause parse exception");
-  }
-
-  void printReport() const {
-    if (errorCount == 0) {
-      cout << "All tests passed." << endl;
-    } else {
-      cout << errorCount << " tests failed." << endl;
-    }
-  }
-};
-
 
 class NodeFactory {
 private:
