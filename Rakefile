@@ -1,13 +1,24 @@
 COMPILER = "clang++"
+OBJECTS = ["parse.o", "node.o", "strutil.o"]
 
-task :default => [:test]
+def compile(target)
+  sh "#{COMPILER} -o #{target.name} #{target.prerequisites.join(' ')}"
+end
+
+task :default => [:all]
+
+task :all => [:test, "repl"]
 
 task :test => ["runtests"] do
   sh "./runtests"
 end
 
-file "runtests" => ["lambda_test.o","tester.o","parse.o","node.o","strutil.o"] do |target|
-  sh "#{COMPILER} -o #{target.name} #{target.prerequisites.join(' ')}"
+file "repl" => ["lambda_repl.o"] + OBJECTS do |target|
+  compile target
+end
+
+file "runtests" => ["lambda_test.o","tester.o"] + OBJECTS do |target|
+  compile target
 end
 
 rule ".o" => ".cpp" do |target|
