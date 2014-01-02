@@ -8,6 +8,7 @@ string trim(const string&);
 bool isWrapped(const string&);
 string substrFromEnds(const string&, size_t, size_t);
 string substrFromStart(const string&, size_t, size_t);
+int findLastOpenParen(const string&);
 char lastChar(const string&);
 char firstChar(const string&);
 
@@ -43,10 +44,9 @@ const Node* parse(const string& program) {
 // "(A (B C))" returns {"(A (B C))"}
 
 vector<string> splitAtLastToken(const string& expression) {
-  int lastTokenPos;
-  if (lastChar(expression) == ')') {
-    lastTokenPos = expression.rfind('(');
-  } else {
+  int lastTokenPos = findLastOpenParen(expression);
+  
+  if (lastTokenPos == expression.length()) {
     lastTokenPos = expression.find_last_of(WHITESPACE) + 1;
   }
 
@@ -76,22 +76,31 @@ string trim(const string& expression) {
 }
 
 bool isWrapped(const string& expression) {
+  return findLastOpenParen(expression) == 0;
+}
+
+// If last character of expression is not ')',
+//    return length of expression
+// If last ')' has no matching '('
+//    return -1
+// Else
+//    return position of '(' matching last ')'
+int findLastOpenParen(const string& expression) {
   if (lastChar(expression) != ')') {
-    return false;
+    return expression.length();
   }
 
-  int nestLevel = -1;
-  int i = expression.length() - 2;
-  while ((nestLevel != 0) && (i >= 0)) {
-    if (expression[i] == '(') {
-      nestLevel++;
-    } else if (expression[i] == ')') {
-      nestLevel--;
-    }
+  int nestLevel = 1;
+  int i = expression.length() - 1;
+  while (nestLevel > 0 && i > 0) {
     i--;
+    if (expression[i] == '(') {
+      nestLevel--;
+    } else if (expression[i] == ')') {
+      nestLevel++;
+    }
   }
-
-  return (nestLevel == 0) && (i == -1);
+  return i;
 }
 
 string substrFromStart(const string& text, size_t firstCharPos, size_t lastCharPos) {

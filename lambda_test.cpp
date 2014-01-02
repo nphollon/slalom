@@ -260,8 +260,8 @@ int main() {
     tester->assertParse("\tA", nodeA);
     tester->assertParse("( A )", nodeA);
     tester->assertParse("A\tB", nodeAB);
-    //tester->assertParse("A ((B))", nodeAB);
-    //    tester->assertParse("(\t A  )\t\t( ((B)  )\t)", nodeAB);
+    tester->assertParse("A ((B))", nodeAB);
+    tester->assertParse("(\t A  )\t\t( ((B)  )\t)", nodeAB);
     factory->deleteNodes();
   }
 
