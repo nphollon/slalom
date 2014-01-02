@@ -8,6 +8,8 @@ using namespace std;
 
 const Node* parse(const string&);
 
-class ParenthesesDoNotMatch {};
+class ParseError {};
+class ParenthesesDoNotMatch : public ParseError {};
+class MissingWhitespace : public ParseError {};
 
 #endif

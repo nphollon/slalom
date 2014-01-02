@@ -5,6 +5,7 @@
 // Helper function prototypes
 const Node* constructParseTree(const string& program);
 void validate(const string&);
+void validateWhitespaceAt(const string&, const int&);
 vector<string> splitAtLastToken(const string&);
 string trim(const string&);
 bool isWrapped(const string&);
@@ -13,8 +14,8 @@ int findLastOpenParen(const string&);
 const string WHITESPACE = "\t ";
 
 const Node* parse(const string& program) {
- validate(program);
- return constructParseTree(program);
+  validate(program);
+  return constructParseTree(program);
 }
 
 const Node* constructParseTree(const string& program) {
@@ -40,14 +41,23 @@ void validate(const string& expression) {
   int nestLevel = 0;
   for (int i = 0; i < expression.length() && nestLevel <= 0; i++) {
     if (expression[i] == '(') {
+      validateWhitespaceAt(expression, i-1);
       nestLevel--;
     } else if (expression[i] == ')') {
+      validateWhitespaceAt(expression, i+1);
       nestLevel++;
     }
   }
 
   if (nestLevel != 0) {
     throw ParenthesesDoNotMatch();
+  }
+}
+
+void validateWhitespaceAt(const string& expression, const int& pos) {
+  if (pos < 0 || pos >= expression.length()) return;
+  if ((WHITESPACE + "()").find(expression[pos]) == string::npos) {
+    throw MissingWhitespace();
   }
 }
 

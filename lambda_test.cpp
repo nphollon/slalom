@@ -193,9 +193,11 @@ int main() {
     factory->deleteNodes();
   }
 
-  { // Test parsing with mismatched parens
+  { // Test parsing erroneous programs
     tester->assertParseError("(");
-    tester->assertParseError(")(");
+    tester->assertParseError(") (");
+    tester->assertParseError("A(B)");
+    tester->assertParseError("(A)B");
   }
 
   tester->printReport();
