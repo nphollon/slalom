@@ -1,7 +1,5 @@
 #include "node.hpp"
 
-using namespace std;
-
 Node::Node(const string& n) {
   applicator = NULL;
   input = NULL;

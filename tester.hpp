@@ -1,7 +1,10 @@
 #ifndef H_TESTER
 #define H_TESTER
 
+#include <string>
 #include "node.hpp"
+
+using namespace std;
 
 class Tester {
 private:

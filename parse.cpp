@@ -1,6 +1,6 @@
-#include <iostream>
-#include <vector>
 #include "parse.hpp"
+
+#include "strutil.hpp"
 
 // Helper function prototypes
 const Node* constructParseTree(const string& program);
@@ -8,11 +8,7 @@ void validate(const string&);
 vector<string> splitAtLastToken(const string&);
 string trim(const string&);
 bool isWrapped(const string&);
-string substrFromEnds(const string&, size_t, size_t);
-string substrFromStart(const string&, size_t, size_t);
 int findLastOpenParen(const string&);
-char lastChar(const string&);
-char firstChar(const string&);
 
 const string WHITESPACE = "\t ";
 
@@ -122,22 +118,4 @@ int findLastOpenParen(const string& expression) {
     }
   }
   return i;
-}
-
-string substrFromStart(const string& text, size_t firstCharPos, size_t lastCharPos) {
-  int length = lastCharPos - firstCharPos + 1;
-  return text.substr(firstCharPos, length);
-}
-
-string substrFromEnds(const string& text, size_t startPos, size_t lenFromEnd) {
-  int length = text.length() - lenFromEnd - startPos;
-  return text.substr(startPos, length);
-}
-
-char lastChar(const string& text) {
-  return text.at(text.length() - 1);
-}
-
-char firstChar(const string& text) {
-  return text.at(0);
 }
