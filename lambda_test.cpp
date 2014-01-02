@@ -24,10 +24,12 @@ public:
 
   void assertParse(const string& program, const Node *expectedParseTree) {
     const Node *actualParseTree = parse(program);
+
     const string errorMessage = "Unexpected parse tree for program.\nProgram text: " + 
       (program.empty() ? "<empty>" : program) + "\nExpected parse tree: " +
       expectedParseTree->getName() + "\nActual parse tree: " +
       actualParseTree->getName();
+
     assert(*actualParseTree == *expectedParseTree, errorMessage);
     delete actualParseTree;
   }
@@ -133,10 +135,10 @@ int main() {
     const Node *parent12 = factory->buildNode(*child1, *child2);
     const Node *parent21 = factory->buildNode(*child2, *child1);
 
-    tester->assert(parent12->getName() == "(A B)",
-                   "Expected name of node `A B to be (A B)");
-    tester->assert(parent21->getName() == "(B A)",
-                   "Expected name of node `B A to be (B A)");
+    tester->assert(parent12->getName() == "(A.B)",
+                   "Expected name of node `A B to be (A.B)");
+    tester->assert(parent21->getName() == "(B.A)",
+                   "Expected name of node `B A to be (B.A)");
     tester->assert(!parent12->isTerminal(),
                    "Expected node `A B not to be terminal");
     tester->assert(parent12->getApplicator() == *child1,
@@ -155,7 +157,7 @@ int main() {
     const Node *grandparentCAB = factory->buildNode(*childless, *parentAB);
 
     tester->assert(*childless != *parentAB,
-                   "Expected node `A B to be != to terminal node whose name is (A B)");
+                   "Expected node `A B to be != to terminal node whose name is (A.B)");
     tester->assert(*parentAB != *childless,
                    "Expected terminal node whose name is (A B) to be != to node `A B");
     tester->assert(*grandparentABC != *grandparentCAB,
@@ -170,7 +172,7 @@ int main() {
     const Node *copy = new Node(*original);
     factory->deleteNodes();
 
-    tester->assert(copy->getName() == "(A B)",
+    tester->assert(copy->getName() == "(A.B)",
                    "Expected copy constructor to deep copy name string");
     tester->assert(copy->getApplicator() == *(factory->buildNode("A")),
                    "Expected copy constructor to deep copy applicator");
@@ -232,6 +234,34 @@ int main() {
     const Node *nodeBC = factory->buildNode(*nodeB, *nodeC);
     const Node *nodeABC = factory->buildNode(*nodeA, *nodeBC);
     tester->assertParse("Aa (Bb Cc)", nodeABC);
+    factory->deleteNodes();
+  }
+
+  { // Test parsing four nodes with pairs grouped
+    const Node *nodeA = factory->buildNode("Aa");
+    const Node *nodeB = factory->buildNode("Bb");
+    const Node *nodeC = factory->buildNode("Cc");
+    const Node *nodeD = factory->buildNode("Dd");
+
+    const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
+    const Node *nodeCD = factory->buildNode(*nodeC, *nodeD);
+    
+    const Node *nodeABCD = factory->buildNode(*nodeAB, *nodeCD);
+    tester->assertParse("(Aa Bb) (Cc Dd)", nodeABCD);
+    factory->deleteNodes();
+  }
+
+  { // Test parsing with extra whitespace and parens
+    const Node *nodeA = factory->buildNode("A");
+    const Node *nodeB = factory->buildNode("B");
+    const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
+    tester->assertParse(" A", nodeA);
+    tester->assertParse("A ", nodeA);
+    tester->assertParse("\tA", nodeA);
+    tester->assertParse("( A )", nodeA);
+    tester->assertParse("A\tB", nodeAB);
+    //tester->assertParse("A ((B))", nodeAB);
+    //    tester->assertParse("(\t A  )\t\t( ((B)  )\t)", nodeAB);
     factory->deleteNodes();
   }
 
