@@ -1,7 +1,7 @@
 Slalom
 ======
 
-Slalom is a simple functional language based on the [SKI combinator calculus](http://en.wikipedia.org/wiki/SKI_combinator_calculus). It is inspired somewhat by [Haskell](http://www.haskell.org/haskellwiki/Haskell) (which you may have heard of) but moreso by [Unlambda](www.madore.org/~david/programs/unlambda/) and [Iota](http://webcache.googleusercontent.com/search?q=cache:ScjNltvRk70J:http://semarch.linguistics.fas.nyu.edu/barker/Iota/%2Biota+jot&hl=en&gbv=2&ct=clnk) (which you probably haven't). The compiler is (or will be) written in [LLVM](http://llvm.org).
+Slalom is a simple functional language based on the [SKI combinator calculus](http://en.wikipedia.org/wiki/SKI_combinator_calculus). It is inspired somewhat by [Haskell](http://www.haskell.org/haskellwiki/Haskell) (which you may have heard of) but moreso by [Unlambda](http://www.madore.org/~david/programs/unlambda/) and [Iota](http://webcache.googleusercontent.com/search?q=cache:ScjNltvRk70J:http://semarch.linguistics.fas.nyu.edu/barker/Iota/%2Biota+jot&hl=en&gbv=2&ct=clnk) (which you probably haven't). The compiler is (or will be) written in [LLVM](http://llvm.org).
 
 Dependencies
 ------------
@@ -12,23 +12,23 @@ Dependencies
 Installing & Running
 --------------------
 
-In your terminal of choice, visit the base directory for the project, and run Rake. This will build 2 executables, _runtests_ and _repl_, and will execute _runtests_.
+In your terminal of choice, visit the base directory for the project, and run Rake.
 
     $ rake
 
-_runtests_ runs the unit tests. They should all pass; if they don't, then I did something wrong! The source code for the tests is in _slalom\_test.cpp_.
+This will build 2 executables, `runtests` and `repl`. It will also execute `runtests`, which runs the unit tests. The source code for the tests is in `slalom_test.cpp`.
 
-_repl_ starts a simple command line shell for the language. The source code for the REPL is in _slalom\_repl.cpp_. Right now, the REPL simply accepts a line of text and parses it. If the input has mismatched parentheses, it will give you a syntax error; otherwise, it will print the parse tree. You can exit the REPL by typing Ctrl-D on a blank line.
+`repl` starts a simple command line shell for the language. The source code for the REPL is in `slalom_repl.cpp`. Right now, the REPL simply accepts a line of text and parses it. If the input has mismatched parentheses, it will give you a syntax error; otherwise, it will print the parse tree. You can exit the REPL by typing Ctrl-D on a blank line.
 
 Syntax
 ------
 
-Slalom is a purely functional programming language, in the sense that everything in the language is a function.
+Slalom is a purely functional programming language. Everything in the language is a function. Nothing is not a function.
 
-The Slalom REPL accepts a line of input, parses it, and returns a textual representation of the parse tree. In the examples below, user input is indicated by lines beginning with "`>> `" and the resulting output is displayed on the following line.
+The Slalom REPL accepts a line of input, parses it, and returns a textual representation of the parse tree. In the examples below, user input is indicated by lines beginning with "`>> `", and the resulting output is displayed on the following line.
 
-    >> _example input_
-    _example output_
+    >> example input
+    example output
 
 ### Names
 
@@ -47,16 +47,16 @@ In the REPL, a name evaluates to itself. All of the following are examples of na
 
 ### Function Application
 
-When two functions are separated by whitespace (any number of spaces or tabs), the first is applied to the second. To put it another way, the second is passed as an argument to the first.
+When two functions are separated by whitespace (any number of spaces or tabs), the first is applied to the second. In other words, the second is passed as an argument to the first.
 
-Every function in Slalom can be applied to another function. Every function application results in a new function.
+Every function in Slalom can be applied to another function. Every function application produces a new function.
 
 When one function is applied to another, the REPL will wrap them in helpful parentheses.
 
     >> Applicator Input
     (Applicator Input)
 
-If several functions are separated by whitespace, function application occurs left-to-right.
+If several functions are separated by whitespace, function application occurs from left to right.
 
     >> one two three four
     (((one two) three) four)
@@ -95,5 +95,5 @@ An empty set of parentheses is also interpreted as "I".
 
     >> ()
     I
-    >> AE () OU
+    >> AE ( ) OU
     ((AE I) OU)
