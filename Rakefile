@@ -13,14 +13,18 @@ task :test => ["runtests"] do
   sh "./runtests"
 end
 
-file "repl" => ["lambda_repl.o"] + OBJECTS do |target|
+file "repl" => ["slalom_repl.o"] + OBJECTS do |target|
   compile target
 end
 
-file "runtests" => ["lambda_test.o","tester.o"] + OBJECTS do |target|
+file "runtests" => ["slalom_test.o","tester.o"] + OBJECTS do |target|
   compile target
 end
 
 rule ".o" => ".cpp" do |target|
   sh "#{COMPILER} -c -o #{target.name} #{target.source}"
+end
+
+task :clean do
+  sh "rm -f *.o repl runtests"
 end

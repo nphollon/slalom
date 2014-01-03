@@ -9,7 +9,7 @@ Node::Node(const string& n) {
 Node::Node(const Node& app, const Node& inp) {
   applicator = new Node(app);
   input = new Node(inp);
-  name = new string("(" + app.getName() + "." + inp.getName() + ")");
+  name = new string("(" + app.getName() + " " + inp.getName() + ")");
 }
 
 Node::Node(const Node& original) {

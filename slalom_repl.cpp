@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const string PROMPT = "> ";
+const string PROMPT = ">> ";
 
 void printInstructions();
 void prompt();
