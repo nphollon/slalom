@@ -28,13 +28,7 @@ void Tester::assertParse(const string& program, const Node *expectedParseTree) {
 }
 
 void Tester::assertParseError(const string& program) {
-  bool badExpression = false;
-  try {
-    parse(program);
-  } catch (ParseError e) {
-    badExpression = true;
-  }
-  assert(badExpression, "Expected parse error.\n" + getProgramText(program));
+  assert(parse(program) == NULL, "Expected parse error.\n" + getProgramText(program));
 }
 
 void Tester::printReport() const {
