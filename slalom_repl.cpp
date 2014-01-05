@@ -26,11 +26,11 @@ int main() {
 }
 
 void processLine(const string& line) {
-  try {
-    const Node *parseTree = parse(line);
+  const Node *parseTree = parse(line);
+  if (parseTree) {
     cout << parseTree->getName() << endl;
     delete parseTree;
-  } catch (ParenthesesDoNotMatch e) {
+  } else {
     cout << "ERROR: Parentheses do not match" << endl;
   }
 }

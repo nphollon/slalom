@@ -4,7 +4,7 @@
 
 // Helper function prototypes
 const Node* constructParseTree(const string& program);
-void validate(const string&);
+bool validate(const string&);
 void validateNoNameAt(const string&, const int&);
 vector<string> splitAtLastToken(const string&);
 string trim(const string&);
@@ -15,8 +15,10 @@ const string WHITESPACE = "\t ";
 const string NON_NAME_CHARS = WHITESPACE + "()";
 
 const Node* parse(const string& program) {
-  validate(program);
-  return constructParseTree(program);
+  if (validate(program)) {
+    return constructParseTree(program);
+  }
+  return NULL;
 }
 
 // Recursively construct parse tree
@@ -43,7 +45,7 @@ const Node* constructParseTree(const string& expression) {
 }
 
 // Throws ParenthesesDoNotMatch if expression has mismatched parens
-void validate(const string& expression) {
+bool validate(const string& expression) {
   int nestLevel = 0;
   for (int i = 0; i < expression.length() && nestLevel <= 0; i++) {
     if (expression[i] == '(') {
@@ -53,9 +55,7 @@ void validate(const string& expression) {
     }
   }
 
-  if (nestLevel != 0) {
-    throw ParenthesesDoNotMatch();
-  }
+  return nestLevel == 0;
 }
 
 // Identifies last token in expression, as delimited by whitespace or parens
