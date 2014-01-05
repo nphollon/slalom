@@ -19,8 +19,8 @@ public:
 
   bool isTerminal() const;
   string getName() const;
-  const Node getApplicator() const;
-  const Node getInput() const;
+  const Node* getApplicator() const;
+  const Node* getInput() const;
 
   bool operator==(const Node&) const;
   bool operator!=(const Node&) const;
