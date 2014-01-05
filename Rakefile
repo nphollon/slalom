@@ -1,4 +1,6 @@
 COMPILER = "clang++"
+AS_FLAGS = "`llvm-config --cxxflags`"
+LINK_FLAGS = "`llvm-config --libs core` `llvm-config --ldflags`"
 OBJECTS = ["parse.o", "node.o", "strutil.o"]
 
 def compile(target)
@@ -22,7 +24,7 @@ file "runtests" => ["slalom_test.o","tester.o"] + OBJECTS do |target|
 end
 
 rule ".o" => ".cpp" do |target|
-  sh "#{COMPILER} -c -o #{target.name} #{target.source}"
+  sh "#{COMPILER} #{AS_FLAGS} -c -o #{target.name} #{target.source}"
 end
 
 task :clean do
