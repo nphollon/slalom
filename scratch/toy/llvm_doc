@@ -1,0 +1,73 @@
+== OBJECTS ==
+Module
+        Module(string, LLVMContext&)
+        Function* getFunction(string)
+        .. dump()
+IRBuilder<>
+        IRBuilder(LLVMContext&)
+        Value* CreateFAdd(Value*, Value*, string)
+        Value* CreateFSub(Value*, Value*, string)
+        Value* CreateFMul(Value*, Value*, string)
+        Value* CreateFCmpULT(Value*, Value*, string)
+        Value* CreateUIToFP(Value*, Type*, string)
+        Value* CreateCall(Function*, vector<Value*>, string)
+        Value* CreateFCmpONE(Value*, ConstantFP*, APFloat, string)
+        BasicBlock* GetInsertBlock()
+        .. CreateCondBr(Value*, BasicBlock*, BasicBlock*)
+        .. SetInsertPoint(BasicBlock*)
+        .. CreateBr(BasicBlock*)
+        PHINode* CreatePHI(Type*, int, string)
+        Builder.CreateRet(Value*)
+Value
+FunctionPassManager
+        FunctionPassManager(Module*)
+        .. run(Function*)
+        .. add(TargetData*)
+        .. add(..)
+        .. doInitialization()        
+ConstantFP
+        static ConstantFP* get(LLVMContext&, APFloat)
+APFloat
+        APFloat(double)
+Type
+        static Type* getDoubleTy(LLVMContext&, string)
+Function
+      v .. ExternalLinkage
+        static Function* Create(FunctionType*, .., string, Module*)
+        int arg_size()
+        vector<BasicBlock*> getBasicBlockList()
+        string getName()
+        .. eraseFromParent()
+        bool empty()
+        Function::arg_iterator arg_begin()
+        .. dump()
+Function::arg_iterator
+        .. setName(string)
+BasicBlock
+        static Create(LLVMContext&, string, Function*)
+        static Create(LLVMContext&, string)
+        Function* getParent()
+PHINode
+        .. addIncoming(Value*, BasicBlock*)
+Constant
+        Value* getNullValue(Type*)
+FunctionType
+        static FunctionType* get(Type*, vector<Type*>, bool)
+ExecutionEngine
+        void* getPointerToFunction(Function*)
+        TargetData getTargetData()
+EngineBuilder
+        EngineBuilder(Module*)
+        EngineBuilder setErrorStr(string*)
+        ExecutionEngine* create()
+TargetData
+
+== FUNCTIONS ==
+   LLVMContext& getGlobalContext()
+.. verifyFunction(Function*)
+.. InitializeNativeTarget()
+.. createBasicAliasAnalysisPass()
+.. createInstructionCombiningPass()
+.. createReassociatePass()
+.. createGVNPass()
+.. createCFGSimplificationPass()
