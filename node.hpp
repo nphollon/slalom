@@ -26,8 +26,6 @@ public:
   bool operator!=(const Node&) const;
 };
 
-class NodeDoesNotExist {};
-
 class NodeFactory {
 private:
   vector<Node *> *nodes;
