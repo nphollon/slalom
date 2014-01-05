@@ -3,6 +3,7 @@
 #include "llvm/Module.h"
 #include "llvm/Function.h"
 #include "llvm/Support/IRBuilder.h"
+#include "llvm/Assembly/PrintModulePass.h"
 
 #include "node.hpp"
 
@@ -18,6 +19,7 @@ public:
   CodeGenerator();
   ~CodeGenerator();
   Value* generateFromNode(const Node&) const;
+  Module* getModule() const;
 };
 
 CodeGenerator::CodeGenerator() {
@@ -92,5 +94,15 @@ Value* CodeGenerator::generateFromNode(const Node& node) const {
 
   return [create new slalfunc(NULL, name, -1, vector<>())]
   */
+  return 0;
+}
+
+Module* CodeGenerator::getModule() const {
+  return module;
+}
+
+int main() {
+  CodeGenerator *cg = new CodeGenerator();
+  delete cg;
   return 0;
 }
