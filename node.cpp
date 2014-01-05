@@ -17,8 +17,8 @@ Node::Node(const Node& original) {
     applicator = NULL;
     input = NULL;
   } else {
-    applicator = new Node(original.getApplicator());
-    input = new Node(original.getInput());
+    applicator = new Node(*original.getApplicator());
+    input = new Node(*original.getInput());
   }
   name = new string(original.getName());
 }
@@ -39,18 +39,18 @@ string Node::getName() const {
   return *name;
 }
 
-const Node Node::getApplicator() const {
+const Node* Node::getApplicator() const {
   if (isTerminal()) {
     throw NodeDoesNotExist();
   }
-  return *applicator;
+  return applicator;
 }
 
-const Node Node::getInput() const {
+const Node* Node::getInput() const {
   if (isTerminal()) {
     throw NodeDoesNotExist();
   }
-  return *input;
+  return input;
 }
 
 bool Node::operator==(const Node& n) const {
@@ -59,8 +59,8 @@ bool Node::operator==(const Node& n) const {
   }
 
   return !n.isTerminal() &&
-    *applicator == n.getApplicator() &&
-    *input == n.getInput();
+    *applicator == *n.getApplicator() &&
+    *input == *n.getInput();
 }
 
 bool Node::operator!=(const Node& n) const {

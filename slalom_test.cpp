@@ -69,9 +69,9 @@ int main() {
                    "Expected name of node `B A to be (B A)");
     tester->assert(!parent12->isTerminal(),
                    "Expected node `A B not to be terminal");
-    tester->assert(parent12->getApplicator() == *child1,
+    tester->assert(*parent12->getApplicator() == *child1,
                    "Expected the applicator of `A B to be A");
-    tester->assert(parent12->getInput() == *child2,
+    tester->assert(*parent12->getInput() == *child2,
                    "Expected the applicator of `A B to be B");
     factory->deleteNodes();
   }
@@ -102,9 +102,9 @@ int main() {
 
     tester->assert(copy->getName() == "(A B)",
                    "Expected copy constructor to deep copy name string");
-    tester->assert(copy->getApplicator() == *(factory->buildNode("A")),
+    tester->assert(*copy->getApplicator() == *factory->buildNode("A"),
                    "Expected copy constructor to deep copy applicator");
-    tester->assert(copy->getInput() == *(factory->buildNode("B")),
+    tester->assert(*copy->getInput() == *factory->buildNode("B"),
                    "Expected copy constructor to deep copy input");
     delete copy;
   }
