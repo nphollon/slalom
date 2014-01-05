@@ -40,16 +40,10 @@ string Node::getName() const {
 }
 
 const Node* Node::getApplicator() const {
-  if (isTerminal()) {
-    throw NodeDoesNotExist();
-  }
   return applicator;
 }
 
 const Node* Node::getInput() const {
-  if (isTerminal()) {
-    throw NodeDoesNotExist();
-  }
   return input;
 }
 

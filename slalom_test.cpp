@@ -28,22 +28,9 @@ int main() {
     const Node *terminalNode = factory->buildNode("A");
     tester->assert(terminalNode->getName() == "A", "Expected name of node A to be A");
     tester->assert(terminalNode->isTerminal(), "Expected node A to be terminal");
-
-    bool hasApplicator = true;
-    try {
-      terminalNode->getApplicator();
-    } catch (NodeDoesNotExist e) {
-      hasApplicator = false;
-    }
-    tester->assert(!hasApplicator, "Expected node A to have no applicator");
-
-    bool hasInput = true;
-    try {
-      terminalNode->getInput();
-    } catch (NodeDoesNotExist e) {
-      hasInput = false;
-    }
-    tester->assert(!hasInput, "Expected node A to have no input");
+    tester->assert(terminalNode->getApplicator() == NULL,
+                   "Expected node A to have no applicator");
+    tester->assert(terminalNode->getInput() == NULL, "Expected node A to have no input");
 
     factory->deleteNodes();
   }
