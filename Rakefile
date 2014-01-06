@@ -9,28 +9,33 @@ end
 
 task :default => [:all]
 
-task :all => [:test, "repl", "codegen"]
+task :all => [:test, :repl, :codegen]
 
-task :test => ["runtests"] do
-  sh "./runtests"
+task :test => ["bin", "bin/runtests"] do
+  sh "./bin/runtests"
 end
 
-file "repl" => ["slalom_repl.o"] + OBJECTS do |target|
+task :repl => ["bin", "bin/repl"]
+task :codegen => ["bin", "bin/codegen"]
+
+task :clean do
+  sh "rm -rf *.o bin"
+end
+
+directory "bin"
+
+file "bin/repl" => ["slalom_repl.o"] + OBJECTS do |target|
   compile target
 end
 
-file "runtests" => ["slalom_test.o","tester.o"] + OBJECTS do |target|
+file "bin/runtests" => ["slalom_test.o", "tester.o"] + OBJECTS do |target|
   compile target
 end
 
-file "codegen" => ["codegen.o"] + OBJECTS do |target|
+file "bin/codegen" => ["codegen.o"] + OBJECTS do |target|
   compile target
 end
 
 rule ".o" => ".cpp" do |target|
   sh "#{COMPILER} #{AS_FLAGS} -c -o #{target.name} #{target.source}"
-end
-
-task :clean do
-  sh "rm -f *.o repl runtests"
 end

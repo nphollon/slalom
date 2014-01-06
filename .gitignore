@@ -1,5 +1,3 @@
 *~
 *.o
-runtests
-repl
-codegen
+bin
