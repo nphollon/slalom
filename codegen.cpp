@@ -2,6 +2,7 @@
 
 #include "llvm/Module.h"
 #include "llvm/Function.h"
+#include "llvm/PassManager.h"
 #include "llvm/Support/IRBuilder.h"
 #include "llvm/Assembly/PrintModulePass.h"
 
@@ -79,8 +80,8 @@ void CodeGenerator::buildBaseFunctions() {
 // Need to worry about circular dependency?
 Value* CodeGenerator::generateFromNode(const Node& node) const {
   if (!node.isTerminal()) {
-    Value* applicatorCode = generateFromNode(node.getApplicator());
-    Value* inputCode = generateFromNode(node.getInput());
+    Value* applicatorCode = generateFromNode(*node.getApplicator());
+    Value* inputCode = generateFromNode(*node.getInput());
     Function* apply = module->getFunction("apply");
     return builder->CreateCall2(apply, applicatorCode, inputCode, "applyCall");
   }
@@ -102,7 +103,5 @@ Module* CodeGenerator::getModule() const {
 }
 
 int main() {
-  CodeGenerator *cg = new CodeGenerator();
-  delete cg;
   return 0;
 }
