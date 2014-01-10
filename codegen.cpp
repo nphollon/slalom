@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 
 #include "llvm/Module.h"
@@ -5,6 +6,7 @@
 #include "llvm/PassManager.h"
 #include "llvm/Support/IRBuilder.h"
 #include "llvm/Assembly/PrintModulePass.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include "node.hpp"
 
@@ -14,7 +16,7 @@ class CodeGenerator {
 private:
   Module* module;
   IRBuilder<>* builder;
-  Type* functionType;
+  Type* firstClassFunctionType;
   void buildBaseFunctions();
 public:
   CodeGenerator();
@@ -24,7 +26,8 @@ public:
 };
 
 CodeGenerator::CodeGenerator() {
-  functionType = StructType::create(getGlobalContext());
+  firstClassFunctionType = IntegerType::get(getGlobalContext(), 2); 
+  //StructType::create(getGlobalContext());
   module = new Module("Slalom", getGlobalContext());
   builder = new IRBuilder<>(getGlobalContext());
   buildBaseFunctions();
@@ -38,16 +41,17 @@ CodeGenerator::~CodeGenerator() {
 void CodeGenerator::buildBaseFunctions() {
   // Define I
   Function* iComb = cast<Function>
-    (module->getOrInsertFunction("I", functionType, functionType, NULL));
+    (module->getOrInsertFunction("I", firstClassFunctionType,
+                                 firstClassFunctionType, NULL));
   Value* iArg = iComb->arg_begin();
   BasicBlock *iEntry = BasicBlock::Create(getGlobalContext(), "entry", iComb);
   builder->SetInsertPoint(iEntry);
   builder->CreateRet(iArg);
-
-
+  
   // Define K
   Function* kComb = cast<Function>
-    (module->getOrInsertFunction("K", functionType, functionType, functionType, NULL));
+    (module->getOrInsertFunction("K", firstClassFunctionType,
+                                 firstClassFunctionType, firstClassFunctionType, NULL));
   Function::arg_iterator kArgIter = kComb->arg_begin();
   Value* kArg1 = kArgIter;
   kArgIter++;
@@ -56,13 +60,21 @@ void CodeGenerator::buildBaseFunctions() {
   builder->SetInsertPoint(kEntry);
   builder->CreateRet(kArg1);
 
-  // NEEDS TO BE DEFINED! //
-  Function* apply = module->getFunction("apply");
-
+  FunctionType* iCombType = iComb->getFunctionType();
+  Function* apply = cast<Function>
+    (module->getOrInsertFunction("apply", firstClassFunctionType,
+                                 firstClassFunctionType, firstClassFunctionType, NULL));
+  BasicBlock *applyEntry = BasicBlock::Create(getGlobalContext(), "entry", apply);
+  builder->SetInsertPoint(applyEntry);
+  
+  
+  cerr << "Function apply is unfinished\n";
+  return;
+  
   // Define S
   Function* sComb = cast<Function>
-    (module->getOrInsertFunction("S", functionType,
-                                 functionType, functionType, functionType, NULL));
+    (module->getOrInsertFunction("S", firstClassFunctionType, firstClassFunctionType,
+                                 firstClassFunctionType, firstClassFunctionType, NULL));
   Function::arg_iterator sArgIter = sComb->arg_begin();
   Value* sArg1 = sArgIter;
   sArgIter++;
@@ -75,6 +87,7 @@ void CodeGenerator::buildBaseFunctions() {
   Value* apply2To3 = builder->CreateCall2(apply, sArg2, sArg3, "applyCall");
   Value* sReturn = builder->CreateCall2(apply, apply1To3, apply2To3, "applyCall");
   builder->CreateRet(sReturn);
+  //*/
 }
 
 // Need to worry about circular dependency?
@@ -103,5 +116,21 @@ Module* CodeGenerator::getModule() const {
 }
 
 int main() {
+  CodeGenerator *cg = new CodeGenerator();
+  if (cg == NULL) {
+    cerr << "CodeGenerator object could not be instantiated.\n";
+    return 1;
+  }
+
+  const Node node("A");
+  if (cg->generateFromNode(node) == NULL) {
+    cerr << "Code generation from parse tree failed.\n";
+  }
+
+  PassManager PM;
+  PM.add(createPrintModulePass(&outs()));
+  PM.run(*cg->getModule());
+
+  delete cg;
   return 0;
 }
