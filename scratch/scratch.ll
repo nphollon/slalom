@@ -27,6 +27,19 @@ ret:
   ret i64 %index
 }
 
+define %fcf** @push(%argListT* %list, %fcf* %item) {
+entry:
+  %length = call i64 @length(%argListT* %list)
+  %listIsFull = icmp eq i64 %length, 3
+  br i1 %listIsFull, label %error, label %success
+success:
+  %itemPtr = getelementptr %argListT* %list, i64 0, i64 %length
+  store %fcf* %item, %fcf** %itemPtr
+  ret %fcf** %itemPtr
+error:
+  ret %fcf** null
+}
+
 ; TO APPLY an applicator to an input
 ; * ADD the input to the applicator's argument list
 ; * EVALUATE the applicator
@@ -70,9 +83,7 @@ entry:
   ret %fcf* %result
 }
 
-define i1 @assert(i64, i64) {
-entry:
-  %cond = icmp eq i64 %0, %1
+define i1 @assertCond(i1 %cond) {
   br i1 %cond, label %testPassed, label %testFailed
 
 testPassed:
@@ -97,25 +108,29 @@ entry:
   store %fcf* null, %fcf** %item2
   store %fcf* null, %fcf** %item3
 
-  ; Assert that list length is 0
-  %len0 = call i64 @length(%argListT* %list)
-  call i1 @assert(i64 %len0, i64 0)
-
   ; Add item to list, assert length is 1
-  %function = alloca %fcf
-  store %fcf* %function, %fcf** %item1
+  %func1 = alloca %fcf
+  store %fcf* %func1, %fcf** %item1
   %len1 = call i64 @length(%argListT* %list)
-  call i1 @assert(i64 %len1, i64 1)
+  %lengthIs1 = icmp eq i64 %len1, 1
+  call i1 @assertCond(i1 %lengthIs1)
 
-  ; Add item to list, assert length is 2
-  store %fcf* %function, %fcf** %item2
+  ; Add item to list via @push function
+  ; Assert item has been added to list, and that length is 2
+  %func2 = alloca %fcf
+  %pushRet = call %fcf** @push(%argListT* %list, %fcf* %func2)
+  %pushRetDeref = load %fcf** %pushRet
+  %itemWasPushed = icmp eq %fcf* %func2, %pushRetDeref
+  call i1 @assertCond(i1 %itemWasPushed)
   %len2 = call i64 @length(%argListT* %list)
-  call i1 @assert(i64 %len2, i64 2)
+  %lengthIs2 = icmp eq i64 %len2, 2
+  call i1 @assertCond(i1 %lengthIs2)
 
-  ; Add item to list, assert length is 3
-  store %fcf* %function, %fcf** %item3
-  %len3 = call i64 @length(%argListT* %list)
-  call i1 @assert(i64 %len3, i64 3)
+  ; Assert that @push return null pointer if list is full
+  call %fcf** @push(%argListT* %list, %fcf* %func1)
+  %pushRetFull = call %fcf** @push(%argListT* %list, %fcf* %func2)
+  %ptrIsNull = icmp eq %fcf** %pushRetFull, null
+  call i1 @assertCond(i1 %ptrIsNull)
 
   ret i1 0
 }
