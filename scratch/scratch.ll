@@ -1,5 +1,7 @@
 @.pass = private unnamed_addr constant [12 x i8] c"test passed\00"
 @.fail = private unnamed_addr constant [12 x i8] c"test failed\00"
+@.breakpoint = private unnamed_addr constant [12 x i8] c"breakpoint!\00"
+;  %bkPtr = getelementptr [12 x i8]* @.breakpoint, i64 0, i64 0
 
 declare i32 @puts(i8* nocapture) nounwind
 
@@ -9,12 +11,6 @@ declare i32 @puts(i8* nocapture) nounwind
 ; TO APPLY an applicator to an input
 ; * ADD the input to the applicator's argument list
 ; * EVALUATE the applicator
-
-; TO ADD an item to a list
-; * GET THE LENGTH of the list
-; * GET THE CAPACITY of the list
-; * if length < capacity, place the item at index (length + 1)
-; * if length >= capacity, ERROR
 
 ; TO EVALUATE a function
 ; * GET THE ARITY of the function
@@ -73,11 +69,21 @@ testFailed:
 
 define i64 @length(%argListT* %list) {
 entry:
-  %list0 = load %argListT* %list
-  %valueAt0 = extractvalue %argListT %list0, 0
-  %listIsEmpty = icmp ne %fcf* %valueAt0, null
-  %length = zext i1 %listIsEmpty to i64
-  ret i64 %length
+  br label %loop
+loop:
+  %index = phi i64 [0, %entry], [%nextIndex, %iterate]
+  %isAtCapacity = icmp eq i64 %index, 3
+  br i1 %isAtCapacity, label %ret, label %inspectIndex
+inspectIndex:
+  %itemPtr = getelementptr %argListT* %list, i64 0, i64 %index
+  %item = load %fcf** %itemPtr
+  %isNullItem = icmp eq %fcf* %item, null
+  br i1 %isNullItem, label %ret, label %iterate
+iterate:
+  %nextIndex = add i64 %index, 1
+  br label %loop
+ret:
+  ret i64 %index
 }
 
 define i1 @main() {
@@ -104,7 +110,12 @@ entry:
   ; Add item to list, assert length is 2
   store %fcf* %function, %fcf** %item2
   %len2 = call i64 @length(%argListT* %list)
-  call i1 @assert(i64 %len1, i64 2)
+  call i1 @assert(i64 %len2, i64 2)
+
+  ; Add item to list, assert length is 3
+  store %fcf* %function, %fcf** %item3
+  %len3 = call i64 @length(%argListT* %list)
+  call i1 @assert(i64 %len3, i64 3)
 
   ret i1 0
 }
