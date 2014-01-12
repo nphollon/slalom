@@ -8,6 +8,25 @@ declare i32 @puts(i8* nocapture) nounwind
 %argListT = type [3 x %fcf*]
 %fcf = type {%fcf(%argListT)*, i2, %argListT}
 
+define i64 @length(%argListT* %list) {
+entry:
+  br label %loop
+loop:
+  %index = phi i64 [0, %entry], [%nextIndex, %iterate]
+  %isAtCapacity = icmp eq i64 %index, 3
+  br i1 %isAtCapacity, label %ret, label %inspectIndex
+inspectIndex:
+  %itemPtr = getelementptr %argListT* %list, i64 0, i64 %index
+  %item = load %fcf** %itemPtr
+  %isNullItem = icmp eq %fcf* %item, null
+  br i1 %isNullItem, label %ret, label %iterate
+iterate:
+  %nextIndex = add i64 %index, 1
+  br label %loop
+ret:
+  ret i64 %index
+}
+
 ; TO APPLY an applicator to an input
 ; * ADD the input to the applicator's argument list
 ; * EVALUATE the applicator
@@ -65,25 +84,6 @@ testFailed:
   %failPtr = getelementptr [12 x i8]* @.fail, i64 0, i64 0
   call i32 @puts(i8* %failPtr)
   ret i1 1
-}
-
-define i64 @length(%argListT* %list) {
-entry:
-  br label %loop
-loop:
-  %index = phi i64 [0, %entry], [%nextIndex, %iterate]
-  %isAtCapacity = icmp eq i64 %index, 3
-  br i1 %isAtCapacity, label %ret, label %inspectIndex
-inspectIndex:
-  %itemPtr = getelementptr %argListT* %list, i64 0, i64 %index
-  %item = load %fcf** %itemPtr
-  %isNullItem = icmp eq %fcf* %item, null
-  br i1 %isNullItem, label %ret, label %iterate
-iterate:
-  %nextIndex = add i64 %index, 1
-  br label %loop
-ret:
-  ret i64 %index
 }
 
 define i1 @main() {
