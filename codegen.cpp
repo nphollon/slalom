@@ -1,10 +1,10 @@
 #include <iostream>
 #include <vector>
 
-#include "llvm/Module.h"
-#include "llvm/Function.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
 #include "llvm/Assembly/PrintModulePass.h"
 #include "llvm/Support/raw_ostream.h"
 
