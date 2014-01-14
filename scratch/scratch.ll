@@ -7,39 +7,39 @@ declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO: find better names for these types and the underlying concepts
 ;   (Slalom functions vs. LLVM functions)
-; TODO: define custom type for arity
 %argListT = type [3 x %fcf*]
+%arityT = type i32
 %signature = type %fcf*(%argListT*)*
-%fcf = type {%signature, i2, %argListT}
+%fcf = type {%signature, %arityT, %argListT}
 
 ; assumes argListT has size 3
-define i64 @length(%argListT* %list) {
+define %arityT @length(%argListT* %list) {
 entry:
   br label %loop
 loop:
-  %index = phi i64 [0, %entry], [%nextIndex, %iterate]
-  %isAtCapacity = icmp eq i64 %index, 3
+  %index = phi %arityT [0, %entry], [%nextIndex, %iterate]
+  %isAtCapacity = icmp eq %arityT %index, 3
   br i1 %isAtCapacity, label %ret, label %inspectIndex
 inspectIndex:
-  %itemPtr = getelementptr %argListT* %list, i64 0, i64 %index
+  %itemPtr = getelementptr %argListT* %list, i64 0, %arityT %index
   %item = load %fcf** %itemPtr
   %isNullItem = icmp eq %fcf* %item, null
   br i1 %isNullItem, label %ret, label %iterate
 iterate:
-  %nextIndex = add i64 %index, 1
+  %nextIndex = add %arityT %index, 1
   br label %loop
 ret:
-  ret i64 %index
+  ret %arityT %index
 }
 
 ; assumes argListT has size 3
 define %fcf** @push(%argListT* %list, %fcf* %item) {
 entry:
-  %length = call i64 @length(%argListT* %list)
-  %listIsFull = icmp eq i64 %length, 3
+  %length = call %arityT @length(%argListT* %list)
+  %listIsFull = icmp eq %arityT %length, 3
   br i1 %listIsFull, label %error, label %success
 success:
-  %itemPtr = getelementptr %argListT* %list, i64 0, i64 %length
+  %itemPtr = getelementptr %argListT* %list, i64 0, %arityT %length
   store %fcf* %item, %fcf** %itemPtr
   ret %fcf** %itemPtr
 error:
@@ -72,17 +72,40 @@ entry:
   ret void
 }
 
-; TO APPLY an applicator to an input
-; * ADD the input to the applicator's argument list
-; * EVALUATE the applicator
-
 ; TO EVALUATE a function
 ; * GET THE ARITY of the function
 ; * GET THE NUMBER OF ARGUMENTS of the function
 ; * if number < arity, return the function
 ; * if number = arity, CALL the function
 ; * if number > arity, ERROR
+; NOT YET TESTED
+define %fcf* @evaluate(%fcf* %slalfunc) {
+  %arityP = getelementptr %fcf* %slalfunc, i64 0, i32 1
+  %arity = load %arityT* %arityP
 
+  %args = getelementptr %fcf* %slalfunc, i64 0, i32 2
+  %argNum = call %arityT @length(%argListT* %args)
+
+  %tooManyArgs = icmp ugt %arityT %argNum, %arity
+  br i1 %tooManyArgs, label %error, label %validFunction
+validFunction:
+  %tooFewArgs = icmp ult %arityT %argNum, %arity
+  br i1 %tooFewArgs, label %notReadyForCall, label %readyForCall
+readyForCall:
+  %funcP = getelementptr %fcf* %slalfunc, i64 0, i32 0
+  %func = load %signature* %funcP
+  %toReturn = call %fcf* %func(%argListT* %args)
+  ret %fcf* %toReturn
+notReadyForCall:
+  ret %fcf* %slalfunc
+error:
+  ret %fcf* null
+}
+
+
+; TO APPLY an applicator to an input
+; * ADD the input to the applicator's argument list
+; * EVALUATE the applicator
 define %fcf* @apply(%fcf* %applicator, %fcf* %input) {
 entry:
   %resultP = alloca %fcf*
@@ -130,36 +153,7 @@ testFailed:
   ret i1 1
 }
 
-define i2* @setArity(%fcf* %slalfunc, i2 %arityV) {
-  %arity = getelementptr %fcf* %slalfunc, i64 0, i32 1
-  store i2 %arityV, i2* %arity
-  ret i2* %arity
-}
-
 define i1 @main() {
 entry:
-  ; Initialize FCF, set its function pointer to @I
-  %slalfunc = alloca %fcf
-  %sfFuncPtr = call %signature* @setFunctionPointer(%fcf* %slalfunc, %signature @I)
-
-  ; Initialize FCF arity to 1
-  %arity = call i2* @setArity(%fcf* %slalfunc, i2 1)
-
-  ; Initialize argument list to [slalfunc, NULL, NULL]
-  %list = alloca %argListT
-  call void @fillArgList(%argListT* %list, %fcf* %slalfunc, %fcf* null, %fcf* null)
-  
-  ; Try passing argument list to FCF function pointer
-  %sfFunc = load %signature* %sfFuncPtr
-  %funcRetVal = call %fcf* %sfFunc(%argListT* %list)
-
-  ; Assert that @I([slalfunc, NULL, NULL]) is slalfunc
-  %isSameFunction = icmp eq %fcf* %funcRetVal, %slalfunc
-  call i1 @assertCond(i1 %isSameFunction)
-
-  ; Assert arity is 1
-  %arityVal = load i2* %arity
-  %arityIsOne = icmp eq i2 %arityVal, 1
-
   ret i1 0
 }
