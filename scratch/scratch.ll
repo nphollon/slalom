@@ -99,12 +99,10 @@ entry:
 
 define i1 @assertCond(i1 %cond) {
   br i1 %cond, label %testPassed, label %testFailed
-
 testPassed:
   %passPtr = getelementptr [12 x i8]* @.pass, i64 0, i64 0
   call i32 @puts(i8* %passPtr)
   ret i1 0
-
 testFailed:
   %failPtr = getelementptr [12 x i8]* @.fail, i64 0, i64 0
   call i32 @puts(i8* %failPtr)
@@ -113,33 +111,6 @@ testFailed:
 
 define i1 @main() {
 entry:
-  ; Create list of 3 null pointers
-  %list = alloca %argListT
-  call void @emptyArgList(%argListT* %list)
-
-  ; Add item to list, assert length is 1
-  %func1 = alloca %fcf
-  call %fcf** @push(%argListT* %list, %fcf* %func1)
-  %len1 = call i64 @length(%argListT* %list)
-  %lengthIs1 = icmp eq i64 %len1, 1
-  call i1 @assertCond(i1 %lengthIs1)
-
-  ; Add item to list via @push function
-  ; Assert item has been added to list, and that length is 2
-  %func2 = alloca %fcf
-  %pushRet = call %fcf** @push(%argListT* %list, %fcf* %func2)
-  %pushRetDeref = load %fcf** %pushRet
-  %itemWasPushed = icmp eq %fcf* %func2, %pushRetDeref
-  call i1 @assertCond(i1 %itemWasPushed)
-  %len2 = call i64 @length(%argListT* %list)
-  %lengthIs2 = icmp eq i64 %len2, 2
-  call i1 @assertCond(i1 %lengthIs2)
-
-  ; Assert that @push return null pointer if list is full
-  call %fcf** @push(%argListT* %list, %fcf* %func1)
-  %pushRetFull = call %fcf** @push(%argListT* %list, %fcf* %func2)
-  %ptrIsNull = icmp eq %fcf** %pushRetFull, null
-  call i1 @assertCond(i1 %ptrIsNull)
 
   ret i1 0
 }
