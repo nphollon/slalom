@@ -7,6 +7,7 @@ declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO: find better names for these types and the underlying concepts
 ;   (Slalom functions vs. LLVM functions)
+; TODO: define custom type for arity
 %argListT = type [3 x %fcf*]
 %signature = type %fcf*(%argListT*)*
 %fcf = type {%signature, i2, %argListT}
@@ -129,11 +130,20 @@ testFailed:
   ret i1 1
 }
 
+define i2* @setArity(%fcf* %slalfunc, i2 %arityV) {
+  %arity = getelementptr %fcf* %slalfunc, i64 0, i32 1
+  store i2 %arityV, i2* %arity
+  ret i2* %arity
+}
+
 define i1 @main() {
 entry:
   ; Initialize FCF, set its function pointer to @I
   %slalfunc = alloca %fcf
-  %sfFuncPtr = call %signature* @setFunctionPointer(%fcf* %slalfunc, %signature @K)
+  %sfFuncPtr = call %signature* @setFunctionPointer(%fcf* %slalfunc, %signature @I)
+
+  ; Initialize FCF arity to 1
+  %arity = call i2* @setArity(%fcf* %slalfunc, i2 1)
 
   ; Initialize argument list to [slalfunc, NULL, NULL]
   %list = alloca %argListT
@@ -144,7 +154,12 @@ entry:
   %funcRetVal = call %fcf* %sfFunc(%argListT* %list)
 
   ; Assert that @I([slalfunc, NULL, NULL]) is slalfunc
-  %isSameFunction = icmp i1 %fcf* %funcRetVal, %slalfunc
+  %isSameFunction = icmp eq %fcf* %funcRetVal, %slalfunc
   call i1 @assertCond(i1 %isSameFunction)
+
+  ; Assert arity is 1
+  %arityVal = load i2* %arity
+  %arityIsOne = icmp eq i2 %arityVal, 1
+
   ret i1 0
 }
