@@ -5,8 +5,11 @@
 
 declare i32 @puts(i8* nocapture) nounwind
 
+; TODO: find better names for these types and the underlying concepts
+;   (Slalom functions vs. LLVM functions)
 %argListT = type [3 x %fcf*]
-%fcf = type {%fcf(%argListT)*, i2, %argListT}
+%signature = type %fcf*(%argListT*)*
+%fcf = type {%signature, i2, %argListT}
 
 ; assumes argListT has size 3
 define i64 @length(%argListT* %list) {
@@ -42,15 +45,29 @@ error:
   ret %fcf** null
 }
 
+define %signature* @setFunctionPointer(%fcf* %slalfunc, %signature %funcValue) {
+entry:
+  %funcPtr = getelementptr %fcf* %slalfunc, i64 0, i32 0
+  store %signature %funcValue, %signature* %funcPtr
+  ret %signature* %funcPtr
+}
+
 ; assumes argListT has size 3
-define void @emptyArgList(%argListT* %list) {
+define void @fillArgList(%argListT* %list, %fcf*, %fcf*, %fcf*) {
 entry:
   %item1 = getelementptr %argListT* %list, i64 0, i32 0
   %item2 = getelementptr %argListT* %list, i64 0, i32 1
   %item3 = getelementptr %argListT* %list, i64 0, i32 2
-  store %fcf* null, %fcf** %item1
-  store %fcf* null, %fcf** %item2
-  store %fcf* null, %fcf** %item3
+  store %fcf* %0, %fcf** %item1
+  store %fcf* %1, %fcf** %item2
+  store %fcf* %2, %fcf** %item3
+  ret void
+}
+
+; assumes argListT has size 3
+define void @emptyArgList(%argListT* %list) {
+entry:
+  call void @fillArgList(%argListT* %list, %fcf* null, %fcf* null, %fcf* null)
   ret void
 }
 
@@ -74,18 +91,21 @@ entry:
   ret %fcf* %result
 }
 
-define %fcf* @I(%argListT %args) {
+define %fcf* @I(%argListT* %args) {
 entry:
-  %first = extractvalue %argListT %args, 0
-  ret %fcf* %first
+  %firstItemP = getelementptr %argListT* %args, i64 0, i64 0
+  %firstItem = load %fcf** %firstItemP
+  ret %fcf* %firstItem
 }
 
-define %fcf* @K(%argListT %args) {
+define %fcf* @K(%argListT* %args) {
 entry:
-  %first = extractvalue %argListT %args, 0
-  ret %fcf* %first
+  %firstItemP = getelementptr %argListT* %args, i64 0, i64 0
+  %firstItem = load %fcf** %firstItemP
+  ret %fcf* %firstItem
 }
 
+; TODO: change argument to %argListT*
 define %fcf* @S(%argListT %args) {
 entry:
   %first = extractvalue %argListT %args, 0
@@ -111,6 +131,20 @@ testFailed:
 
 define i1 @main() {
 entry:
+  ; Initialize FCF, set its function pointer to @I
+  %slalfunc = alloca %fcf
+  %sfFuncPtr = call %signature* @setFunctionPointer(%fcf* %slalfunc, %signature @K)
 
+  ; Initialize argument list to [slalfunc, NULL, NULL]
+  %list = alloca %argListT
+  call void @fillArgList(%argListT* %list, %fcf* %slalfunc, %fcf* null, %fcf* null)
+  
+  ; Try passing argument list to FCF function pointer
+  %sfFunc = load %signature* %sfFuncPtr
+  %funcRetVal = call %fcf* %sfFunc(%argListT* %list)
+
+  ; Assert that @I([slalfunc, NULL, NULL]) is slalfunc
+  %isSameFunction = icmp i1 %fcf* %funcRetVal, %slalfunc
+  call i1 @assertCond(i1 %isSameFunction)
   ret i1 0
 }
