@@ -5,14 +5,20 @@
 
 declare i32 @puts(i8* nocapture) nounwind
 
-; TODO: find better names for these types and the underlying concepts
-;   (Slalom functions vs. LLVM functions)
+; TODO
+; * find better names for custom types & variables
+; * how to distinguish Slalom functions vs. LLVM functions?
+; * @length, @push, @fillArgList & @emptyArgList have magic number 3
+; * where should errors (null pointers) be checked? should they propagate through apply?
+; * test @evaluate and @apply
+; * fix signature of @S
+; * create factory methods @getIComb, @getKComb, and @getSComb
+
 %argListT = type [3 x %fcf*]
 %arityT = type i32
 %signature = type %fcf*(%argListT*)*
 %fcf = type {%signature, %arityT, %argListT}
 
-; assumes argListT has size 3
 define %arityT @length(%argListT* %list) {
 entry:
   br label %loop
@@ -32,7 +38,6 @@ ret:
   ret %arityT %index
 }
 
-; assumes argListT has size 3
 define %fcf** @push(%argListT* %list, %fcf* %item) {
 entry:
   %length = call %arityT @length(%argListT* %list)
@@ -53,7 +58,6 @@ entry:
   ret %signature* %funcPtr
 }
 
-; assumes argListT has size 3
 define void @fillArgList(%argListT* %list, %fcf*, %fcf*, %fcf*) {
 entry:
   %item1 = getelementptr %argListT* %list, i64 0, i32 0
@@ -65,20 +69,12 @@ entry:
   ret void
 }
 
-; assumes argListT has size 3
 define void @emptyArgList(%argListT* %list) {
 entry:
   call void @fillArgList(%argListT* %list, %fcf* null, %fcf* null, %fcf* null)
   ret void
 }
 
-; TO EVALUATE a function
-; * GET THE ARITY of the function
-; * GET THE NUMBER OF ARGUMENTS of the function
-; * if number < arity, return the function
-; * if number = arity, CALL the function
-; * if number > arity, ERROR
-; NOT YET TESTED
 define %fcf* @evaluate(%fcf* %slalfunc) {
   %arityP = getelementptr %fcf* %slalfunc, i64 0, i32 1
   %arity = load %arityT* %arityP
@@ -106,10 +102,6 @@ error:
   ret %fcf* null
 }
 
-; TO APPLY an applicator to an input
-; * ADD the input to the applicator's argument list
-; * EVALUATE the applicator
-; NOT YET TESTED
 define %fcf* @apply(%fcf* %applicator, %fcf* %input) {
 entry:
   %args = getelementptr %fcf* %applicator, i64 0, i32 2
@@ -132,7 +124,6 @@ entry:
   ret %fcf* %firstItem
 }
 
-; TODO: change argument to %argListT*
 define %fcf* @S(%argListT %args) {
 entry:
   %first = extractvalue %argListT %args, 0
