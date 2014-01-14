@@ -6,6 +6,7 @@
 declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO
+; * push changes!
 ; * find better names for custom types & variables
 ; * how to distinguish Slalom functions vs. LLVM functions?
 ; * @length, @push, @fillArgList & @emptyArgList have magic number 3
