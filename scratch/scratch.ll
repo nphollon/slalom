@@ -88,30 +88,33 @@ define %fcf* @evaluate(%fcf* %slalfunc) {
 
   %tooManyArgs = icmp ugt %arityT %argNum, %arity
   br i1 %tooManyArgs, label %error, label %validFunction
+
 validFunction:
   %tooFewArgs = icmp ult %arityT %argNum, %arity
   br i1 %tooFewArgs, label %notReadyForCall, label %readyForCall
+
 readyForCall:
   %funcP = getelementptr %fcf* %slalfunc, i64 0, i32 0
   %func = load %signature* %funcP
   %toReturn = call %fcf* %func(%argListT* %args)
   ret %fcf* %toReturn
+
 notReadyForCall:
   ret %fcf* %slalfunc
+
 error:
   ret %fcf* null
 }
 
-
 ; TO APPLY an applicator to an input
 ; * ADD the input to the applicator's argument list
 ; * EVALUATE the applicator
+; NOT YET TESTED
 define %fcf* @apply(%fcf* %applicator, %fcf* %input) {
 entry:
-  %resultP = alloca %fcf*
-  store %fcf* %applicator, %fcf** %resultP
-
-  %result = load %fcf** %resultP
+  %args = getelementptr %fcf* %applicator, i64 0, i32 2
+  call %fcf** @push(%argListT* %args, %fcf* %input)
+  %result = call %fcf* @evaluate(%fcf* %applicator)
   ret %fcf* %result
 }
 
