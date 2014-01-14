@@ -8,6 +8,7 @@ declare i32 @puts(i8* nocapture) nounwind
 %argListT = type [3 x %fcf*]
 %fcf = type {%fcf(%argListT)*, i2, %argListT}
 
+; assumes argListT has size 3
 define i64 @length(%argListT* %list) {
 entry:
   br label %loop
@@ -27,6 +28,7 @@ ret:
   ret i64 %index
 }
 
+; assumes argListT has size 3
 define %fcf** @push(%argListT* %list, %fcf* %item) {
 entry:
   %length = call i64 @length(%argListT* %list)
@@ -38,6 +40,18 @@ success:
   ret %fcf** %itemPtr
 error:
   ret %fcf** null
+}
+
+; assumes argListT has size 3
+define void @emptyArgList(%argListT* %list) {
+entry:
+  %item1 = getelementptr %argListT* %list, i64 0, i32 0
+  %item2 = getelementptr %argListT* %list, i64 0, i32 1
+  %item3 = getelementptr %argListT* %list, i64 0, i32 2
+  store %fcf* null, %fcf** %item1
+  store %fcf* null, %fcf** %item2
+  store %fcf* null, %fcf** %item3
+  ret void
 }
 
 ; TO APPLY an applicator to an input
@@ -101,16 +115,11 @@ define i1 @main() {
 entry:
   ; Create list of 3 null pointers
   %list = alloca %argListT
-  %item1 = getelementptr %argListT* %list, i64 0, i32 0
-  %item2 = getelementptr %argListT* %list, i64 0, i32 1
-  %item3 = getelementptr %argListT* %list, i64 0, i32 2
-  store %fcf* null, %fcf** %item1
-  store %fcf* null, %fcf** %item2
-  store %fcf* null, %fcf** %item3
+  call void @emptyArgList(%argListT* %list)
 
   ; Add item to list, assert length is 1
   %func1 = alloca %fcf
-  store %fcf* %func1, %fcf** %item1
+  call %fcf** @push(%argListT* %list, %fcf* %func1)
   %len1 = call i64 @length(%argListT* %list)
   %lengthIs1 = icmp eq i64 %len1, 1
   call i1 @assertCond(i1 %lengthIs1)
