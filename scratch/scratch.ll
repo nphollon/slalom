@@ -4,9 +4,8 @@
 declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO
-; * @fillArgList & @emptyArgList have magic number 3
 ; * where should errors (null pointers) be checked? should they propagate through @apply?
-; * test @evaluate and @apply
+; * test @evaluate, @apply, and @emptyInputs
 ; * fix signature of @S
 ; * create factory methods @getIComb, @getKComb, and @getSComb
 
@@ -25,16 +24,16 @@ entry:
 loop:
   %index = phi %Arity [0, %entry], [%nextIndex, %iterate]
   %isAtCapacity = icmp eq %Arity %index, %capacity
-  br i1 %isAtCapacity, label %ret, label %inspectIndex
+  br i1 %isAtCapacity, label %exit, label %inspectIndex
 inspectIndex:
   %itemPtr = getelementptr %Inputs* %list, i64 0, %Arity %index
   %item = load %Function** %itemPtr
   %isNullItem = icmp eq %Function* %item, null
-  br i1 %isNullItem, label %ret, label %iterate
+  br i1 %isNullItem, label %exit, label %iterate
 iterate:
   %nextIndex = add %Arity %index, 1
   br label %loop
-ret:
+exit:
   ret %Arity %index
 }
 
@@ -52,20 +51,20 @@ error:
   ret %Function** null
 }
 
-define void @fillArgList(%Inputs* %list, %Function*, %Function*, %Function*) {
+define void @emptyInputs(%Inputs* %list) {
 entry:
-  %item1 = getelementptr %Inputs* %list, i64 0, i32 0
-  %item2 = getelementptr %Inputs* %list, i64 0, i32 1
-  %item3 = getelementptr %Inputs* %list, i64 0, i32 2
-  store %Function* %0, %Function** %item1
-  store %Function* %1, %Function** %item2
-  store %Function* %2, %Function** %item3
-  ret void
-}
-
-define void @emptyArgList(%Inputs* %list) {
-entry:
-  call void @fillArgList(%Inputs* %list, %Function* null, %Function* null, %Function* null)
+  %capacity = load %Arity* @Capacity
+  br label %loop
+loop:
+  %index = phi %Arity [0, %entry], [%nextIndex, %emptyIndex]
+  %isAtCapacity = icmp eq %Arity %index, %capacity
+  br i1 %isAtCapacity, label %exit, label %emptyIndex
+emptyIndex:
+  %itemPtr = getelementptr %Inputs* %list, i64 0, %Arity %index
+  store %Function* null, %Function** %itemPtr
+  %nextIndex = add %Arity %index, 1
+  br label %loop
+exit:
   ret void
 }
 
