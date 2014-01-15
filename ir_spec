@@ -4,14 +4,17 @@ Slalom IR Spec
 Types
 -----
 
-Function = { Body* functionBody, uint arity, Queue arguments }
+Function = { Body* body, uint arity, Queue arguments }
 Body = Function* (Queue arguments)
 Queue = { uint length, QueueNode* first, QueueNode* last }
 QueueNode = { Function* argument, QueueNode* next }
+uint = some unsigned integer type
 
 Functions
 ---------
-Getters and setters should be supplied for Function, Queue, and QueueNode where needed.
+
+Getters and setters should be supplied for Function, Queue, and
+QueueNode where needed.
 
 ###Queue Functions
   All functions assume that Queue* q is not null
@@ -32,11 +35,16 @@ void enqueue(Queue* q, Function* toInsert)
   Effects: toInsert is wrapped in a QueueNode and appended to q
   Exceptions: does nothing if toInsert is null
 
+void destroy(Queue* q)
+  Effects: deallocates memory for q, its QueueNodes, and their
+  Functions. LAST is never deallocated.
+
 ###Function Functions
   All functions assume that Queue* q is not null
 
 Function* substitute(Queue* q)
-  Effects: returns (q[0] q[2] (q[1] q[2])); q is unchanged
+  Effects: returns (q[0] q[2] (q[1] q[2])); q is unchanged; q[2] is
+  duplicated with fCopy()
   Exceptions: returns null if q.length < 3
 
 Function* apply(Function* applicator, Function* input)
@@ -46,37 +54,75 @@ Function* apply(Function* applicator, Function* input)
 Function* evaluate(Function* f)
   Effects: * if f.arguments.length < f.arity, return f
   	   * tmpArgs = cut(f.arguments, f.arity)
-	   * tmpFunc = f.functionBody(tmpArgs)
+	   * tmpFunc = f.body(tmpArgs)
+     * destroy(tmpArgs)
 	   * paste(tmpFunc.arguments, f.arguments)
 	   * return evaluate(tmpFunc)
   Exceptions: returns null if f is null
 
-###Initialization Functions
+###Factory Functions
+  All functions allocate new structures on the heap.
 
-void getEmptyQueue(Queue* q)
-  Effects: q = { length: 0, next: LAST }
+Queue* createEmptyQueue()
+  Returns: { length: 0, next: LAST }
 
-void getICombinator(Function* f)
-  Effects: f = { functionBody: dequeue, arity: 1, arguments: getEmptyQueue() }
+Function* createICombinator()
+  Returns: { body: dequeue, arity: 1, arguments: createEmptyQueue() }
 
-void getKCombinator(Function* f)
-  Effects: f = { functionBody: dequeue, arity: 2, arguments: getEmptyQueue() }
+Function* createKCombinator()
+  Returns: { body: dequeue, arity: 2, arguments: createEmptyQueue() }
 
-void getSCombinator(Function* f)
-  Effects: f = { functionBody: substitute, arity: 3, arguments: getEmptyQueue() }
+Function* createSCombinator()
+  Returns: { body: substitute, arity: 3, arguments: createEmptyQueue() }
+
+Queue* qCopy(Queue* q)
+  Returns: shallow copy of q.
+
+Function* fCopy(Function* f)
+  Returns: copy of f. f.arguments is copied using qCopy().
 
 Constants
 ---------
 
 QueueNode LAST = { null, null }
 
-Open Questions
---------------
+Questions
+---------
 
-The only outside entry points will be getICombinator(), getKCombinator(), getSCombinator(), and apply(). Therefore, we should be able to assume the other functions never receive unexpected null pointers. In this case, should we worry about erroneous input?
+The only outside entry points will be getICombinator(),
+getKCombinator(), getSCombinator(), and apply(). Therefore, we should
+be able to assume the other functions never receive unexpected null
+pointers. Do these function still need to guard against nulls?
 
-Can we take any precautions against non-halting programs? For instance, (S I I (S I I)).
+  * No.
 
-Should a Function have a name? How can we store character strings of variable length?
+Should a Function have a name? How can we store character strings of
+variable length?
 
-How do we know when a Function needs to be instantiated? How do we know when a Function can be deleted? What part of the program is responsible for managing memory?
+What precautions should we take against non-halting programs? For
+instance, (S I I (S I I)).
+
+  * See next question. Don't try to solve the halting problem.
+
+How can we prevent deeply recursive (or even non-halting) functions
+from consuming all of our memory?
+
+How do we know when a Function needs to be instantiated? How do we
+know when a Function can be deleted? What part of the program is
+responsible for managing memory?
+
+  * evaluate() can be responsible for freeing memory. After invoking
+    f.body, f.arguments will contain unused arguments; these can be
+    safely deleted.
+
+  * All Functions must be created on the heap, not the stack.
+
+  * The S combinator is the only base combinator that could
+    potentially create new functions (by copying its third
+    argument).
+
+Should destroy() be responsible for nullifying all of the Queue's
+constituent pointers?
+
+  * No, but we should guarantee that invalid pointers do not persist
+    within our code.
