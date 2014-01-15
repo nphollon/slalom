@@ -4,9 +4,9 @@
 declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO
-; * where should errors (null pointers) be checked? should they propagate through @apply?
-; * test @evaluate, @apply, and @emptyInputs
-; * fix signature of @S
+; * test @evaluate, @apply, @emptyInputs, and @S
+; * @S needs to handle null returns
+; * return value of @S need to persist!
 ; * create factory methods @getIComb, @getKComb, and @getSComb
 
 %Arity = type i32
@@ -103,27 +103,31 @@ entry:
   ret %Function* %toReturn
 }
 
+define %Function* @getItem(%Inputs* %list, %Arity %index) {
+  %itemP = getelementptr %Inputs* %list, i64 0, %Arity %index
+  %item = load %Function** %itemP
+  ret %Function* %item
+}
+
 define %Function* @I(%Inputs* %args) {
 entry:
-  %firstItemP = getelementptr %Inputs* %args, i64 0, i64 0
-  %firstItem = load %Function** %firstItemP
+  %firstItem = call %Function* @getItem(%Inputs* %args, %Arity 0)
   ret %Function* %firstItem
 }
 
 define %Function* @K(%Inputs* %args) {
 entry:
-  %firstItemP = getelementptr %Inputs* %args, i64 0, i64 0
-  %firstItem = load %Function** %firstItemP
+  %firstItem = call %Function* @getItem(%Inputs* %args, %Arity 0)
   ret %Function* %firstItem
 }
 
-define %Function* @S(%Inputs %args) {
+define %Function* @S(%Inputs* %args) {
 entry:
-  %first = extractvalue %Inputs %args, 0
-  %second = extractvalue %Inputs %args, 1
-  %third = extractvalue %Inputs %args, 2
-  %tmp13 = call %Function* @apply(%Function* %first, %Function* %third)
-  %tmp23 = call %Function* @apply(%Function* %second, %Function* %third)
+  %firstItem = call %Function* @getItem(%Inputs* %args, %Arity 0)
+  %secondItem = call %Function* @getItem(%Inputs* %args, %Arity 1)
+  %thirdItem = call %Function* @getItem(%Inputs* %args, %Arity 2)
+  %tmp13 = call %Function* @apply(%Function* %firstItem, %Function* %thirdItem)
+  %tmp23 = call %Function* @apply(%Function* %secondItem, %Function* %thirdItem)
   %result = call %Function* @apply(%Function* %tmp13, %Function* %tmp23)
   ret %Function* %result
 }
