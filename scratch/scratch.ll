@@ -1,28 +1,30 @@
+; For test output in main
 @.pass = private unnamed_addr constant [12 x i8] c"test passed\00"
 @.fail = private unnamed_addr constant [12 x i8] c"test failed\00"
-@.breakpoint = private unnamed_addr constant [12 x i8] c"breakpoint!\00"
-;  %bkPtr = getelementptr [12 x i8]* @.breakpoint, i64 0, i64 0
-
 declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO
-; * @length, @push, @fillArgList & @emptyArgList have magic number 3
+; * @fillArgList & @emptyArgList have magic number 3
 ; * where should errors (null pointers) be checked? should they propagate through @apply?
 ; * test @evaluate and @apply
 ; * fix signature of @S
 ; * create factory methods @getIComb, @getKComb, and @getSComb
 
-%Inputs = type [3 x %Function*]
 %Arity = type i32
+%Inputs = type [3 x %Function*]
 %Body = type %Function*(%Inputs*)*
 %Function = type {%Body, %Arity, %Inputs}
 
+; @Capacity value must be <= size of %Inputs
+@Capacity = private unnamed_addr constant %Arity 3
+
 define %Arity @length(%Inputs* %list) {
 entry:
+  %capacity = load %Arity* @Capacity
   br label %loop
 loop:
   %index = phi %Arity [0, %entry], [%nextIndex, %iterate]
-  %isAtCapacity = icmp eq %Arity %index, 3
+  %isAtCapacity = icmp eq %Arity %index, %capacity
   br i1 %isAtCapacity, label %ret, label %inspectIndex
 inspectIndex:
   %itemPtr = getelementptr %Inputs* %list, i64 0, %Arity %index
@@ -38,8 +40,9 @@ ret:
 
 define %Function** @push(%Inputs* %list, %Function* %item) {
 entry:
+  %capacity = load %Arity* @Capacity
   %length = call %Arity @length(%Inputs* %list)
-  %listIsFull = icmp eq %Arity %length, 3
+  %listIsFull = icmp eq %Arity %length, %capacity
   br i1 %listIsFull, label %error, label %success
 success:
   %itemPtr = getelementptr %Inputs* %list, i64 0, %Arity %length
