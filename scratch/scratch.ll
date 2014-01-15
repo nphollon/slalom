@@ -4,10 +4,17 @@
 declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO
+; * @apply needs to handle list overflow
+; * @evaluate needs to handle improper input (#args > arity)
+; * return value of @S needs to persist
 ; * test @evaluate, @apply, @emptyInputs, and @S
-; * @S needs to handle null returns
-; * return value of @S need to persist!
 ; * create factory methods @getIComb, @getKComb, and @getSComb
+
+; CONTRACTS
+; functions that accept %Inputs* assume the argument is safe
+; functions that accept %Function* assume the argument is unsafe
+; functions that accept unsafe arguments will never fail
+; functions that receive null %Function* will return null %Function*
 
 %Arity = type i32
 %Inputs = type [3 x %Function*]
@@ -69,6 +76,11 @@ exit:
 }
 
 define %Function* @evaluate(%Function* %function) {
+entry:
+  %isNull = icmp eq %Function* %function, null
+  br i1 %isNull, label %error, label %checkArity
+
+checkArity:
   %arityP = getelementptr %Function* %function, i64 0, i32 1
   %arity = load %Arity* %arityP
 
@@ -76,9 +88,9 @@ define %Function* @evaluate(%Function* %function) {
   %argNum = call %Arity @length(%Inputs* %args)
 
   %tooManyArgs = icmp ugt %Arity %argNum, %arity
-  br i1 %tooManyArgs, label %error, label %validFunction
+  br i1 %tooManyArgs, label %error, label %properFunction
 
-validFunction:
+properFunction:
   %tooFewArgs = icmp ult %Arity %argNum, %arity
   br i1 %tooFewArgs, label %notReadyForCall, label %readyForCall
 
@@ -97,10 +109,19 @@ error:
 
 define %Function* @apply(%Function* %applicator, %Function* %input) {
 entry:
+  %applicatorIsNull = icmp eq %Function* %applicator, null
+  %inputIsNull = icmp eq %Function* %input, null
+  %invalidArguments = or i1 %applicatorIsNull, %inputIsNull
+  br i1 %invalidArguments, label %error, label %validArguments
+
+validArguments:
   %args = getelementptr %Function* %applicator, i64 0, i32 2
   call %Function** @push(%Inputs* %args, %Function* %input)
   %toReturn = call %Function* @evaluate(%Function* %applicator)
   ret %Function* %toReturn
+
+error:
+  ret %Function* null
 }
 
 define %Function* @getItem(%Inputs* %list, %Arity %index) {
