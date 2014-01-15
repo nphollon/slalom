@@ -1,0 +1,82 @@
+Slalom IR Spec
+==============
+
+Types
+-----
+
+Function = { Body* functionBody, uint arity, Queue arguments }
+Body = Function* (Queue arguments)
+Queue = { uint length, QueueNode* first, QueueNode* last }
+QueueNode = { Function* argument, QueueNode* next }
+
+Functions
+---------
+Getters and setters should be supplied for Function, Queue, and QueueNode where needed.
+
+###Queue Functions
+  All functions assume that Queue* q is not null
+
+Queue* cut(Queue* q, int toCut)
+  Effects: first <toCut> QueueNodes removed from q and returned
+  Exceptions: What happens if toCut > q.length?
+
+void paste(Queue* q, Queue* toPaste)
+  Effects: appends toPaste to end of q
+  Exceptions: does nothing if toPaste is null
+
+Function* dequeue(Queue* q)
+  Effects: first node is removed from q; returns value of first node of q
+  Exceptions: returns null if q.length = 0
+
+void enqueue(Queue* q, Function* toInsert)
+  Effects: toInsert is wrapped in a QueueNode and appended to q
+  Exceptions: does nothing if toInsert is null
+
+###Function Functions
+  All functions assume that Queue* q is not null
+
+Function* substitute(Queue* q)
+  Effects: returns (q[0] q[2] (q[1] q[2])); q is unchanged
+  Exceptions: returns null if q.length < 3
+
+Function* apply(Function* applicator, Function* input)
+  Effects: enqueue(applicator.arguments, input); return evaluate(applicator)
+  Exceptions: returns null if applicator or input is null
+
+Function* evaluate(Function* f)
+  Effects: * if f.arguments.length < f.arity, return f
+  	   * tmpArgs = cut(f.arguments, f.arity)
+	   * tmpFunc = f.functionBody(tmpArgs)
+	   * paste(tmpFunc.arguments, f.arguments)
+	   * return evaluate(tmpFunc)
+  Exceptions: returns null if f is null
+
+###Initialization Functions
+
+void getEmptyQueue(Queue* q)
+  Effects: q = { length: 0, next: LAST }
+
+void getICombinator(Function* f)
+  Effects: f = { functionBody: dequeue, arity: 1, arguments: getEmptyQueue() }
+
+void getKCombinator(Function* f)
+  Effects: f = { functionBody: dequeue, arity: 2, arguments: getEmptyQueue() }
+
+void getSCombinator(Function* f)
+  Effects: f = { functionBody: substitute, arity: 3, arguments: getEmptyQueue() }
+
+Constants
+---------
+
+QueueNode LAST = { null, null }
+
+Open Questions
+--------------
+
+The only outside entry points will be getICombinator(), getKCombinator(), getSCombinator(), and apply(). Therefore, we should be able to assume the other functions never receive unexpected null pointers. In this case, should we worry about erroneous input?
+
+Can we take any precautions against non-halting programs? For instance, (S I I (S I I)).
+
+Should a Function have a name? How can we store character strings of variable length?
+
+How do we know when a Function needs to be instantiated? How do we know when a Function can be deleted? What part of the program is responsible for managing memory?
