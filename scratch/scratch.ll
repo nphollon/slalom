@@ -6,134 +6,124 @@
 declare i32 @puts(i8* nocapture) nounwind
 
 ; TODO
-; * push changes!
-; * find better names for custom types & variables
-; * how to distinguish Slalom functions vs. LLVM functions?
 ; * @length, @push, @fillArgList & @emptyArgList have magic number 3
-; * where should errors (null pointers) be checked? should they propagate through apply?
+; * where should errors (null pointers) be checked? should they propagate through @apply?
 ; * test @evaluate and @apply
 ; * fix signature of @S
 ; * create factory methods @getIComb, @getKComb, and @getSComb
 
-%argListT = type [3 x %fcf*]
-%arityT = type i32
-%signature = type %fcf*(%argListT*)*
-%fcf = type {%signature, %arityT, %argListT}
+%Inputs = type [3 x %Function*]
+%Arity = type i32
+%Body = type %Function*(%Inputs*)*
+%Function = type {%Body, %Arity, %Inputs}
 
-define %arityT @length(%argListT* %list) {
+define %Arity @length(%Inputs* %list) {
 entry:
   br label %loop
 loop:
-  %index = phi %arityT [0, %entry], [%nextIndex, %iterate]
-  %isAtCapacity = icmp eq %arityT %index, 3
+  %index = phi %Arity [0, %entry], [%nextIndex, %iterate]
+  %isAtCapacity = icmp eq %Arity %index, 3
   br i1 %isAtCapacity, label %ret, label %inspectIndex
 inspectIndex:
-  %itemPtr = getelementptr %argListT* %list, i64 0, %arityT %index
-  %item = load %fcf** %itemPtr
-  %isNullItem = icmp eq %fcf* %item, null
+  %itemPtr = getelementptr %Inputs* %list, i64 0, %Arity %index
+  %item = load %Function** %itemPtr
+  %isNullItem = icmp eq %Function* %item, null
   br i1 %isNullItem, label %ret, label %iterate
 iterate:
-  %nextIndex = add %arityT %index, 1
+  %nextIndex = add %Arity %index, 1
   br label %loop
 ret:
-  ret %arityT %index
+  ret %Arity %index
 }
 
-define %fcf** @push(%argListT* %list, %fcf* %item) {
+define %Function** @push(%Inputs* %list, %Function* %item) {
 entry:
-  %length = call %arityT @length(%argListT* %list)
-  %listIsFull = icmp eq %arityT %length, 3
+  %length = call %Arity @length(%Inputs* %list)
+  %listIsFull = icmp eq %Arity %length, 3
   br i1 %listIsFull, label %error, label %success
 success:
-  %itemPtr = getelementptr %argListT* %list, i64 0, %arityT %length
-  store %fcf* %item, %fcf** %itemPtr
-  ret %fcf** %itemPtr
+  %itemPtr = getelementptr %Inputs* %list, i64 0, %Arity %length
+  store %Function* %item, %Function** %itemPtr
+  ret %Function** %itemPtr
 error:
-  ret %fcf** null
+  ret %Function** null
 }
 
-define %signature* @setFunctionPointer(%fcf* %slalfunc, %signature %funcValue) {
+define void @fillArgList(%Inputs* %list, %Function*, %Function*, %Function*) {
 entry:
-  %funcPtr = getelementptr %fcf* %slalfunc, i64 0, i32 0
-  store %signature %funcValue, %signature* %funcPtr
-  ret %signature* %funcPtr
-}
-
-define void @fillArgList(%argListT* %list, %fcf*, %fcf*, %fcf*) {
-entry:
-  %item1 = getelementptr %argListT* %list, i64 0, i32 0
-  %item2 = getelementptr %argListT* %list, i64 0, i32 1
-  %item3 = getelementptr %argListT* %list, i64 0, i32 2
-  store %fcf* %0, %fcf** %item1
-  store %fcf* %1, %fcf** %item2
-  store %fcf* %2, %fcf** %item3
+  %item1 = getelementptr %Inputs* %list, i64 0, i32 0
+  %item2 = getelementptr %Inputs* %list, i64 0, i32 1
+  %item3 = getelementptr %Inputs* %list, i64 0, i32 2
+  store %Function* %0, %Function** %item1
+  store %Function* %1, %Function** %item2
+  store %Function* %2, %Function** %item3
   ret void
 }
 
-define void @emptyArgList(%argListT* %list) {
+define void @emptyArgList(%Inputs* %list) {
 entry:
-  call void @fillArgList(%argListT* %list, %fcf* null, %fcf* null, %fcf* null)
+  call void @fillArgList(%Inputs* %list, %Function* null, %Function* null, %Function* null)
   ret void
 }
 
-define %fcf* @evaluate(%fcf* %slalfunc) {
-  %arityP = getelementptr %fcf* %slalfunc, i64 0, i32 1
-  %arity = load %arityT* %arityP
+define %Function* @evaluate(%Function* %function) {
+  %arityP = getelementptr %Function* %function, i64 0, i32 1
+  %arity = load %Arity* %arityP
 
-  %args = getelementptr %fcf* %slalfunc, i64 0, i32 2
-  %argNum = call %arityT @length(%argListT* %args)
+  %args = getelementptr %Function* %function, i64 0, i32 2
+  %argNum = call %Arity @length(%Inputs* %args)
 
-  %tooManyArgs = icmp ugt %arityT %argNum, %arity
+  %tooManyArgs = icmp ugt %Arity %argNum, %arity
   br i1 %tooManyArgs, label %error, label %validFunction
 
 validFunction:
-  %tooFewArgs = icmp ult %arityT %argNum, %arity
+  %tooFewArgs = icmp ult %Arity %argNum, %arity
   br i1 %tooFewArgs, label %notReadyForCall, label %readyForCall
 
 readyForCall:
-  %funcP = getelementptr %fcf* %slalfunc, i64 0, i32 0
-  %func = load %signature* %funcP
-  %toReturn = call %fcf* %func(%argListT* %args)
-  ret %fcf* %toReturn
+  %bodyP = getelementptr %Function* %function, i64 0, i32 0
+  %body = load %Body* %bodyP
+  %toReturn = call %Function* %body(%Inputs* %args)
+  ret %Function* %toReturn
 
 notReadyForCall:
-  ret %fcf* %slalfunc
+  ret %Function* %function
 
 error:
-  ret %fcf* null
+  ret %Function* null
 }
 
-define %fcf* @apply(%fcf* %applicator, %fcf* %input) {
+define %Function* @apply(%Function* %applicator, %Function* %input) {
 entry:
-  %args = getelementptr %fcf* %applicator, i64 0, i32 2
-  call %fcf** @push(%argListT* %args, %fcf* %input)
-  %result = call %fcf* @evaluate(%fcf* %applicator)
-  ret %fcf* %result
+  %args = getelementptr %Function* %applicator, i64 0, i32 2
+  call %Function** @push(%Inputs* %args, %Function* %input)
+  %toReturn = call %Function* @evaluate(%Function* %applicator)
+  ret %Function* %toReturn
 }
 
-define %fcf* @I(%argListT* %args) {
+define %Function* @I(%Inputs* %args) {
 entry:
-  %firstItemP = getelementptr %argListT* %args, i64 0, i64 0
-  %firstItem = load %fcf** %firstItemP
-  ret %fcf* %firstItem
+  %firstItemP = getelementptr %Inputs* %args, i64 0, i64 0
+  %firstItem = load %Function** %firstItemP
+  ret %Function* %firstItem
 }
 
-define %fcf* @K(%argListT* %args) {
+define %Function* @K(%Inputs* %args) {
 entry:
-  %firstItemP = getelementptr %argListT* %args, i64 0, i64 0
-  %firstItem = load %fcf** %firstItemP
-  ret %fcf* %firstItem
+  %firstItemP = getelementptr %Inputs* %args, i64 0, i64 0
+  %firstItem = load %Function** %firstItemP
+  ret %Function* %firstItem
 }
 
-define %fcf* @S(%argListT %args) {
+define %Function* @S(%Inputs %args) {
 entry:
-  %first = extractvalue %argListT %args, 0
-  %second = extractvalue %argListT %args, 1
-  %third = extractvalue %argListT %args, 2
-  %tmp13 = call %fcf* @apply(%fcf* %first, %fcf* %third)
-  %tmp23 = call %fcf* @apply(%fcf* %second, %fcf* %third)
-  %result = call %fcf* @apply(%fcf* %tmp13, %fcf* %tmp23)
-  ret %fcf* %result
+  %first = extractvalue %Inputs %args, 0
+  %second = extractvalue %Inputs %args, 1
+  %third = extractvalue %Inputs %args, 2
+  %tmp13 = call %Function* @apply(%Function* %first, %Function* %third)
+  %tmp23 = call %Function* @apply(%Function* %second, %Function* %third)
+  %result = call %Function* @apply(%Function* %tmp13, %Function* %tmp23)
+  ret %Function* %result
 }
 
 define i1 @assertCond(i1 %cond) {
