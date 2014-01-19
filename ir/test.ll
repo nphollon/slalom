@@ -50,58 +50,58 @@ entry:
   ret i1 0
 }
 
-@.qBigger1 = private unnamed_addr constant %TestName c"Q Bigger 1  \00"
-@.headIsFirst = private unnamed_addr constant %TestName c"HeadIsFirst \00"
-@.lastIsSecond = private unnamed_addr constant %TestName c"LastIsSecond\00"
-@.tailIsHead = private unnamed_addr constant %TestName c"TailIsHead  \00"
-@.qBigger2 = private unnamed_addr constant %TestName c"Q Bigger 2  \00"
+@.qBigger1     = private unnamed_addr constant %TestName c"Q Bigger 1  \00"
+@.headIsN1     = private unnamed_addr constant %TestName c"Head Is N1  \00"
+@.n1HasF1      = private unnamed_addr constant %TestName c"N1 Has F1   \00"
+@.n1PtToLast   = private unnamed_addr constant %TestName c"N1PtToLast  \00"
+@.qBigger2     = private unnamed_addr constant %TestName c"Q Bigger 2  \00"
+@.n2HasF2      = private unnamed_addr constant %TestName c"N2 Has F2   \00"
 @.headNoChange = private unnamed_addr constant %TestName c"HeadNoChange\00"
-@.tailIsSecond = private unnamed_addr constant %TestName c"TailIsSecond\00"
-@.headPtToTail = private unnamed_addr constant %TestName c"HeadPtToTail\00"
+@.n1PtToN2     = private unnamed_addr constant %TestName c"N1 Pt To N2 \00"
 define void @testEnqueue() {
   %q = call %Queue* @createEmptyQueue()
   
   ; Enqueue a function
   %f1 = call %Function* @createICombinator()
   call void @enqueue(%Queue* %q, %Function* %f1)
+  %node1 = call %QueueNode* @getTail(%Queue* %q)
 
   ; Assert that q length is 1
   %length1 = call %Index @getLength(%Queue* %q)
   call void @assertEqIndex(%Index %length1, %Index 1, %TestName* @.qBigger1)
 
-  ; Assert that q head contains f1
+  ; Assert that node1 contains f1
+  %node1Data = call %Function* @getData(%QueueNode* %node1)
+  call void @assertEqFunction(%Function* %node1Data, %Function* %f1, %TestName* @.n1HasF1)
+
+  ; Assert that node1 points to LAST
+  %node1Next = call %QueueNode* @getNext(%QueueNode* %node1)
+  call void @assertEqQueueNode(%QueueNode* %node1Next, %QueueNode* @.LAST, %TestName* @.n1PtToLast)
+
+  ; Assert that q head is node1
   %head = call %QueueNode* @getHead(%Queue* %q)
-  %headData = call %Function* @getData(%QueueNode* %head)
-  call void @assertEqFunction(%Function* %headData, %Function* %f1, %TestName* @.headIsFirst)
-
-  ; Assert that q head points to LAST
-  %headNext = call %QueueNode* @getNext(%QueueNode* %head)
-  call void @assertEqQueueNode(%QueueNode* %headNext, %QueueNode* @.LAST, %TestName* @.lastIsSecond)
-
-  ; Assert that q head and q tail are the same
-  %tail = call %QueueNode* @getTail(%Queue* %q)
-  call void @assertEqQueueNode(%QueueNode* %tail, %QueueNode* %head, %TestName* @.tailIsHead)
+  call void @assertEqQueueNode(%QueueNode* %node1, %QueueNode* %head, %TestName* @.headIsN1)
 
   ; Enqueue another function
   %f2 = call %Function* @createICombinator()
   call void @enqueue(%Queue* %q, %Function* %f2)
+  %node2 = call %QueueNode* @getTail(%Queue* %q)
 
   ; Assert that q length is 2
   %length2 = call %Index @getLength(%Queue* %q)
   call void @assertEqIndex(%Index %length2, %Index 2, %TestName* @.qBigger2)
 
-  ; Assert that q head is unchanged
+  ; Assert that node2 contains f2
+  %node2Data = call %Function* @getData(%QueueNode* %node2)
+  call void @assertEqFunction(%Function* %node2Data, %Function* %f2, %TestName* @.n2HasF2)
+
+  ; Assert that q head is still node1
   %head2 = call %QueueNode* @getHead(%Queue* %q)
-  call void @assertEqQueueNode(%QueueNode* %head2, %QueueNode* %head, %TestName* @.headNoChange)
+  call void @assertEqQueueNode(%QueueNode* %head2, %QueueNode* %node1, %TestName* @.headNoChange)
 
-  ; Assert that q tail contains f2
-  %tail2 = call %QueueNode* @getTail(%Queue* %q)
-  %tail2Data = call %Function* @getData(%QueueNode* %tail2)
-  call void @assertEqFunction(%Function* %tail2Data, %Function* %f2, %TestName* @.tailIsSecond)
-
-  ; Assert that q head points to q tail
-  %headNext2 = call %QueueNode* @getNext(%QueueNode* %head2)
-  call void @assertEqQueueNode(%QueueNode* %headNext2, %QueueNode* %tail2, %TestName* @.headPtToTail)
+  ; Assert that node1 points to node2
+  %node1Next2 = call %QueueNode* @getNext(%QueueNode* %node1)
+  call void @assertEqQueueNode(%QueueNode* %node1Next2, %QueueNode* %node2, %TestName* @.n1PtToN2)
 
   ret void
 }
