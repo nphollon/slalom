@@ -82,19 +82,23 @@ define %Function* @dequeue(%Queue*) {
 
 define void @enqueue(%Queue* %q, %Function* %f) {
 entry:
-  %wasEmpty = call i1 @isEmpty(%Queue* %q)
-  call void @incrementLength(%Queue* %q)
   %qn = call %QueueNode* @createNode(%Function* %f)
-  call void @setTail(%Queue* %q, %QueueNode* %qn)
 
-  br i1 %wasEmpty, label %setHead, label %setHeadNext
+  %isEmpty = call i1 @isEmpty(%Queue* %q)
+  br i1 %isEmpty, label %setHead, label %setTailNext
+
 setHead:
   call void @setHead(%Queue* %q, %QueueNode* %qn)
-  ret void
+  br label %updateTail
 
-setHeadNext:
-  %head = call %QueueNode* @getHead(%Queue* %q)
-  call void @setNext(%QueueNode* %head, %QueueNode* %qn)
+setTailNext:
+  %tail = call %QueueNode* @getTail(%Queue* %q)
+  call void @setNext(%QueueNode* %tail, %QueueNode* %qn)
+  br label %updateTail
+
+updateTail:
+  call void @setTail(%Queue* %q, %QueueNode* %qn)
+  call void @incrementLength(%Queue* %q)
   ret void
 }
 

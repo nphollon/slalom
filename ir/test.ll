@@ -58,6 +58,8 @@ entry:
 @.n2HasF2      = private unnamed_addr constant %TestName c"N2 Has F2   \00"
 @.headNoChange = private unnamed_addr constant %TestName c"HeadNoChange\00"
 @.n1PtToN2     = private unnamed_addr constant %TestName c"N1 Pt To N2 \00"
+@.n1NotPtToN3  = private unnamed_addr constant %TestName c"N1NotPtToN3 \00"
+@.n2PtToN3     = private unnamed_addr constant %TestName c"N2 Pt To N3 \00"
 define void @testEnqueue() {
   %q = call %Queue* @createEmptyQueue()
   
@@ -102,6 +104,19 @@ define void @testEnqueue() {
   ; Assert that node1 points to node2
   %node1Next2 = call %QueueNode* @getNext(%QueueNode* %node1)
   call void @assertEqQueueNode(%QueueNode* %node1Next2, %QueueNode* %node2, %TestName* @.n1PtToN2)
+
+  ; Enqueue another function
+  %f3 = call %Function* @createICombinator()
+  call void @enqueue(%Queue* %q, %Function* %f3)
+  %node3 = call %QueueNode* @getTail(%Queue* %q)
+
+  ; Assert that node1 still points to node2
+  %node1Next3 = call %QueueNode* @getNext(%QueueNode* %node1)
+  call void @assertEqQueueNode(%QueueNode* %node1Next3, %QueueNode* %node2, %TestName* @.n1NotPtToN3)
+
+  ; Assert that node2 points to node3
+  %node2Next = call %QueueNode* @getNext(%QueueNode* %node2)
+  call void @assertEqQueueNode(%QueueNode* %node2Next, %QueueNode* %node3, %TestName* @.n2PtToN3)
 
   ret void
 }
