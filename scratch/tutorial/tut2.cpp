@@ -1,3 +1,16 @@
+/*
+  tut2.cpp
+  Creates LLVM module with function that computes greatest common denominator:
+    int gcd(int x, int y) {
+      if (x == y) return x;
+      if (x < y) {
+        return gcd(x, y - x);
+      }
+      return gcd(x - y, y);
+    }
+  See gcd.ll for annotations of the resulting IR code.
+*/
+
 #include "llvm/Module.h"
 #include "llvm/Function.h"
 #include "llvm/PassManager.h"

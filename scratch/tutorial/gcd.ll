@@ -16,7 +16,7 @@ entry:
 br i1 %tmp3, label %return, label %cond_false
 
 return:
-ret i32
+ret i32 %x
 
 cond_false:
 ; ult is unsigned less-than (%x and %y are treated as unsigned ints)

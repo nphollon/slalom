@@ -1,3 +1,11 @@
+/*
+  tut1.cpp
+  Creates an LLVM Module with function:
+    int mul_add(int x, int y, int z) {
+      return x*y + z;
+    }
+*/
+
 #include "llvm/Module.h"
 #include "llvm/Function.h"
 #include "llvm/PassManager.h"
