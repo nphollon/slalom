@@ -59,6 +59,10 @@ entry:
   ret void
 }
 
+define %Function* @dequeue(%Queue*) {
+entry:
+  ret %Function* null
+}
 
 define %Queue* @createEmptyQueue() {
 entry:

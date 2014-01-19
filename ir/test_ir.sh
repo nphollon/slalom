@@ -1,3 +1,3 @@
 #! /bin/sh
 
-cat types.ll queue.ll codegen_draft.ll | lli
+cat types.ll function.ll queue.ll test.ll | lli

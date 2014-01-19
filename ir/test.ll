@@ -20,7 +20,40 @@ define i1 @main() {
 entry:
   call void @testLast()
   call void @testCreateEmptyQueue()
+  call void @testCreateICombinator()
   ret i1 0
+}
+
+@.iArity1 = private unnamed_addr constant %TestName c"I Arity 1   \00"
+@.iArgsEmpty = private unnamed_addr constant %TestName c"I Args Empty\00"
+@.iBodyDequeue = private unnamed_addr constant %TestName c"IBodyDequeue\00"
+define void @testCreateICombinator() {
+entry:
+  %i = call %Function* @createICombinator()
+
+  ; Assert that body is @dequeue
+  %body_p = call %Body* @getBody(%Function* %i)
+  %body = load %Body* %body_p
+  %iBodyDequeue = icmp eq %Body %body, @dequeue
+  call i1 @assertCond(i1 %iBodyDequeue, %TestName* @.iBodyDequeue)
+
+  ; Assert that arity is 1
+  %arity = call %Index @getArity(%Function* %i)
+  %iArity1 = icmp eq %Index %arity, 1
+  call i1 @assertCond(i1 %iArity1, %TestName* @.iArity1)
+
+  ; Assert that arguments is an empty queue
+  %arguments = call %Queue* @getArguments(%Function* %i)
+  %len = call %Index @getLength(%Queue* %arguments)
+  %iArgsEmpty = icmp eq %Index %len, 0
+  call i1 @assertCond(i1 %iArgsEmpty, %TestName* @.iArgsEmpty)
+
+  ; Free function & arguments
+  %arguments_i8 = bitcast %Queue* %arguments to i8*
+  call void @free(i8* %arguments_i8) nounwind
+  %i_i8 = bitcast %Function* %i to i8*
+  call void @free(i8* %i_i8) nounwind
+  ret void
 }
 
 @.emptyLength0 = private unnamed_addr constant %TestName c"EmptyLength0\00"

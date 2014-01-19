@@ -18,6 +18,9 @@ Functions
 ###Queue Functions
   All functions assume that Queue* q is not null
 
+Boolean isEmpty(Queue* q)
+  Effects: return true if length of q is 0
+
 Index getLength(Queue* q)
   Effects: return length of q
 
