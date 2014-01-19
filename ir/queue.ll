@@ -9,10 +9,22 @@ define %Function* @getData(%QueueNode* %qn) {
   ret %Function* %data
 }
 
+define void @setData(%QueueNode* %qn, %Function* %newData) {
+  %data_p = call %Function** @getDataPointer(%QueueNode* %qn)
+  store %Function* %newData, %Function** %data_p
+  ret void
+}
+
 define %QueueNode* @getNext(%QueueNode* %qn) {
   %next_p = call %QueueNode** @getNextPointer(%QueueNode* %qn)
   %next = load %QueueNode** %next_p
   ret %QueueNode* %next
+}
+
+define void @setNext(%QueueNode* %qn, %QueueNode* %newNext) {
+  %next_p = call %QueueNode** @getNextPointer(%QueueNode* %qn)
+  store %QueueNode* %newNext, %QueueNode** %next_p
+  ret void
 }
 
 define %Index @getLength(%Queue* %q) {
@@ -51,8 +63,46 @@ define void @setTail(%Queue* %q, %QueueNode* %newTail) {
   ret void
 }
 
+define i1 @isEmpty(%Queue* %q) {
+  %length = call %Index @getLength(%Queue* %q)
+  %isEmpty = icmp eq %Index %length, 0
+  ret i1 %isEmpty
+};
+
+define void @incrementLength(%Queue* %q) {
+  %length = call %Index @getLength(%Queue* %q)
+  %newLength = add nuw %Index %length, 1
+  call void @setLength(%Queue* %q, %Index %newLength)
+  ret void
+}
+
 define %Function* @dequeue(%Queue*) {
   ret %Function* null
+}
+
+define void @enqueue(%Queue* %q, %Function* %f) {
+entry:
+  %wasEmpty = call i1 @isEmpty(%Queue* %q)
+  call void @incrementLength(%Queue* %q)
+  br i1 %wasEmpty, label %addNewNode, label %exit
+
+addNewNode:
+  %qn = call %QueueNode* @createNode(%Function* %f)
+  call void @setHead(%Queue* %q, %QueueNode* %qn)
+  call void @setTail(%Queue* %q, %QueueNode* %qn)
+  br label %exit
+
+exit:
+  ret void
+}
+
+define %QueueNode* @createNode(%Function* %f) {
+  %qn_size = load i32* @.QUEUENODE_SIZE
+  %qn_i8 = tail call noalias i8* @malloc(i32 %qn_size) nounwind
+  %qn = bitcast i8* %qn_i8 to %QueueNode*
+  call void @setData(%QueueNode* %qn, %Function* %f)
+  call void @setNext(%QueueNode* %qn, %QueueNode* @.LAST)
+  ret %QueueNode* %qn
 }
 
 define %Queue* @createEmptyQueue() {
