@@ -84,15 +84,17 @@ define void @enqueue(%Queue* %q, %Function* %f) {
 entry:
   %wasEmpty = call i1 @isEmpty(%Queue* %q)
   call void @incrementLength(%Queue* %q)
-  br i1 %wasEmpty, label %addNewNode, label %exit
-
-addNewNode:
   %qn = call %QueueNode* @createNode(%Function* %f)
-  call void @setHead(%Queue* %q, %QueueNode* %qn)
   call void @setTail(%Queue* %q, %QueueNode* %qn)
-  br label %exit
 
-exit:
+  br i1 %wasEmpty, label %setHead, label %setHeadNext
+setHead:
+  call void @setHead(%Queue* %q, %QueueNode* %qn)
+  ret void
+
+setHeadNext:
+  %head = call %QueueNode* @getHead(%Queue* %q)
+  call void @setNext(%QueueNode* %head, %QueueNode* %qn)
   ret void
 }
 

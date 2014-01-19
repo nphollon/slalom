@@ -46,7 +46,7 @@ entry:
   call void @testLast()
   call void @testCreateEmptyQueue()
   call void @testCreateICombinator()
-  call void @testEnqueueAndDequeue()
+  call void @testEnqueue()
   ret i1 0
 }
 
@@ -56,12 +56,13 @@ entry:
 @.tailIsHead = private unnamed_addr constant %TestName c"TailIsHead  \00"
 @.qBigger2 = private unnamed_addr constant %TestName c"Q Bigger 2  \00"
 @.headNoChange = private unnamed_addr constant %TestName c"HeadNoChange\00"
-define void @testEnqueueAndDequeue() {
+@.tailIsSecond = private unnamed_addr constant %TestName c"TailIsSecond\00"
+@.headPtToTail = private unnamed_addr constant %TestName c"HeadPtToTail\00"
+define void @testEnqueue() {
   %q = call %Queue* @createEmptyQueue()
   
   ; Enqueue a function
   %f1 = call %Function* @createICombinator()
-  %args1 = call %Queue* @getArguments(%Function* %f1)
   call void @enqueue(%Queue* %q, %Function* %f1)
 
   ; Assert that q length is 1
@@ -83,7 +84,6 @@ define void @testEnqueueAndDequeue() {
 
   ; Enqueue another function
   %f2 = call %Function* @createICombinator()
-  %args2 = call %Queue* @getArguments(%Function* %f2)
   call void @enqueue(%Queue* %q, %Function* %f2)
 
   ; Assert that q length is 2
@@ -93,6 +93,15 @@ define void @testEnqueueAndDequeue() {
   ; Assert that q head is unchanged
   %head2 = call %QueueNode* @getHead(%Queue* %q)
   call void @assertEqQueueNode(%QueueNode* %head2, %QueueNode* %head, %TestName* @.headNoChange)
+
+  ; Assert that q tail contains f2
+  %tail2 = call %QueueNode* @getTail(%Queue* %q)
+  %tail2Data = call %Function* @getData(%QueueNode* %tail2)
+  call void @assertEqFunction(%Function* %tail2Data, %Function* %f2, %TestName* @.tailIsSecond)
+
+  ; Assert that q head points to q tail
+  %headNext2 = call %QueueNode* @getNext(%QueueNode* %head2)
+  call void @assertEqQueueNode(%QueueNode* %headNext2, %QueueNode* %tail2, %TestName* @.headPtToTail)
 
   ret void
 }
@@ -116,11 +125,6 @@ define void @testCreateICombinator() {
   %len = call %Index @getLength(%Queue* %arguments)
   call void @assertEqIndex(%Index %len, %Index 0, %TestName* @.iArgsEmpty)
 
-  ; Free function & arguments
-  %arguments_i8 = bitcast %Queue* %arguments to i8*
-  call void @free(i8* %arguments_i8) nounwind
-  %i_i8 = bitcast %Function* %i to i8*
-  call void @free(i8* %i_i8) nounwind
   ret void
 }
 
@@ -142,9 +146,6 @@ define void @testCreateEmptyQueue() {
   %q_tail = call %QueueNode* @getTail(%Queue* %q)
   call void @assertEqQueueNode(%QueueNode* %q_tail, %QueueNode* @.LAST, %TestName* @.emptyTail)
 
-  ; Free queue
-  %q_i8 = bitcast %Queue* %q to i8*
-  call void @free(i8* %q_i8) nounwind
   ret void
 }
 
