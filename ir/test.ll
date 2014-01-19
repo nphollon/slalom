@@ -32,7 +32,7 @@ entry:
   %i = call %Function* @createICombinator()
 
   ; Assert that body is @dequeue
-  %body_p = call %Body* @getBody(%Function* %i)
+  %body_p = call %Body* @getBodyPointer(%Function* %i)
   %body = load %Body* %body_p
   %iBodyDequeue = icmp eq %Body %body, @dequeue
   call i1 @assertCond(i1 %iBodyDequeue, %TestName* @.iBodyDequeue)
@@ -84,14 +84,14 @@ entry:
   ret void
 }
 
-@.lastArgNull = private unnamed_addr constant %TestName c"LastArgNull \00"
+@.lastDataNull = private unnamed_addr constant %TestName c"LastDataNull\00"
 @.lastNextNull = private unnamed_addr constant %TestName c"LastNextNull\00"
 define void @testLast() {
 entry:
   ; Assert that @.LAST.argument is null
-  %last_arg = call %Function* @getArgument(%QueueNode* @.LAST)
-  %lastArgNull = icmp eq %Function* %last_arg, null
-  call i1 @assertCond(i1 %lastArgNull, %TestName* @.lastArgNull)
+  %last_data = call %Function* @getData(%QueueNode* @.LAST)
+  %lastDataNull = icmp eq %Function* %last_data, null
+  call i1 @assertCond(i1 %lastDataNull, %TestName* @.lastDataNull)
 
   ; Assert that @.LAST.next is null
   %last_next = call %QueueNode* @getNext(%QueueNode* @.LAST)
