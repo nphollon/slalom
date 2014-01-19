@@ -1,0 +1,164 @@
+Slalom Code Generation Spec
+===========================
+
+Types
+-----
+
+Function = { Body* body, Index arity, Queue arguments }
+Body = Function* (Queue arguments)
+Queue = { Index length, QueueNode* first, QueueNode* last }
+QueueNode = { Function* argument, QueueNode* next }
+Index = some unsigned integer type
+
+
+
+Functions
+---------
+
+###Queue Functions
+  All functions assume that Queue* q is not null
+
+Index getLength(Queue* q)
+  Effects: return length of q
+
+Queue* cut(Queue* q, int toCut)
+  Effects: first <toCut> QueueNodes removed from q and returned
+  Exceptions: What happens if toCut > q.length?
+
+void paste(Queue* q, Queue* toPaste)
+  Effects: appends toPaste to end of q
+  Exceptions: does nothing if toPaste is null
+
+Function* dequeue(Queue* q)
+  Effects: first node is removed from q; returns value of first node of q
+  Exceptions: returns null if q.length = 0
+
+void enqueue(Queue* q, Function* toInsert)
+  Effects: toInsert is wrapped in a QueueNode and appended to q
+  Exceptions: does nothing if toInsert is null
+
+void destroy(Queue* q)
+  Effects: deallocates memory for q, its QueueNodes, and destroys
+           their Functions. LAST is never deallocated.
+
+
+###Function Functions
+  All functions assume that Queue* q is not null
+
+Index getArity(Function* f)
+  Effects: returns arity of f
+
+Queue* getArguments(Function* f)
+  Effects: returns arguments of f
+
+Body* getBody(Function* f)
+  Effects: returns body of f
+
+Function* substitute(Queue* q)
+  Effects: returns (q[0] q[2] (q[1] q[2])); q is unchanged; q[2] is
+           duplicated with fCopy()
+  Exceptions: returns null if q.length < 3
+
+Function* apply(Function* applicator, Function* input)
+  Effects: enqueue(applicator.arguments, input); return evaluate(applicator)
+  Exceptions: returns null if applicator or input is null
+
+Function* evaluate(Function* f)
+  Effects: * if f.arguments.length < f.arity, return f
+  	       * tmpArgs = cut(f.arguments, f.arity)
+           * tmpFunc = f.body(tmpArgs)
+           * destroy(tmpArgs)
+           * paste(tmpFunc.arguments, f.arguments)
+           * return evaluate(tmpFunc)
+  Exceptions: returns null if f is null
+
+void destroy(Function* f)
+  Effects: deallocates memory for f and destroys its arguments Queue.
+
+
+###Factory Functions
+  All functions allocate new structures using malloc
+
+Queue* createEmptyQueue()
+  Returns: { length: 0, next: LAST }
+
+Function* createICombinator()
+  Returns: { body: dequeue, arity: 1, arguments: createEmptyQueue() }
+
+Function* createKCombinator()
+  Returns: { body: dequeue, arity: 2, arguments: createEmptyQueue() }
+
+Function* createSCombinator()
+  Returns: { body: substitute, arity: 3, arguments: createEmptyQueue() }
+
+Queue* qCopy(Queue* q)
+  Returns: shallow copy of q.
+
+Function* fCopy(Function* f)
+  Returns: copy of f. f.arguments is copied using qCopy().
+
+
+
+Constants
+---------
+
+QueueNode LAST = { null, null }
+
+
+
+Memory Management
+-----------------
+
+Import malloc & free
+  declare noalias i8* @malloc(i32) nounwind
+  declare void @free(i8*) nounwind
+
+Use malloc
+  %1 = tail call noalias i8* @malloc(i32 <type size>) nounwind
+  %2 = bitcast i8* %1 to <type>*
+
+Use free
+  %3 = bitcast <type>* %2 to i8*
+  call void @free(i8* %3) nounwind
+
+
+
+Questions
+---------
+
+The only outside entry points will be getICombinator(),
+getKCombinator(), getSCombinator(), and apply(). Therefore, we should
+be able to assume the other functions never receive unexpected null
+pointers. Do these function still need to guard against nulls?
+
+  * No.
+
+Should a Function have a name? How can we store character strings of
+variable length?
+
+What precautions should we take against non-halting programs? For
+instance, (S I I (S I I)).
+
+  * See next question. Don't try to solve the halting problem.
+
+How can we prevent deeply recursive (or even non-halting) functions
+from consuming all of our memory?
+
+How do we know when a Function needs to be instantiated? How do we
+know when a Function can be deleted? What part of the program is
+responsible for managing memory?
+
+  * evaluate() is responsible for freeing memory. After invoking
+    f.body, f.arguments may contain unused arguments; these should be
+    deleted.
+
+  * The Body functions (currently only substitute() and dequeue())
+    assume certain responsibilities for managing memory. If they
+    malloc a Function* or dequeue a Function* from their arguments
+    Queue, they must either free or return the pointer.
+
+Should destroy() be responsible for nullifying all of the Queue's
+constituent pointers?
+
+  * No, but we should guarantee that invalid pointers do not persist
+    within our code.

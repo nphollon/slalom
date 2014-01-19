@@ -1,0 +1,9 @@
+task :default => [:tut1, :tut2]
+
+task :tut1 do
+  sh "clang++ -g tut1.cpp `llvm-config --cxxflags --libs core` `llvm-config --ldflags` -o tut1"
+end
+
+task :tut2 do
+  sh "clang++ -g tut2.cpp `llvm-config --cxxflags --libs core` `llvm-config --ldflags` -o tut2"
+end
