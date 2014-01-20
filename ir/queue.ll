@@ -128,7 +128,21 @@ returnNull:
 }
 
 define %Queue* @cut(%Queue* %q, %Index %cutLength) {
+entry:
   %newQ = call %Queue* @createEmptyQueue()
+  br label %loop
+loop:
+  %index = phi %Index [%cutLength, %entry], [%nextIndex, %iterate]
+  %shouldTerminate = icmp eq %Index %index, 0
+  br i1 %shouldTerminate, label %exit, label %addItem
+addItem:
+  %f = call %Function* @dequeue(%Queue* %q)
+  call void @enqueue(%Queue* %newQ, %Function* %f)
+  br label %iterate
+iterate:
+  %nextIndex = sub %Index %index, 1
+  br label %loop
+exit:
   ret %Queue* %newQ
 }
 

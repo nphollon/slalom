@@ -50,9 +50,38 @@ entry:
   call void @testEnqueue()
   call void @testDequeue()
   call void @testNullCut()
+  call void @testHappyCut()
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+@.cutLength2   = private unnamed_addr constant %TestName c"Cut Length 2\00"
+@.cut2HasF1    = private unnamed_addr constant %TestName c"Cut2 Has F1 \00"
+define void @testHappyCut() {
+  %q = call %Queue* @createEmptyQueue()
+  %f1 = call %Function* @createICombinator()
+  %f2 = call %Function* @createICombinator()
+  %f3 = call %Function* @createICombinator()
+  call void @enqueue(%Queue* %q, %Function* %f1)
+  call void @enqueue(%Queue* %q, %Function* %f2)
+  call void @enqueue(%Queue* %q, %Function* %f3)
+
+  ; Cut 2 from q
+  %cut2 = call %Queue* @cut(%Queue* %q, %Index 2)
+
+  ; Assert that cut2 has length 2
+  %cut2Length = call %Index @getLength(%Queue* %cut2)
+  call void @assertEqIndex(%Index %cut2Length, %Index 2, %TestName* @.cutLength2)
+
+  ; Assert that 1st node in cut2 is f1
+  %cut2F1 = call %Function* @dequeue(%Queue* %cut2)
+  call void @assertEqFunction(%Function* %cut2F1, %Function* %f1, %TestName* @.cut2HasF1)
+
+  call void @fDestroy(%Function* %cut2F1)
+  call void @qDestroy(%Queue* %cut2)
+  call void @qDestroy(%Queue* %q)
+  ret void
 }
 
 @.cut0IsEmpty  = private unnamed_addr constant %TestName c"Cut0IsEmpty \00"
