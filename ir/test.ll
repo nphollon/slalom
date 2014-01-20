@@ -57,7 +57,11 @@ entry:
 }
 
 @.cutLength2   = private unnamed_addr constant %TestName c"Cut Length 2\00"
-@.cut2HasF1    = private unnamed_addr constant %TestName c"Cut2 Has F1 \00"
+@.cut2HeadF1   = private unnamed_addr constant %TestName c"Cut2 Head F1\00"
+@.cut2TailF2   = private unnamed_addr constant %TestName c"Cut2 Tail F2\00"
+@.cut2TailLast = private unnamed_addr constant %TestName c"Cut2TailLast\00"
+@.qHeadF3      = private unnamed_addr constant %TestName c"Q Head F3   \00"
+@.qLength1     = private unnamed_addr constant %TestName c"Q Length 1  \00"
 define void @testHappyCut() {
   %q = call %Queue* @createEmptyQueue()
   %f1 = call %Function* @createICombinator()
@@ -74,11 +78,29 @@ define void @testHappyCut() {
   %cut2Length = call %Index @getLength(%Queue* %cut2)
   call void @assertEqIndex(%Index %cut2Length, %Index 2, %TestName* @.cutLength2)
 
-  ; Assert that 1st node in cut2 is f1
-  %cut2F1 = call %Function* @dequeue(%Queue* %cut2)
-  call void @assertEqFunction(%Function* %cut2F1, %Function* %f1, %TestName* @.cut2HasF1)
+  ; Assert that head of cut2 contains f1
+  %cut2N1 = call %QueueNode* @getHead(%Queue* %cut2)
+  %n1Data = call %Function* @getData(%QueueNode* %cut2N1)
+  call void @assertEqFunction(%Function* %n1Data, %Function* %f1, %TestName* @.cut2HeadF1)
 
-  call void @fDestroy(%Function* %cut2F1)
+  ; Assert that tail of cut2 contains f2
+  %cut2N2 = call %QueueNode* @getTail(%Queue* %cut2)
+  %n2Data = call %Function* @getData(%QueueNode* %cut2N2)
+  call void @assertEqFunction(%Function* %n2Data, %Function* %f2, %TestName* @.cut2TailF2)
+
+  ; Assert that tail.next is LAST
+  %n2Next = call %QueueNode* @getNext(%QueueNode* %cut2N2)
+  call void @assertEqQueueNode(%QueueNode* %n2Next, %QueueNode* @.LAST, %TestName* @.cut2TailLast)
+
+  ; Assert that head of q contains f3
+  %qHead = call %QueueNode* @getHead(%Queue* %q)
+  %qHeadData = call %Function* @getData(%QueueNode* %qHead)
+  call void @assertEqFunction(%Function* %qHeadData, %Function* %f3, %TestName* @.qHeadF3)
+
+  ; Assert that q has length 1
+  %qLength = call %Index @getLength(%Queue* %q)
+  call void @assertEqIndex(%Index %qLength, %Index 1, %TestName* @.qLength1)
+
   call void @qDestroy(%Queue* %cut2)
   call void @qDestroy(%Queue* %q)
   ret void

@@ -127,23 +127,43 @@ returnNull:
   ret %Function* null
 }
 
+define %QueueNode* @getLink(%QueueNode* %qn, %Index %i) {
+entry:
+  %isThisNode = icmp eq %Index %i, 1
+  br i1 %isThisNode, label %returnThis, label %iterate
+returnThis:
+  ret %QueueNode* %qn
+iterate:
+  %iNext = sub nuw %Index %i, 1
+  %next = call %QueueNode* @getNext(%QueueNode* %qn)
+  %toReturn = tail call %QueueNode* @getLink(%QueueNode* %next, %Index %iNext)
+  ret %QueueNode* %toReturn
+}
+
 define %Queue* @cut(%Queue* %q, %Index %cutLength) {
 entry:
-  %newQ = call %Queue* @createEmptyQueue()
-  br label %loop
-loop:
-  %index = phi %Index [%cutLength, %entry], [%nextIndex, %iterate]
-  %shouldTerminate = icmp eq %Index %index, 0
-  br i1 %shouldTerminate, label %exit, label %addItem
-addItem:
-  %f = call %Function* @dequeue(%Queue* %q)
-  call void @enqueue(%Queue* %newQ, %Function* %f)
-  br label %iterate
-iterate:
-  %nextIndex = sub %Index %index, 1
-  br label %loop
+  %cutQ = call %Queue* @createEmptyQueue()
+  %isEmptyCut = icmp eq %Index %cutLength, 0
+  br i1 %isEmptyCut, label %exit, label %splitQueue
+
+splitQueue:
+  %cutHead = call %QueueNode* @getHead(%Queue* %q)
+  %cutTail = call %QueueNode* @getLink(%QueueNode* %cutHead, %Index %cutLength)
+
+  %qNewHead = call %QueueNode* @getNext(%QueueNode* %cutTail)
+  %qOldLength = call %Index @getLength(%Queue* %q)
+  %qNewLength = sub nuw %Index %qOldLength, %cutLength
+  call void @setLength(%Queue* %q, %Index %qNewLength)
+  call void @setHead(%Queue* %q, %QueueNode* %qNewHead)
+
+  call void @setHead(%Queue* %cutQ, %QueueNode* %cutHead)
+  call void @setTail(%Queue* %cutQ, %QueueNode* %cutTail)
+  call void @setNext(%QueueNode* %cutTail, %QueueNode* @.LAST)
+  call void @setLength(%Queue* %cutQ, %Index %cutLength)
+
+  br label %exit
 exit:
-  ret %Queue* %newQ
+  ret %Queue* %cutQ
 }
 
 define %QueueNode* @createNode(%Function* %f) {
