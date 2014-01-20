@@ -127,6 +127,11 @@ returnNull:
   ret %Function* null
 }
 
+define %Queue* @cut(%Queue* %q, %Index %cutLength) {
+  %newQ = call %Queue* @createEmptyQueue()
+  ret %Queue* %newQ
+}
+
 define %QueueNode* @createNode(%Function* %f) {
   %qn_size = load i32* @.QUEUENODE_SIZE
   %qn_i8 = tail call noalias i8* @malloc(i32 %qn_size) nounwind

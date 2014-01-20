@@ -49,7 +49,31 @@ entry:
   call void @testCreateICombinator()
   call void @testEnqueue()
   call void @testDequeue()
+  call void @testNullCut()
+
+  call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+@.cut0IsEmpty  = private unnamed_addr constant %TestName c"Cut0IsEmpty \00"
+@.cut0IsNotQ   = private unnamed_addr constant %TestName c"Cut0IsNotQ  \00"
+define void @testNullCut() {
+  %q = call %Queue* @createEmptyQueue()
+
+  ; Cut 0 from q
+  %cut0 = call %Queue* @cut(%Queue* %q, %Index 0)
+
+  ; Assert that cut0 is empty
+  %cut0IsEmpty = call i1 @isEmpty(%Queue* %cut0)
+  call void @assertCond(i1 %cut0IsEmpty, %TestName* @.cut0IsEmpty)
+
+  ; Assert that cut0 and q are different
+  %cut0IsNotQ = icmp ne %Queue* %cut0, %q
+  call void @assertCond(i1 %cut0IsNotQ, %TestName* @.cut0IsNotQ) 
+
+  call void @qDestroy(%Queue* %cut0)
+  call void @qDestroy(%Queue* %q)
+  ret void
 }
 
 @.dq1IsF1      = private unnamed_addr constant %TestName c"DQ1 Is F1   \00"

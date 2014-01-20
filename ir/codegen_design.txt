@@ -33,7 +33,7 @@ void paste(Queue* q, Queue* toPaste)
   Exceptions: does nothing if toPaste is null
 
 Function* dequeue(Queue* q)
-  Effects: first node is removed from q; returns value of first node of q
+  Effects: returns value of head node of q; head node is destroyed
   Exceptions: returns null if q.length = 0
 
 void enqueue(Queue* q, Function* toInsert)
