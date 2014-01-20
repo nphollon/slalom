@@ -111,7 +111,11 @@ define void @testDequeue() {
   
   ; Assert that q head is LAST
   %head3 = call %QueueNode* @getHead(%Queue* %q)
-  call void @assertEqQueueNode(%QueueNode* %head3, %QueueNode* @.LAST, %TestName* @.headNotNull)  
+  call void @assertEqQueueNode(%QueueNode* %head3, %QueueNode* @.LAST, %TestName* @.headNotNull)
+
+  call void @fDestroy(%Function* %dq1)
+  call void @fDestroy(%Function* %dq2)
+  call void @qDestroy(%Queue* %q)
   ret void
 }
 
@@ -183,6 +187,7 @@ define void @testEnqueue() {
   %node2Next = call %QueueNode* @getNext(%QueueNode* %node2)
   call void @assertEqQueueNode(%QueueNode* %node2Next, %QueueNode* %node3, %TestName* @.n2PtToN3)
 
+  call void @qDestroy(%Queue* %q)
   ret void
 }
 
@@ -205,6 +210,7 @@ define void @testCreateICombinator() {
   %len = call %Index @getLength(%Queue* %arguments)
   call void @assertEqIndex(%Index %len, %Index 0, %TestName* @.iArgsEmpty)
 
+  call void @fDestroy(%Function* %i)
   ret void
 }
 
@@ -226,6 +232,7 @@ define void @testCreateEmptyQueue() {
   %q_tail = call %QueueNode* @getTail(%Queue* %q)
   call void @assertEqQueueNode(%QueueNode* %q_tail, %QueueNode* @.LAST, %TestName* @.emptyTail)
 
+  call void @qDestroy(%Queue* %q)
   ret void
 }
 

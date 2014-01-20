@@ -1,0 +1,3 @@
+#! /bin/sh
+
+cat types.ll function.ll queue.ll test.ll | valgrind lli

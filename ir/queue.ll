@@ -107,20 +107,24 @@ updateTail:
 
 define %Function* @dequeue(%Queue* %q) {
 entry:
-  %head = call %QueueNode* @getHead(%Queue* %q)
-
   %isEmpty = call i1 @isEmpty(%Queue* %q)
-  br i1 %isEmpty, label %exit, label %updateHead
+  br i1 %isEmpty, label %returnNull, label %removeHead
 
-updateHead:
+removeHead:
+  %head = call %QueueNode* @getHead(%Queue* %q)
+  %data = call %Function* @getData(%QueueNode* %head)
   %next = call %QueueNode* @getNext(%QueueNode* %head)
+
   call void @setHead(%Queue* %q, %QueueNode* %next)
   call void @decrementLength(%Queue* %q)
-  br label %exit
 
-exit:
-  %data = call %Function* @getData(%QueueNode* %head)
+  %headCast = bitcast %QueueNode* %head to i8*
+  call void @free(i8* %headCast) nounwind
+
   ret %Function* %data
+
+returnNull:
+  ret %Function* null
 }
 
 define %QueueNode* @createNode(%Function* %f) {
@@ -140,4 +144,35 @@ define %Queue* @createEmptyQueue() {
   call void @setHead(%Queue* %q, %QueueNode* @.LAST)
   call void @setTail(%Queue* %q, %QueueNode* @.LAST)
   ret %Queue* %q
+}
+
+define void @qnDestroy(%QueueNode* %qn) {
+entry:
+  %isLast = icmp eq %QueueNode* %qn, @.LAST
+  br i1 %isLast, label %exit, label %recursiveFree
+
+recursiveFree:
+  %next = call %QueueNode* @getNext(%QueueNode* %qn)
+
+  %data = call %Function* @getData(%QueueNode* %qn)
+  %qnCast = bitcast %QueueNode* %qn to i8*
+  call void @fDestroy(%Function* %data)
+  call void @free(i8* %qnCast) nounwind
+
+  tail call void @qnDestroy(%QueueNode* %next)
+  ret void
+
+exit:
+  ret void
+}
+
+define void @qDestroy(%Queue* %q) {
+  ; Free nodes recursively from head
+  %head = call %QueueNode* @getHead(%Queue* %q)
+  call void @qnDestroy(%QueueNode* %head)
+
+  ; Free queue
+  %qCast = bitcast %Queue* %q to i8*
+  call void @free(i8* %qCast) nounwind
+  ret void
 }

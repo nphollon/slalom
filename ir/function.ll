@@ -40,3 +40,13 @@ define %Function* @createICombinator() {
 
   ret %Function* %f
 }
+
+define void @fDestroy(%Function* %f) {
+  ; Free arguments queue
+  %args = call %Queue* @getArguments(%Function* %f)
+  call void @qDestroy(%Queue* %args)
+  ; Free function
+  %fCast = bitcast %Function* %f to i8*
+  call void @free(i8* %fCast) nounwind
+  ret void
+}
