@@ -1,6 +1,7 @@
 ; For test output in main
 %TestName = type [13 x i8]
-@.pass = private unnamed_addr constant [2 x i8] c".\00"
+@.NULLC = private unnamed_addr constant i8 0
+declare i32 @putchar(i32) nounwind
 declare i32 @puts(i8* nocapture) nounwind
 
 define void @assertEqIndex(%Index, %Index, %TestName* %name) {
@@ -32,11 +33,11 @@ define void @assertCond(i1 %cond, %TestName* %name) {
 entry:
   br i1 %cond, label %testPassed, label %testFailed
 testPassed:
-  %passPtr = getelementptr [2 x i8]* @.pass, i64 0, i64 0
-  call i32 @puts(i8* %passPtr)
+  call i32 @putchar(i32 46) ; Prints a period
   ret void
 testFailed:
   %namePtr = getelementptr %TestName* %name, i64 0, i64 0
+  call i32 @puts(i8* @.NULLC)
   call i32 @puts(i8* %namePtr)
   ret void
 }
@@ -47,7 +48,71 @@ entry:
   call void @testCreateEmptyQueue()
   call void @testCreateICombinator()
   call void @testEnqueue()
+  call void @testDequeue()
   ret i1 0
+}
+
+@.dq1IsF1      = private unnamed_addr constant %TestName c"DQ1 Is F1   \00"
+@.qSmaller1    = private unnamed_addr constant %TestName c"Q Smaller 1 \00"
+@.headIsN2     = private unnamed_addr constant %TestName c"Head Is N2  \00"
+@.qSmaller0    = private unnamed_addr constant %TestName c"Q Smaller 0 \00"
+@.dq2IsF2      = private unnamed_addr constant %TestName c"DQ2 Is F2   \00"
+@.headIsLast   = private unnamed_addr constant %TestName c"Head Is Last\00"
+@.qNoSmaller   = private unnamed_addr constant %TestName c"Q No Smaller\00"
+@.dq3IsNull    = private unnamed_addr constant %TestName c"DQ3 Is Null \00"
+@.headNotNull  = private unnamed_addr constant %TestName c"HeadNotNull \00"
+define void @testDequeue() {
+  ; create a queue with some functions
+  %q = call %Queue* @createEmptyQueue()
+  %f1 = call %Function* @createICombinator()
+  %f2 = call %Function* @createICombinator()
+  call void @enqueue(%Queue* %q, %Function* %f1)
+  %node1 = call %QueueNode* @getTail(%Queue* %q)
+  call void @enqueue(%Queue* %q, %Function* %f2)
+  %node2 = call %QueueNode* @getTail(%Queue* %q)
+
+  ; Dequeue a function
+  %dq1 = call %Function* @dequeue(%Queue* %q)
+
+  ; Assert that q length is 1
+  %length = call %Index @getLength(%Queue* %q)
+  call void @assertEqIndex(%Index %length, %Index 1, %TestName* @.qSmaller1)
+
+  ; Assert that dq1 is f1
+  call void @assertEqFunction(%Function* %dq1, %Function* %f1, %TestName* @.dq1IsF1)
+
+  ; Assert that q head is node2
+  %head = call %QueueNode* @getHead(%Queue* %q)
+  call void @assertEqQueueNode(%QueueNode* %head, %QueueNode* %node2, %TestName* @.headIsN2)
+
+  ; Dequeue another function
+  %dq2 = call %Function* @dequeue(%Queue* %q)
+
+  ; Assert that q is empty
+  %isEmpty = call i1 @isEmpty(%Queue* %q)
+  call void @assertCond(i1 %isEmpty, %TestName* @.qSmaller0)
+
+  ; Assert that dq2 is f2
+  call void @assertEqFunction(%Function* %dq2, %Function* %f2, %TestName* @.dq2IsF2)
+
+  ; Assert that q head is LAST
+  %head2 = call %QueueNode* @getHead(%Queue* %q)
+  call void @assertEqQueueNode(%QueueNode* %head2, %QueueNode* @.LAST, %TestName* @.headIsLast)
+
+  ; Dequeue another function
+  %dq3 = call %Function* @dequeue(%Queue* %q)
+
+  ; Assert that q length is still 0
+  %isStillEmpty = call i1 @isEmpty(%Queue* %q)
+  call void @assertCond(i1 %isStillEmpty, %TestName* @.qNoSmaller)
+
+  ; Assert that dq3 is null
+  call void @assertEqFunction(%Function* %dq3, %Function* null, %TestName* @.dq3IsNull)
+  
+  ; Assert that q head is LAST
+  %head3 = call %QueueNode* @getHead(%Queue* %q)
+  call void @assertEqQueueNode(%QueueNode* %head3, %QueueNode* @.LAST, %TestName* @.headNotNull)  
+  ret void
 }
 
 @.qBigger1     = private unnamed_addr constant %TestName c"Q Bigger 1  \00"

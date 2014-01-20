@@ -76,8 +76,11 @@ define void @incrementLength(%Queue* %q) {
   ret void
 }
 
-define %Function* @dequeue(%Queue*) {
-  ret %Function* null
+define void @decrementLength(%Queue* %q) {
+  %length = call %Index @getLength(%Queue* %q)
+  %newLength = sub nuw %Index %length, 1
+  call void @setLength(%Queue* %q, %Index %newLength)
+  ret void
 }
 
 define void @enqueue(%Queue* %q, %Function* %f) {
@@ -100,6 +103,24 @@ updateTail:
   call void @setTail(%Queue* %q, %QueueNode* %qn)
   call void @incrementLength(%Queue* %q)
   ret void
+}
+
+define %Function* @dequeue(%Queue* %q) {
+entry:
+  %head = call %QueueNode* @getHead(%Queue* %q)
+
+  %isEmpty = call i1 @isEmpty(%Queue* %q)
+  br i1 %isEmpty, label %exit, label %updateHead
+
+updateHead:
+  %next = call %QueueNode* @getNext(%QueueNode* %head)
+  call void @setHead(%Queue* %q, %QueueNode* %next)
+  call void @decrementLength(%Queue* %q)
+  br label %exit
+
+exit:
+  %data = call %Function* @getData(%QueueNode* %head)
+  ret %Function* %data
 }
 
 define %QueueNode* @createNode(%Function* %f) {
