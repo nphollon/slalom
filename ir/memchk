@@ -1,3 +1,3 @@
 #! /bin/sh
 
-cat types.ll function.ll queue.ll test.ll | valgrind lli
+cat types.ll queue_node.ll queue.ll function.ll test.ll | valgrind lli

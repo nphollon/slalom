@@ -1,3 +1,6 @@
+declare noalias i8* @malloc(i32) nounwind
+declare void @free(i8*) nounwind
+
 ; assume sizeof(pointer) = sizeof(i64) = 8
 
 %Body = type %Function*(%Queue*)*

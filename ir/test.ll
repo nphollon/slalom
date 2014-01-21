@@ -51,9 +51,25 @@ entry:
   call void @testDequeue()
   call void @testNullCut()
   call void @testHappyCut()
+  call void @testPaste()
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+define void @testPaste() {
+  %main = call %Queue* @createEmptyQueue()
+  %toPaste = call %Queue* @createEmptyQueue()
+  %f1 = call %Function* @createICombinator()
+  %f2 = call %Function* @createICombinator()
+  call void @enqueue(%Queue* %main, %Function* %f1)
+  call void @enqueue(%Queue* %toPaste, %Function* %f2)
+
+  ; Paste toPaste into main
+  call void @paste(%Queue* %main, %Queue* %toPaste)
+
+  call void @qDestroy(%Queue* %main)
+  ret void
 }
 
 @.cutLength2   = private unnamed_addr constant %TestName c"Cut Length 2\00"
