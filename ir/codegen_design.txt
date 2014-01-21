@@ -7,30 +7,60 @@ Types
 Function = { Body* body, Index arity, Queue arguments }
 Body = Function* (Queue arguments)
 Queue = { Index length, QueueNode* first, QueueNode* last }
-QueueNode = { Function* argument, QueueNode* next }
+QueueNode = { Function* data, QueueNode* next }
 Index = some unsigned integer type
 
 
 
 Functions
 ---------
+  All functions assume that arguments are not null
+
+
+###Accessor Functions
+  Except for getBodyPointer(), these functions are only used by their respective getters and setters.
+
+Function** getDataPointer(QueueNode* qn)
+Queue** getNextPointer(QueueNode* qn)
+
+Index* getLengthPointer(Queue* q)
+QueueNode** getHeadPointer(Queue* q)
+QueueNode** getTailPointer(Queue* q)
+
+Body* getBodyPointer(Function* f)
+Index* getArityPointer(Function* f)
+Queue** getArgumentsPointer(Function* f)
+
+
+###QueueNode Functions
+
+Function* getData(QueueNode* qn)
+void setData(QueueNode* qn, Function* newData)
+
+QueueNode* getNext(QueueNode* qn)
+void setNext(QueueNode* qn, Function* newNext)
+
+QueueNode* getLink(QueueNode* qn, Index i)
+  Effects: Returns the (i-1)th node after qn
+  Exceptions: Undefined behavior if i = 0 or i > size of linked list
+
 
 ###Queue Functions
-  All functions assume that Queue* q is not null
+
+Index getLength(Queue* q)
+void setLength(Queue* q, Index)
+
+QueueNode* getHead(Queue* q)
+void setHead(Queue* q, QueueNode* qn)
+
+QueueNode* getTail(Queue* q)
+void setTail(Queue* q, QueueNode* qn)
 
 Boolean isEmpty(Queue* q)
   Effects: return true if length of q is 0
 
-Index getLength(Queue* q)
-  Effects: return length of q
-
-Queue* cut(Queue* q, int toCut)
-  Effects: first <toCut> QueueNodes removed from q and returned
-  Exceptions: What happens if toCut > q.length?
-
-void paste(Queue* q, Queue* toPaste)
-  Effects: appends toPaste to end of q
-  Exceptions: does nothing if toPaste is null
+void incrementLength(Queue* q)
+void decrementLength(Queue* q)
 
 Function* dequeue(Queue* q)
   Effects: returns value of head node of q; head node is destroyed
@@ -40,22 +70,26 @@ void enqueue(Queue* q, Function* toInsert)
   Effects: toInsert is wrapped in a QueueNode and appended to q
   Exceptions: does nothing if toInsert is null
 
-void destroy(Queue* q)
-  Effects: deallocates memory for q, its QueueNodes, and destroys
-           their Functions. LAST is never deallocated.
+Queue* cut(Queue* q, int toCut)
+  Effects: first <toCut> QueueNodes removed from q and returned
+  Exceptions: What happens if toCut > q.length?
+
+void paste(Queue* q, Queue* toPaste)
+  Effects: appends toPaste to end of q
+  Exceptions: does nothing if toPaste is null
 
 
 ###Function Functions
-  All functions assume that Queue* q is not null
+
+void setBody(Function* f, Body newBody)
 
 Index getArity(Function* f)
-  Effects: returns arity of f
+void setArity(Function* f, Index newArity)
 
 Queue* getArguments(Function* f)
-  Effects: returns arguments of f
 
-Body* getBody(Function* f)
-  Effects: returns body of f
+void initializeArguments(Function* f)
+  Effects: sets f.arguments to a new queue using createEmptyQueue()
 
 Function* substitute(Queue* q)
   Effects: returns (q[0] q[2] (q[1] q[2])); q is unchanged; q[2] is
@@ -75,15 +109,15 @@ Function* evaluate(Function* f)
            * return evaluate(tmpFunc)
   Exceptions: returns null if f is null
 
-void destroy(Function* f)
-  Effects: deallocates memory for f and destroys its arguments Queue.
-
 
 ###Factory Functions
   All functions allocate new structures using malloc
 
+QueueNode* createNode(Function* f)
+  Returns: { data: f, next: LAST }
+
 Queue* createEmptyQueue()
-  Returns: { length: 0, next: LAST }
+  Returns: { length: 0, head: LAST, tail: LAST }
 
 Function* createICombinator()
   Returns: { body: dequeue, arity: 1, arguments: createEmptyQueue() }
@@ -101,11 +135,24 @@ Function* fCopy(Function* f)
   Returns: copy of f. f.arguments is copied using qCopy().
 
 
+###Destructor Functions
+
+void qnDestroy(QueueNode* qn)
+  Effects: frees memory of qn, qn.data (using fDestroy()) and qn.next (using qnDestroy())
+  Exceptions: Does nothing if qn is LAST
+
+void qDestroy(Queue* q)
+  Effects: frees memory of q and q.head (using qnDestroy()).
+
+void fDestroy(Function* f)
+  Effects: frees memory of f and f.arguments (using qDestroy())
+
+
 
 Constants
 ---------
 
-QueueNode LAST = { null, null }
+QueueNode LAST = { data: null, next: null }
 
 
 
