@@ -46,27 +46,56 @@ define i1 @main() {
 entry:
   call void @testLast()
   call void @testCreateEmptyQueue()
-  call void @testCreateICombinator()
   call void @testEnqueue()
   call void @testDequeue()
   call void @testNullCut()
   call void @testHappyCut()
   call void @testPaste()
+;  call void @testQCopy()
+
+  call void @testCreateICombinator()  
+;  call void @testCreateKCombinator()
+;  call void @testCreateSCombinator()
+;  call void @testEvaluate()
+;  call void @testApply()
+;  call void @testSubstitute
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
 }
 
+@.pasteLength4 = private unnamed_addr constant %TestName c"PasteLength4\00"
+@.pasteTailF4  = private unnamed_addr constant %TestName c"PasteTailF4 \00"
+@.pasteN3IsF3  = private unnamed_addr constant %TestName c"PasteN3IsF3 \00"
 define void @testPaste() {
   %main = call %Queue* @createEmptyQueue()
   %toPaste = call %Queue* @createEmptyQueue()
   %f1 = call %Function* @createICombinator()
   %f2 = call %Function* @createICombinator()
+  %f3 = call %Function* @createICombinator()
+  %f4 = call %Function* @createICombinator()
   call void @enqueue(%Queue* %main, %Function* %f1)
-  call void @enqueue(%Queue* %toPaste, %Function* %f2)
+  call void @enqueue(%Queue* %main, %Function* %f2)
+  call void @enqueue(%Queue* %toPaste, %Function* %f3)
+  call void @enqueue(%Queue* %toPaste, %Function* %f4)
 
   ; Paste toPaste into main
   call void @paste(%Queue* %main, %Queue* %toPaste)
+
+  ; Assert main has length 2
+  %pasteLength = call %Index @getLength(%Queue* %main)
+  call void @assertEqIndex(%Index %pasteLength, %Index 4, %TestName* @.pasteLength4)
+
+  ; Assert that tail of main is f4
+  %pasteTail = call %QueueNode* @getTail(%Queue* %main)
+  %pasteTailData = call %Function* @getData(%QueueNode* %pasteTail)
+  call void @assertEqFunction(%Function* %pasteTailData, %Function* %f4, %TestName* @.pasteTailF4)
+
+  ; Assert that 3rd node in main contains f3
+  %pasteHead = call %QueueNode* @getHead(%Queue* %main)
+  %node3 = call %QueueNode* @getLink(%QueueNode* %pasteHead, %Index 3)
+  %node3Data = call %Function* @getData(%QueueNode* %node3)
+  call void @assertEqFunction(%Function* %node3Data, %Function* %f3, %TestName* @.pasteN3IsF3)
 
   call void @qDestroy(%Queue* %main)
   ret void

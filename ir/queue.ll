@@ -40,16 +40,16 @@ define i1 @isEmpty(%Queue* %q) {
   ret i1 %isEmpty
 };
 
-define void @incrementLength(%Queue* %q) {
+define void @increaseLength(%Queue* %q, %Index %change) {
   %length = call %Index @getLength(%Queue* %q)
-  %newLength = add nuw %Index %length, 1
+  %newLength = add nuw %Index %length, %change
   call void @setLength(%Queue* %q, %Index %newLength)
   ret void
 }
 
-define void @decrementLength(%Queue* %q) {
+define void @decreaseLength(%Queue* %q, %Index %change) {
   %length = call %Index @getLength(%Queue* %q)
-  %newLength = sub nuw %Index %length, 1
+  %newLength = sub nuw %Index %length, %change
   call void @setLength(%Queue* %q, %Index %newLength)
   ret void
 }
@@ -72,7 +72,7 @@ setTailNext:
 
 updateTail:
   call void @setTail(%Queue* %q, %QueueNode* %qn)
-  call void @incrementLength(%Queue* %q)
+  call void @increaseLength(%Queue* %q, %Index 1)
   ret void
 }
 
@@ -87,7 +87,7 @@ removeHead:
   %next = call %QueueNode* @getNext(%QueueNode* %head)
 
   call void @setHead(%Queue* %q, %QueueNode* %next)
-  call void @decrementLength(%Queue* %q)
+  call void @decreaseLength(%Queue* %q, %Index 1)
 
   %headCast = bitcast %QueueNode* %head to i8*
   call void @free(i8* %headCast) nounwind
@@ -107,12 +107,10 @@ entry:
 splitQueue:
   %cutHead = call %QueueNode* @getHead(%Queue* %q)
   %cutTail = call %QueueNode* @getLink(%QueueNode* %cutHead, %Index %cutLength)
-
   %qNewHead = call %QueueNode* @getNext(%QueueNode* %cutTail)
-  %qOldLength = call %Index @getLength(%Queue* %q)
-  %qNewLength = sub nuw %Index %qOldLength, %cutLength
-  call void @setLength(%Queue* %q, %Index %qNewLength)
+
   call void @setHead(%Queue* %q, %QueueNode* %qNewHead)
+  call void @decreaseLength(%Queue* %q, %Index %cutLength)
 
   call void @setHead(%Queue* %cutQ, %QueueNode* %cutHead)
   call void @setTail(%Queue* %cutQ, %QueueNode* %cutTail)
@@ -125,6 +123,17 @@ exit:
 }
 
 define void @paste(%Queue* %front, %Queue* %back) {
+  %lengthBack = call %Index @getLength(%Queue* %back)
+  call void @increaseLength(%Queue* %front, %Index %lengthBack)
+
+  %frontTail = call %QueueNode* @getTail(%Queue* %front)
+  %backHead = call %QueueNode* @getHead(%Queue* %back)
+  call void @setNext(%QueueNode* %frontTail, %QueueNode* %backHead)
+
+  %backTail = call %QueueNode* @getTail(%Queue* %back)
+  call void @setTail(%Queue* %front, %QueueNode* %backTail)
+  
+  call void @qSalvage(%Queue* %back)
   ret void
 }
 
@@ -138,13 +147,15 @@ define %Queue* @createEmptyQueue() {
   ret %Queue* %q
 }
 
-define void @qDestroy(%Queue* %q) {
-  ; Free nodes recursively from head
-  %head = call %QueueNode* @getHead(%Queue* %q)
-  call void @qnDestroy(%QueueNode* %head)
-
-  ; Free queue
+define void @qSalvage(%Queue* %q) {
   %qCast = bitcast %Queue* %q to i8*
   call void @free(i8* %qCast) nounwind
+  ret void
+}
+
+define void @qDestroy(%Queue* %q) {
+  %head = call %QueueNode* @getHead(%Queue* %q)
+  call void @qnDestroy(%QueueNode* %head)
+  call void @qSalvage(%Queue* %q)
   ret void
 }

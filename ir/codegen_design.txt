@@ -59,8 +59,8 @@ void setTail(Queue* q, QueueNode* qn)
 Boolean isEmpty(Queue* q)
   Effects: return true if length of q is 0
 
-void incrementLength(Queue* q)
-void decrementLength(Queue* q)
+void increaseLength(Queue* q, Index change)
+void decreaseLength(Queue* q, Index change)
 
 Function* dequeue(Queue* q)
   Effects: returns value of head node of q; head node is destroyed
@@ -140,6 +140,9 @@ Function* fCopy(Function* f)
 void qnDestroy(QueueNode* qn)
   Effects: frees memory of qn, qn.data (using fDestroy()) and qn.next (using qnDestroy())
   Exceptions: Does nothing if qn is LAST
+
+void qSalvage(Queue* q)
+  Effects: frees memory of q; does not destroy nodes
 
 void qDestroy(Queue* q)
   Effects: frees memory of q and q.head (using qnDestroy()).
