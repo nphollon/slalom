@@ -22,6 +22,12 @@ define %Queue* @getArguments(%Function* %f) {
   ret %Queue* %args
 }
 
+define void @addArgument(%Function* %app, %Function* %arg) {
+  %args = call %Queue* @getArguments(%Function* %app)
+  call void @enqueue(%Queue* %args, %Function* %arg)
+  ret void
+}
+
 define %Function* @substitute(%Queue*) {
   ret %Function* null
 }
@@ -59,9 +65,10 @@ define %Function* @createSCombinator() {
 }
 
 define %Function* @fCopy(%Function* %f) {
-  %copy = call %Function* @createICombinator()
   %arity = call %Index @getArity(%Function* %f)
-  call void @setArity(%Function* %copy, %Index %arity)
+  %bodyP = call %Body* @getBodyPointer(%Function* %f)
+  %body = load %Body* %bodyP
+  %copy = call %Function* @createFunction(%Body %body, %Index %arity)
   ret %Function* %copy
 }
 

@@ -56,13 +56,42 @@ entry:
   call void @testCreateICombinator()
   call void @testCreateKCombinator()
   call void @testCreateSCombinator()
-;  call void @testFCopy()
+  call void @testFCopy()
 ;  call void @testEvaluate()
 ;  call void @testApply()
 ;  call void @testSubstitute()
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+@.fCopyArity   = private unnamed_addr constant %TestName c"F Copy Arity\00"
+@.fCopyBody    = private unnamed_addr constant %TestName c"F Copy Body \00"
+define void @testFCopy() {
+  %original = call %Function* @createSCombinator()
+  %arg1 = call %Function* @createICombinator()
+  %arg2 = call %Function* @createKCombinator()
+  call void @addArgument(%Function* %original, %Function* %arg1)
+  call void @addArgument(%Function* %original, %Function* %arg2)
+
+  ; Copy the function
+  %copy = call %Function* @fCopy(%Function* %original)
+
+  ; Assert arity is the same
+  %cArity = call %Index @getArity(%Function* %copy)
+  %oArity = call %Index @getArity(%Function* %original)
+  call void @assertEqIndex(%Index %cArity, %Index %oArity, %TestName* @.fCopyArity)
+
+  ; Assert body is the same
+  %cBodyP = call %Body* @getBodyPointer(%Function* %copy)
+  %oBodyP = call %Body* @getBodyPointer(%Function* %original)
+  %oBody = load %Body* %oBodyP
+  call void @assertEqBody(%Body* %cBodyP, %Body %oBody, %TestName* @.fCopyBody)
+
+  ; Assert arguments are deep copied
+
+  call void @fDestroy(%Function* %original)
+  ret void
 }
 
 @.sBodyDequeue = private unnamed_addr constant %TestName c"SBodyDequeue\00"
