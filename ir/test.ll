@@ -51,17 +51,60 @@ entry:
   call void @testNullCut()
   call void @testHappyCut()
   call void @testPaste()
-;  call void @testQCopy()
+  call void @testQCopy()
 
-  call void @testCreateICombinator()  
+  call void @testCreateICombinator()
 ;  call void @testCreateKCombinator()
 ;  call void @testCreateSCombinator()
+;  call void @testFCopy()
 ;  call void @testEvaluate()
 ;  call void @testApply()
-;  call void @testSubstitute
+;  call void @testSubstitute()
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+@.copyF1IsntF1 = private unnamed_addr constant %TestName c"CopyF1IsntF1\00"
+@.deepCopyN1   = private unnamed_addr constant %TestName c"Deep Copy F1\00"
+@.copyF2IsntF2 = private unnamed_addr constant %TestName c"CopyF2IsntF2\00"
+@.deepCopyN2   = private unnamed_addr constant %TestName c"Deep Copy F2\00"
+define void @testQCopy() {
+  %original = call %Queue* @createEmptyQueue()
+  %f1 = call %Function* @createICombinator()
+  call void @setArity(%Function* %f1, %Index 3)
+  %f2 = call %Function* @createICombinator()
+  call void @setArity(%Function* %f2, %Index 7)
+  call void @enqueue(%Queue* %original, %Function* %f1)
+  call void @enqueue(%Queue* %original, %Function* %f2)
+
+  ; Copy the original
+  %copy = call %Queue* @qCopy(%Queue* %original)
+  %cNode1 = call %QueueNode* @getHead(%Queue* %copy)
+  %cNode2 = call %QueueNode* @getTail(%Queue* %copy)
+
+  %oNode1 = call %QueueNode* @getHead(%Queue* %original)
+  %oNode2 = call %QueueNode* @getTail(%Queue* %original)
+
+  ; Assert that cNode1 and oNode1 are deep copies
+  %copyF1 = call %Function* @getData(%QueueNode* %cNode1)
+  %headsNotEqual = icmp ne %Function* %f1, %copyF1
+  call void @assertCond(i1 %headsNotEqual, %TestName* @.copyF1IsntF1)
+  %o1Arity = call %Index @getArity(%Function* %f1)
+  %c1Arity = call %Index @getArity(%Function* %copyF1)
+  call void @assertEqIndex(%Index %o1Arity, %Index %c1Arity, %TestName* @.deepCopyN1)
+
+  ; Assert that cNode2 and oNode2 are deep copies
+  %copyF2 = call %Function* @getData(%QueueNode* %cNode2)
+  %tailsNotEqual = icmp ne %Function* %f2, %copyF2
+  call void @assertCond(i1 %tailsNotEqual, %TestName* @.copyF2IsntF2)
+  %o2Arity = call %Index @getArity(%Function* %f2)
+  %c2Arity = call %Index @getArity(%Function* %copyF2)
+  call void @assertEqIndex(%Index %o2Arity, %Index %c2Arity, %TestName* @.deepCopyN2)
+
+  call void @qDestroy(%Queue* %original)
+  call void @qDestroy(%Queue* %copy)
+  ret void
 }
 
 @.pasteLength4 = private unnamed_addr constant %TestName c"PasteLength4\00"

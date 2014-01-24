@@ -147,6 +147,28 @@ define %Queue* @createEmptyQueue() {
   ret %Queue* %q
 }
 
+define void @copyDataToQueue(%Queue* %q, %QueueNode* %qn) {
+entry:
+  %isLast = icmp eq %QueueNode* %qn, @.LAST
+  br i1 %isLast, label %exit, label %copyData
+copyData:
+  %data = call %Function* @getData(%QueueNode* %qn)
+  %dataCopy = call %Function* @fCopy(%Function* %data)
+  call void @enqueue(%Queue* %q, %Function* %dataCopy)
+  %next = call %QueueNode* @getNext(%QueueNode* %qn)
+  call void @copyDataToQueue(%Queue* %q, %QueueNode* %next)
+  br label %exit
+exit:
+  ret void  
+}
+
+define %Queue* @qCopy(%Queue* %original) {
+  %copy = call %Queue* @createEmptyQueue()
+  %originalHead = call %QueueNode* @getHead(%Queue* %original)
+  call void @copyDataToQueue(%Queue* %copy, %QueueNode* %originalHead)
+  ret %Queue* %copy
+}
+
 define void @qSalvage(%Queue* %q) {
   %qCast = bitcast %Queue* %q to i8*
   call void @free(i8* %qCast) nounwind

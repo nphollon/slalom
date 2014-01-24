@@ -78,6 +78,8 @@ void paste(Queue* q, Queue* toPaste)
   Effects: appends toPaste to end of q
   Exceptions: does nothing if toPaste is null
 
+void copyDataToQueue(Queue* q, QueueNode* qn)
+  Effects: deep copies qn onto the tail of q
 
 ###Function Functions
 
@@ -129,10 +131,10 @@ Function* createSCombinator()
   Returns: { body: substitute, arity: 3, arguments: createEmptyQueue() }
 
 Queue* qCopy(Queue* q)
-  Returns: shallow copy of q.
+  Returns: deep copy of q.
 
 Function* fCopy(Function* f)
-  Returns: copy of f. f.arguments is copied using qCopy().
+  Returns: deep copy of f.
 
 
 ###Destructor Functions
@@ -196,6 +198,9 @@ instance, (S I I (S I I)).
 
 How can we prevent deeply recursive (or even non-halting) functions
 from consuming all of our memory?
+
+Should we be worried about recursive data structures? Are they
+possible?
 
 How do we know when a Function needs to be instantiated? How do we
 know when a Function can be deleted? What part of the program is
