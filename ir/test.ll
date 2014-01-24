@@ -54,7 +54,7 @@ entry:
   call void @testQCopy()
 
   call void @testCreateICombinator()
-;  call void @testCreateKCombinator()
+  call void @testCreateKCombinator()
 ;  call void @testCreateSCombinator()
 ;  call void @testFCopy()
 ;  call void @testEvaluate()
@@ -63,6 +63,27 @@ entry:
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+@.kBodyDequeue = private unnamed_addr constant %TestName c"KBodyDequeue\00"
+@.kArity2      = private unnamed_addr constant %TestName c"K Arity 2   \00"
+@.kArgsEmpty   = private unnamed_addr constant %TestName c"K Args Empty\00"
+define void @testCreateKCombinator() {
+  %k = call %Function* @createKCombinator()
+
+  ; Assert body is dequeue
+  %body = call %Body* @getBodyPointer(%Function* %k)
+  call void @assertEqBody(%Body* %body, %Body @dequeue, %TestName* @.kBodyDequeue)
+
+  ; Assert arity 2
+  %arity = call %Index @getArity(%Function* %k)
+  call void @assertEqIndex(%Index %arity, %Index 2, %TestName* @.kArity2)
+
+  ; Assert arguments queue is empty
+  %arguments = call %Queue* @getArguments(%Function* %k)
+  %isEmpty = call i1 @isEmpty(%Queue* %arguments)
+  call void @assertCond(i1 %isEmpty, %TestName* @.kArgsEmpty)
+  ret void
 }
 
 @.copyF1IsntF1 = private unnamed_addr constant %TestName c"CopyF1IsntF1\00"
@@ -370,8 +391,8 @@ define void @testCreateICombinator() {
 
   ; Assert that arguments is an empty queue
   %arguments = call %Queue* @getArguments(%Function* %i)
-  %len = call %Index @getLength(%Queue* %arguments)
-  call void @assertEqIndex(%Index %len, %Index 0, %TestName* @.iArgsEmpty)
+  %isEmpty = call i1 @isEmpty(%Queue* %arguments)
+  call void @assertCond(i1 %isEmpty, %TestName* @.iArgsEmpty)
 
   call void @fDestroy(%Function* %i)
   ret void

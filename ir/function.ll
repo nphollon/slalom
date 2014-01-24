@@ -45,6 +45,14 @@ define %Function* @createICombinator() {
   ret %Function* %f
 }
 
+define %Function* @createKCombinator() {
+  %f = call %Function* @allocateFunction()
+  call void @setBody(%Function* %f, %Body @dequeue)
+  call void @setArity(%Function* %f, %Index 2)
+  call void @initializeArguments(%Function* %f)
+  ret %Function* %f
+}
+
 define %Function* @fCopy(%Function* %f) {
   %copy = call %Function* @createICombinator()
   %arity = call %Index @getArity(%Function* %f)
