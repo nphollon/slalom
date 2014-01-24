@@ -55,7 +55,7 @@ entry:
 
   call void @testCreateICombinator()
   call void @testCreateKCombinator()
-;  call void @testCreateSCombinator()
+  call void @testCreateSCombinator()
 ;  call void @testFCopy()
 ;  call void @testEvaluate()
 ;  call void @testApply()
@@ -63,6 +63,29 @@ entry:
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+@.sBodyDequeue = private unnamed_addr constant %TestName c"SBodyDequeue\00"
+@.sArity2      = private unnamed_addr constant %TestName c"S Arity 2   \00"
+@.sArgsEmpty   = private unnamed_addr constant %TestName c"S Args Empty\00"
+define void @testCreateSCombinator() {
+  %s = call %Function* @createSCombinator()
+
+  ; Assert body is @substitute
+  %body = call %Body* @getBodyPointer(%Function* %s)
+  call void @assertEqBody(%Body* %body, %Body @substitute, %TestName* @.sBodyDequeue)
+
+  ; Assert arity 3
+  %arity = call %Index @getArity(%Function* %s)
+  call void @assertEqIndex(%Index %arity, %Index 3, %TestName* @.sArity2)
+
+  ; Assert arguments queue is empty
+  %arguments = call %Queue* @getArguments(%Function* %s)
+  %isEmpty = call i1 @isEmpty(%Queue* %arguments)
+  call void @assertCond(i1 %isEmpty, %TestName* @.sArgsEmpty)
+
+  call void @fDestroy(%Function* %s)
+  ret void
 }
 
 @.kBodyDequeue = private unnamed_addr constant %TestName c"KBodyDequeue\00"
@@ -83,6 +106,8 @@ define void @testCreateKCombinator() {
   %arguments = call %Queue* @getArguments(%Function* %k)
   %isEmpty = call i1 @isEmpty(%Queue* %arguments)
   call void @assertCond(i1 %isEmpty, %TestName* @.kArgsEmpty)
+
+  call void @fDestroy(%Function* %k)
   ret void
 }
 

@@ -22,6 +22,10 @@ define %Queue* @getArguments(%Function* %f) {
   ret %Queue* %args
 }
 
+define %Function* @substitute(%Queue*) {
+  ret %Function* null
+}
+
 define void @initializeArguments(%Function* %f) {
   %args_p = call %Queue** @getArgumentsPointer(%Function* %f)
   %args = call %Queue* @createEmptyQueue()
@@ -29,27 +33,28 @@ define void @initializeArguments(%Function* %f) {
   ret void
 }
 
-define %Function* @allocateFunction() {
+define %Function* @createFunction(%Body %body, %Index %arity) {
   %f_size = load i32* @.FUNCTION_SIZE
   %f_i8 = tail call noalias i8* @malloc(i32 %f_size) nounwind
   %f = bitcast i8* %f_i8 to %Function*
+  call void @setBody(%Function* %f, %Body %body)
+  call void @setArity(%Function* %f, %Index %arity)
+  call void @initializeArguments(%Function* %f)
   ret %Function* %f
 }
 
 define %Function* @createICombinator() {
-  %f = call %Function* @allocateFunction()
-  call void @setBody(%Function* %f, %Body @dequeue)
-  call void @setArity(%Function* %f, %Index 1)
-  call void @initializeArguments(%Function* %f)
-
+  %f = call %Function* @createFunction(%Body @dequeue, %Index 1)
   ret %Function* %f
 }
 
 define %Function* @createKCombinator() {
-  %f = call %Function* @allocateFunction()
-  call void @setBody(%Function* %f, %Body @dequeue)
-  call void @setArity(%Function* %f, %Index 2)
-  call void @initializeArguments(%Function* %f)
+  %f = call %Function* @createFunction(%Body @dequeue, %Index 2)
+  ret %Function* %f
+}
+
+define %Function* @createSCombinator() {
+  %f = call %Function* @createFunction(%Body @substitute, %Index 3)
   ret %Function* %f
 }
 
