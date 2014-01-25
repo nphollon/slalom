@@ -42,29 +42,6 @@ testFailed:
   ret void
 }
 
-define i1 @main() {
-entry:
-  call void @testLast()
-  call void @testCreateEmptyQueue()
-  call void @testEnqueue()
-  call void @testDequeue()
-  call void @testNullCut()
-  call void @testHappyCut()
-  call void @testPaste()
-  call void @testQCopy()
-
-  call void @testCreateICombinator()
-  call void @testCreateKCombinator()
-  call void @testCreateSCombinator()
-  call void @testFCopy()
-;  call void @testEvaluate()
-;  call void @testApply()
-;  call void @testSubstitute()
-
-  call i32 @puts(i8* @.NULLC)
-  ret i1 0
-}
-
 define void @assertIsI(%Function* %f, %TestName* %name) {
   %bodyP = call %Body* @getBodyPointer(%Function* %f)
   call void @assertEqBody(%Body* %bodyP, %Body @dequeue, %TestName* %name)
@@ -79,7 +56,103 @@ define void @assertIsK(%Function* %f, %TestName* %name) {
   %arity = call %Index @getArity(%Function* %f)
   call void @assertEqIndex(%Index %arity, %Index 2, %TestName* %name)
   ret void
-} 
+}
+
+define i1 @main() {
+entry:
+  call void @testLast()
+  call void @testCreateEmptyQueue()
+  call void @testEnqueue()
+  call void @testDequeue()
+  call void @testNullCut()
+  call void @testHappyCut()
+  call void @testPaste()
+  call void @testPasteToEmpty()
+  call void @testQCopy()
+
+  call void @testCreateICombinator()
+  call void @testCreateKCombinator()
+  call void @testCreateSCombinator()
+  call void @testFCopy()
+  call void @testEvaluate()
+  call void @testEvaluateOverflow()
+  call void @testEvaluateRecursive()
+;  call void @testApply()
+;  call void @testSubstitute()
+
+  call i32 @puts(i8* @.NULLC)
+  ret i1 0
+}
+
+@.kiisEvalToS  = private unnamed_addr constant %TestName c"KiisEvalToS \00"
+define void @testEvaluateRecursive() {
+  ; Evaluate (K I I S)
+  %applicator = call %Function* @createKCombinator()
+  %arg1 = call %Function* @createICombinator()
+  %arg2 = call %Function* @createICombinator()
+  %arg3 = call %Function* @createSCombinator()
+  call void @addArgument(%Function* %applicator, %Function* %arg1)
+  call void @addArgument(%Function* %applicator, %Function* %arg2)
+  call void @addArgument(%Function* %applicator, %Function* %arg3)
+  %result = call %Function* @evaluate(%Function* %applicator)
+
+  ; Assert result is (S)
+  call void @assertEqFunction(%Function* %result, %Function* %arg3, %TestName* @.kiisEvalToS)
+
+  call void @fDestroy(%Function* %result)
+  ret void
+}
+
+@.kkisAppIsK   = private unnamed_addr constant %TestName c"KkisAppIsK  \00"
+@.kkisHas1Arg  = private unnamed_addr constant %TestName c"KkisHas1Arg \00"
+@.kkisArgIsS   = private unnamed_addr constant %TestName c"KkisArgIsS  \00"
+define void @testEvaluateOverflow() {
+  ; Evaluate (K K I S)
+  %applicator = call %Function* @createKCombinator()
+  %arg1 = call %Function* @createKCombinator()
+  %arg2 = call %Function* @createICombinator()
+  %arg3 = call %Function* @createSCombinator()
+  call void @addArgument(%Function* %applicator, %Function* %arg1)
+  call void @addArgument(%Function* %applicator, %Function* %arg2)
+  call void @addArgument(%Function* %applicator, %Function* %arg3)
+  %result = call %Function* @evaluate(%Function* %applicator)
+  
+  ; Assert result is (K S)
+  call void @assertIsK(%Function* %result, %TestName* @.kkisAppIsK)
+  %resultArgs = call %Queue* @getArguments(%Function* %result)
+  %resultArgNum = call %Index @getLength(%Queue* %resultArgs)
+  call void @assertEqIndex(%Index %resultArgNum, %Index 1, %TestName* @.kkisHas1Arg)
+  %resultNode1 = call %QueueNode* @getHead(%Queue* %resultArgs)
+  %resultArg1 = call %Function* @getData(%QueueNode* %resultNode1)
+  call void @assertEqFunction(%Function* %resultArg1, %Function* %arg3, %TestName* @.kkisArgIsS)
+  
+  call void @fDestroy(%Function* %result)
+  ret void
+}
+
+@.evalUnderflo = private unnamed_addr constant %TestName c"EvalUnderflo\00"
+@.evalExactK   = private unnamed_addr constant %TestName c"Eval Exact K\00"
+define void @testEvaluate() {
+  ; Evaluate (K I)
+  %applicator = call %Function* @createKCombinator()
+  %arg1 = call %Function* @createICombinator()
+  call void @addArgument(%Function* %applicator, %Function* %arg1)
+  %result1 = call %Function* @evaluate(%Function* %applicator)
+
+  ; Assert result is applicator
+  call void @assertEqFunction(%Function* %result1, %Function* %applicator, %TestName* @.evalUnderflo)
+
+  ; Evaluate (K I S)
+  %arg2 = call %Function* @createSCombinator()
+  call void @addArgument(%Function* %applicator, %Function* %arg2)
+  %result2 = call %Function* @evaluate(%Function* %applicator)
+  
+  ; Assert result is arg1
+  call void @assertEqFunction(%Function* %result2, %Function* %arg1, %TestName* @.evalExactK)
+
+  call void @fDestroy(%Function* %result2)
+  ret void
+}
 
 @.fCopyArity   = private unnamed_addr constant %TestName c"F Copy Arity\00"
 @.fCopyBody    = private unnamed_addr constant %TestName c"F Copy Body \00"
@@ -208,6 +281,38 @@ define void @testQCopy() {
   ret void
 }
 
+@.pasteLength2 = private unnamed_addr constant %TestName c"PasteLength2\00"
+@.pasteTailF2  = private unnamed_addr constant %TestName c"PasteTailF2 \00"
+@.pasteHeadF1  = private unnamed_addr constant %TestName c"PasteHeadF1 \00"
+define void @testPasteToEmpty() {
+  %front = call %Queue* @createEmptyQueue()
+  %back = call %Queue* @createEmptyQueue()
+  %f1 = call %Function* @createICombinator()
+  %f2 = call %Function* @createICombinator()
+  call void @enqueue(%Queue* %back, %Function* %f1)
+  call void @enqueue(%Queue* %back, %Function* %f2)
+
+  ; Paste back into front
+  call void @paste(%Queue* %front, %Queue* %back)
+
+  ; Assert front has length 2
+  %pasteLength = call %Index @getLength(%Queue* %front)
+  call void @assertEqIndex(%Index %pasteLength, %Index 2, %TestName* @.pasteLength2)
+
+  ; Assert tail is f2
+  %pasteTail = call %QueueNode* @getTail(%Queue* %front)
+  %tailData = call %Function* @getData(%QueueNode* %pasteTail)
+  call void @assertEqFunction(%Function* %tailData, %Function* %f2, %TestName* @.pasteTailF2)
+
+  ; Assert head is f1
+  %pasteHead = call %QueueNode* @getHead(%Queue* %front)
+  %headData = call %Function* @getData(%QueueNode* %pasteHead)
+  call void @assertEqFunction(%Function* %headData, %Function* %f1, %TestName* @.pasteHeadF1)
+  
+  call void @qDestroy(%Queue* %front)
+  ret void
+}
+
 @.pasteLength4 = private unnamed_addr constant %TestName c"PasteLength4\00"
 @.pasteTailF4  = private unnamed_addr constant %TestName c"PasteTailF4 \00"
 @.pasteN3IsF3  = private unnamed_addr constant %TestName c"PasteN3IsF3 \00"
@@ -226,7 +331,7 @@ define void @testPaste() {
   ; Paste toPaste into main
   call void @paste(%Queue* %main, %Queue* %toPaste)
 
-  ; Assert main has length 2
+  ; Assert main has length 4
   %pasteLength = call %Index @getLength(%Queue* %main)
   call void @assertEqIndex(%Index %pasteLength, %Index 4, %TestName* @.pasteLength4)
 
@@ -322,6 +427,7 @@ define void @testNullCut() {
 @.qSmaller0    = private unnamed_addr constant %TestName c"Q Smaller 0 \00"
 @.dq2IsF2      = private unnamed_addr constant %TestName c"DQ2 Is F2   \00"
 @.headIsLast   = private unnamed_addr constant %TestName c"Head Is Last\00"
+@.tailIsLast   = private unnamed_addr constant %TestName c"Tail Is Last\00"
 @.qNoSmaller   = private unnamed_addr constant %TestName c"Q No Smaller\00"
 @.dq3IsNull    = private unnamed_addr constant %TestName c"DQ3 Is Null \00"
 @.headNotNull  = private unnamed_addr constant %TestName c"HeadNotNull \00"
@@ -362,6 +468,10 @@ define void @testDequeue() {
   ; Assert that q head is LAST
   %head2 = call %QueueNode* @getHead(%Queue* %q)
   call void @assertEqQueueNode(%QueueNode* %head2, %QueueNode* @.LAST, %TestName* @.headIsLast)
+  
+  ; Assert that q tail is LAST
+  %tail2 = call %QueueNode* @getTail(%Queue* %q)
+  call void @assertEqQueueNode(%QueueNode* %tail2, %QueueNode* @.LAST, %TestName* @.tailIsLast)
 
   ; Dequeue another function
   %dq3 = call %Function* @dequeue(%Queue* %q)

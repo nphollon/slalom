@@ -38,6 +38,33 @@ define %Function* @substitute(%Queue*) {
   ret %Function* null
 }
 
+define %Function* @evaluate(%Function* %f) {
+entry:
+  %args = call %Queue* @getArguments(%Function* %f)
+  %argNum = call %Index @getLength(%Queue* %args)
+  %arity = call %Index @getArity(%Function* %f)
+  %enoughArgs = icmp uge %Index %argNum, %arity
+  br i1 %enoughArgs, label %callF, label %doNothing
+
+callF:
+  %bodyP = call %Body* @getBodyPointer(%Function* %f)
+  %body = load %Body* %bodyP
+  %argsToPass = call %Queue* @cut(%Queue* %args, %Index %arity)
+  %tempResult = call %Function* %body(%Queue* %argsToPass)
+
+  call void @fSalvage(%Function* %f)
+  call void @qDestroy(%Queue* %argsToPass)
+
+  %tempResultArgs = call %Queue* @getArguments(%Function* %tempResult)
+  call void @paste(%Queue* %tempResultArgs, %Queue* %args)
+
+  %finalResult = call %Function* @evaluate(%Function* %tempResult)
+  ret %Function* %finalResult
+
+doNothing:
+  ret %Function* %f
+}
+
 define %Function* @createFunction(%Body %body, %Index %arity, %Queue* %arguments) {
   %f_size = load i32* @.FUNCTION_SIZE
   %f_i8 = tail call noalias i8* @malloc(i32 %f_size) nounwind
@@ -84,12 +111,15 @@ define %Function* @fCopy(%Function* %original) {
   ret %Function* %copy
 }
 
-define void @fDestroy(%Function* %f) {
-  ; Free arguments queue
-  %args = call %Queue* @getArguments(%Function* %f)
-  call void @qDestroy(%Queue* %args)
-  ; Free function
+define void @fSalvage(%Function* %f) {
   %fCast = bitcast %Function* %f to i8*
   call void @free(i8* %fCast) nounwind
+  ret void
+}
+
+define void @fDestroy(%Function* %f) {
+  %args = call %Queue* @getArguments(%Function* %f)
+  call void @qDestroy(%Queue* %args)
+  call void @fSalvage(%Function* %f)
   ret void
 }

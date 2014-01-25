@@ -89,8 +89,19 @@ removeHead:
   call void @setHead(%Queue* %q, %QueueNode* %next)
   call void @decreaseLength(%Queue* %q, %Index 1)
 
+  %isEmptyAfterRemoval = call i1 @isEmpty(%Queue* %q)
+  br i1 %isEmptyAfterRemoval, label %setTailToLast, label %freeOldHead
+
+setTailToLast:
+  call void @setTail(%Queue* %q, %QueueNode* @.LAST)
+  br label %freeOldHead
+
+freeOldHead:
   %headCast = bitcast %QueueNode* %head to i8*
   call void @free(i8* %headCast) nounwind
+  %.args = call %Queue* @getArguments(%Function* %data)
+  %.length = call %Index* @getLengthPointer(%Queue* %.args)
+  %.i = load %Index* %.length
 
   ret %Function* %data
 
@@ -123,16 +134,29 @@ exit:
 }
 
 define void @paste(%Queue* %front, %Queue* %back) {
+entry:
+  %frontIsEmpty = call i1 @isEmpty(%Queue* %front)
+
+  %backHead = call %QueueNode* @getHead(%Queue* %back)
+  %backTail = call %QueueNode* @getTail(%Queue* %back)
+
   %lengthBack = call %Index @getLength(%Queue* %back)
   call void @increaseLength(%Queue* %front, %Index %lengthBack)
 
-  %frontTail = call %QueueNode* @getTail(%Queue* %front)
-  %backHead = call %QueueNode* @getHead(%Queue* %back)
-  call void @setNext(%QueueNode* %frontTail, %QueueNode* %backHead)
+  br i1 %frontIsEmpty, label %replaceFrontWithBack, label %joinBackToFront
 
-  %backTail = call %QueueNode* @getTail(%Queue* %back)
+replaceFrontWithBack:
+  call void @setHead(%Queue* %front, %QueueNode* %backHead)
   call void @setTail(%Queue* %front, %QueueNode* %backTail)
-  
+  br label %salvageBack
+
+joinBackToFront:
+  %frontTail = call %QueueNode* @getTail(%Queue* %front)
+  call void @setNext(%QueueNode* %frontTail, %QueueNode* %backHead)
+  call void @setTail(%Queue* %front, %QueueNode* %backTail)
+  br label %salvageBack
+
+salvageBack:
   call void @qSalvage(%Queue* %back)
   ret void
 }
