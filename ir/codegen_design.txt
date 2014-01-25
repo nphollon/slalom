@@ -89,9 +89,7 @@ Index getArity(Function* f)
 void setArity(Function* f, Index newArity)
 
 Queue* getArguments(Function* f)
-
-void initializeArguments(Function* f)
-  Effects: sets f.arguments to a new queue using createEmptyQueue()
+void setArguments(Function* f, Queue* arguments)
 
 Function* substitute(Queue* q)
   Effects: returns (q[0] q[2] (q[1] q[2])); q is unchanged; q[2] is
@@ -120,6 +118,11 @@ QueueNode* createNode(Function* f)
 
 Queue* createEmptyQueue()
   Returns: { length: 0, head: LAST, tail: LAST }
+
+Function* createFunction(Body body, Index arity, Queue* arguments)
+
+Function* createBareFunction(Body body, Index arity)
+  Returns: Function with empty arguments queue
 
 Function* createICombinator()
   Returns: { body: dequeue, arity: 1, arguments: createEmptyQueue() }

@@ -65,8 +65,26 @@ entry:
   ret i1 0
 }
 
+define void @assertIsI(%Function* %f, %TestName* %name) {
+  %bodyP = call %Body* @getBodyPointer(%Function* %f)
+  call void @assertEqBody(%Body* %bodyP, %Body @dequeue, %TestName* %name)
+  %arity = call %Index @getArity(%Function* %f)
+  call void @assertEqIndex(%Index %arity, %Index 1, %TestName* %name)
+  ret void
+} 
+
+define void @assertIsK(%Function* %f, %TestName* %name) {
+  %bodyP = call %Body* @getBodyPointer(%Function* %f)
+  call void @assertEqBody(%Body* %bodyP, %Body @dequeue, %TestName* %name)
+  %arity = call %Index @getArity(%Function* %f)
+  call void @assertEqIndex(%Index %arity, %Index 2, %TestName* %name)
+  ret void
+} 
+
 @.fCopyArity   = private unnamed_addr constant %TestName c"F Copy Arity\00"
 @.fCopyBody    = private unnamed_addr constant %TestName c"F Copy Body \00"
+@.fCopyArg1    = private unnamed_addr constant %TestName c"F Copy Arg1 \00"
+@.fCopyArg2    = private unnamed_addr constant %TestName c"F Copy Arg2 \00"
 define void @testFCopy() {
   %original = call %Function* @createSCombinator()
   %arg1 = call %Function* @createICombinator()
@@ -89,8 +107,16 @@ define void @testFCopy() {
   call void @assertEqBody(%Body* %cBodyP, %Body %oBody, %TestName* @.fCopyBody)
 
   ; Assert arguments are deep copied
+  %cArgs = call %Queue* @getArguments(%Function* %copy)
+  %cArg1 = call %Function* @dequeue(%Queue* %cArgs)
+  call void @assertIsI(%Function* %cArg1, %TestName* @.fCopyArg1)
+  %cArg2 = call %Function* @dequeue(%Queue* %cArgs)
+  call void @assertIsK(%Function* %cArg2, %TestName* @.fCopyArg2)
 
   call void @fDestroy(%Function* %original)
+  call void @fDestroy(%Function* %copy)
+  call void @fDestroy(%Function* %cArg1)
+  call void @fDestroy(%Function* %cArg2)
   ret void
 }
 
