@@ -58,6 +58,14 @@ define void @assertIsK(%Function* %f, %TestName* %name) {
   ret void
 }
 
+define void @assertIsS(%Function* %f, %TestName* %name) {
+  %bodyP = call %Body* @getBodyPointer(%Function* %f)
+  call void @assertEqBody(%Body* %bodyP, %Body @substitute, %TestName* %name)
+  %arity = call %Index @getArity(%Function* %f)
+  call void @assertEqIndex(%Index %arity, %Index 3, %TestName* %name)
+  ret void
+}
+
 define i1 @main() {
 entry:
   call void @testLast()
@@ -79,9 +87,54 @@ entry:
   call void @testEvaluateRecursive()
   call void @testApply()
   call void @testSubstitute()
+  call void @testSubstituteEval1()
+  call void @testSubstituteEval2()
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+@.subsNestEval = private unnamed_addr constant %TestName c"subsNestEval\00"
+define void @testSubstituteEval2() {
+  ; Call substitute(S, I, S)
+  %args = call %Queue* @createEmptyQueue()
+  %arg1 = call %Function* @createSCombinator()
+  %arg2 = call %Function* @createICombinator()
+  %arg3 = call %Function* @createSCombinator()
+  call void @enqueue(%Queue* %args, %Function* %arg1)
+  call void @enqueue(%Queue* %args, %Function* %arg2)
+  call void @enqueue(%Queue* %args, %Function* %arg3)
+  %result = call %Function* @substitute(%Queue* %args)
+
+  ; Assert result is (S S S)
+  %resultArgs = call %Queue* @getArguments(%Function* %result)
+  %resultArg2 = call %QueueNode* @getTail(%Queue* %resultArgs)
+  %resultF2 = call %Function* @getData(%QueueNode* %resultArg2)
+  call void @assertIsS(%Function* %resultF2, %TestName* @.subsNestEval)
+
+  call void @qDestroy(%Queue* %args)
+  call void @fDestroy(%Function* %result)
+  ret void
+}
+
+@.skksEvalToS  = private unnamed_addr constant %TestName c"SkksEvalToS \00"
+define void @testSubstituteEval1() {
+  ; Call substitute(K, K, S)
+  %args = call %Queue* @createEmptyQueue()
+  %arg1 = call %Function* @createKCombinator()
+  %arg2 = call %Function* @createKCombinator()
+  %arg3 = call %Function* @createSCombinator()
+  call void @enqueue(%Queue* %args, %Function* %arg1)
+  call void @enqueue(%Queue* %args, %Function* %arg2)
+  call void @enqueue(%Queue* %args, %Function* %arg3)
+  %result = call %Function* @substitute(%Queue* %args)
+
+  ; Assert result is (S)
+  call void @assertIsS(%Function* %result, %TestName* @.skksEvalToS)
+
+  call void @qDestroy(%Queue* %args)
+  call void @fDestroy(%Function* %result)
+  ret void
 }
 
 @.sikiAppIsS   = private unnamed_addr constant %TestName c"SikiAppIsS  \00"

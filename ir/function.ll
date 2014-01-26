@@ -35,15 +35,17 @@ define void @addArgument(%Function* %app, %Function* %arg) {
 }
 
 define %Function* @substitute(%Queue* %q) {
-  %arg1 = call %Function* @dequeue(%Queue* %q)
-  %arg2 = call %Function* @dequeue(%Queue* %q)
-  %arg3 = call %Function* @dequeue(%Queue* %q)
-  %arg3Copy = call %Function* @fCopy(%Function* %arg3)
-  call void @addArgument(%Function* %arg1, %Function* %arg3)
-  call void @addArgument(%Function* %arg2, %Function* %arg3Copy)
-  call void @addArgument(%Function* %arg1, %Function* %arg2)
+  %applicator1 = call %Function* @dequeue(%Queue* %q)
+  %applicator2 = call %Function* @dequeue(%Queue* %q)
 
-  ret %Function* %arg1
+  %input1 = call %Function* @dequeue(%Queue* %q)
+  %input2 = call %Function* @fCopy(%Function* %input1)
+
+  %eval1 = call %Function* @apply(%Function* %applicator1, %Function* %input1)
+  %eval2 = call %Function* @apply(%Function* %applicator2, %Function* %input2)
+
+  %result = call %Function* @apply(%Function* %eval1, %Function* %eval2)
+  ret %Function* %result
 }
 
 define %Function* @evaluate(%Function* %f) {
