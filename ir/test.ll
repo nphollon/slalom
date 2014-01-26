@@ -84,9 +84,52 @@ entry:
   ret i1 0
 }
 
+@.sikiAppIsS   = private unnamed_addr constant %TestName c"SikiAppIsS  \00"
+@.sikiArg1IsI  = private unnamed_addr constant %TestName c"SikiArg1IsI \00"
+@.sikiHas2Args = private unnamed_addr constant %TestName c"SikiHas2Args\00"
+@.sikiArg2IsK  = private unnamed_addr constant %TestName c"SikiArg2IsK \00"
+@.kInSikiHasAr = private unnamed_addr constant %TestName c"KInSikiHasAr\00"
+@.kInSikiArgI  = private unnamed_addr constant %TestName c"KInSikiArgI \00"
+@.sikiArgsUniq = private unnamed_addr constant %TestName c"SikiArgsUniq\00"
 define void @testSubstitute() {
-  ; Call substitute(K, S, I)
-  ; Assert result is (K I (S I))
+  ; Call substitute(S, K, I)
+  %args = call %Queue* @createEmptyQueue()
+  %arg1 = call %Function* @createSCombinator()
+  %arg2 = call %Function* @createKCombinator()
+  %arg3 = call %Function* @createICombinator()
+  call void @enqueue(%Queue* %args, %Function* %arg1)
+  call void @enqueue(%Queue* %args, %Function* %arg2)
+  call void @enqueue(%Queue* %args, %Function* %arg3)
+  %result = call %Function* @substitute(%Queue* %args)
+
+  ; Assert result is (S I (K I))
+  call void @assertEqFunction(%Function* %result, %Function* %arg1, %TestName* @.sikiAppIsS)
+  
+  %resultArgs = call %Queue* @getArguments(%Function* %result)
+  %resultArg1 = call %QueueNode* @getHead(%Queue* %resultArgs)
+  %resultF1 = call %Function* @getData(%QueueNode* %resultArg1)
+  call void @assertIsI(%Function* %resultF1, %TestName* @.sikiArg1IsI)
+
+  %resultArgsLength = call %Index @getLength(%Queue* %resultArgs)
+  call void @assertEqIndex(%Index %resultArgsLength, %Index 2, %TestName* @.sikiHas2Args)
+
+  %resultArg2 = call %QueueNode* @getTail(%Queue* %resultArgs)
+  %resultF2 = call %Function* @getData(%QueueNode* %resultArg2)
+  call void @assertEqFunction(%Function* %resultF2, %Function* %arg2, %TestName* @.sikiArg2IsK)
+
+  %resultF2Args = call %Queue* @getArguments(%Function* %resultF2)
+  %resultF2ArgsLength = call %Index @getLength(%Queue* %resultF2Args)
+  call void @assertEqIndex(%Index %resultF2ArgsLength, %Index 1, %TestName* @.kInSikiHasAr)
+
+  %resultF2Arg1 = call %QueueNode* @getHead(%Queue* %resultF2Args)
+  %resultF2F1 = call %Function* @getData(%QueueNode* %resultF2Arg1)
+  call void @assertIsI(%Function* %resultF2F1, %TestName* @.kInSikiArgI)
+
+  %argsAreUnique = icmp ne %Function* %resultF2F1, %resultF1
+  call void @assertCond(i1 %argsAreUnique, %TestName* @.sikiArgsUniq)
+
+  call void @qDestroy(%Queue* %args)
+  call void @fDestroy(%Function* %result)
   ret void
 }
 
