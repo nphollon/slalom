@@ -1,37 +1,13 @@
-define void @setBody(%Function* %f, %Body %newBody) {
-  %body_p = call %Body* @getBodyPointer(%Function* %f)
-  store %Body %newBody, %Body* %body_p
-  ret void
-}
-
 define %Index @getArity(%Function* %f) {
   %arity_p = call %Index* @getArityPointer(%Function* %f)
   %arity = load %Index* %arity_p
   ret %Index %arity
 }
 
-define void @setArity(%Function* %f, %Index %newArity) {
-  %arity_p = call %Index* @getArityPointer(%Function* %f)
-  store %Index %newArity, %Index* %arity_p
-  ret void
-}
-
 define %Queue* @getArguments(%Function* %f) {
   %args_p = call %Queue** @getArgumentsPointer(%Function* %f)
   %args = load %Queue** %args_p
   ret %Queue* %args
-}
-
-define void @setArguments(%Function* %f, %Queue* %args) {
-  %args_p = call %Queue** @getArgumentsPointer(%Function* %f)
-  store %Queue* %args, %Queue** %args_p
-  ret void
-}
-
-define void @addArgument(%Function* %app, %Function* %arg) {
-  %args = call %Queue* @getArguments(%Function* %app)
-  call void @enqueue(%Queue* %args, %Function* %arg)
-  ret void
 }
 
 define %Function* @substitute(%Queue* %q) {
@@ -51,24 +27,26 @@ define %Function* @substitute(%Queue* %q) {
 define %Function* @evaluate(%Function* %f) {
 entry:
   %args = call %Queue* @getArguments(%Function* %f)
-  %argNum = call %Index @getLength(%Queue* %args)
+  %totalArgCount = call %Index @getLength(%Queue* %args)
   %arity = call %Index @getArity(%Function* %f)
-  %enoughArgs = icmp uge %Index %argNum, %arity
-  br i1 %enoughArgs, label %callF, label %doNothing
+  %readyForEval = icmp uge %Index %totalArgCount, %arity
+  br i1 %readyForEval, label %evalF, label %doNothing
 
-callF:
-  %bodyP = call %Body* @getBodyPointer(%Function* %f)
-  %body = load %Body* %bodyP
-  %argsToPass = call %Queue* @cut(%Queue* %args, %Index %arity)
-  %tempResult = call %Function* %body(%Queue* %argsToPass)
+evalF:
+  %bodyPointer = call %Body* @getBodyPointer(%Function* %f)
+  %body = load %Body* %bodyPointer
 
-  call void @fSalvage(%Function* %f)
-  call void @qDestroy(%Queue* %argsToPass)
+  %argsToConsume = call %Queue* @createEmptyQueue()
+  call void @transfer(%Queue* %argsToConsume, %Queue* %args, %Index %arity)
+  %result = call %Function* %body(%Queue* %argsToConsume)
+  call void @qDestroy(%Queue* %argsToConsume)
 
-  %tempResultArgs = call %Queue* @getArguments(%Function* %tempResult)
-  call void @paste(%Queue* %tempResultArgs, %Queue* %args)
+  %remainingArgCount = sub nuw %Index %totalArgCount, %arity
+  %resultArgs = call %Queue* @getArguments(%Function* %result)
+  call void @transfer(%Queue* %resultArgs, %Queue* %args, %Index %remainingArgCount)
 
-  %finalResult = call %Function* @evaluate(%Function* %tempResult)
+  call void @fDestroy(%Function* %f)
+  %finalResult = call %Function* @evaluate(%Function* %result)
   ret %Function* %finalResult
 
 doNothing:
@@ -76,7 +54,8 @@ doNothing:
 }
 
 define %Function* @apply(%Function* %applicator, %Function* %input) {
-  call void @addArgument(%Function* %applicator, %Function* %input)
+  %args = call %Queue* @getArguments(%Function* %applicator)
+  call void @enqueue(%Queue* %args, %Function* %input)
   %result = call %Function* @evaluate(%Function* %applicator)
   ret %Function* %result
 }
@@ -86,9 +65,14 @@ define %Function* @createFunction(%Body %body, %Index %arity, %Queue* %arguments
   %f_i8 = tail call noalias i8* @malloc(i32 %f_size) nounwind
   %f = bitcast i8* %f_i8 to %Function*
 
-  call void @setBody(%Function* %f, %Body %body)
-  call void @setArity(%Function* %f, %Index %arity)
-  call void @setArguments(%Function* %f, %Queue* %arguments)
+  %body_p = call %Body* @getBodyPointer(%Function* %f)
+  store %Body %body, %Body* %body_p
+
+  %arity_p = call %Index* @getArityPointer(%Function* %f)
+  store %Index %arity, %Index* %arity_p
+
+  %args_p = call %Queue** @getArgumentsPointer(%Function* %f)
+  store %Queue* %arguments, %Queue** %args_p
 
   ret %Function* %f
 }
@@ -121,21 +105,18 @@ define %Function* @fCopy(%Function* %original) {
   %body = load %Body* %bodyP
 
   %args = call %Queue* @getArguments(%Function* %original)
-  %argsCopy = call %Queue* @qCopy(%Queue* %args)
+  %argsHead = call %QueueNode* @getHead(%Queue* %args)
+  %argsCopy = call %Queue* @createEmptyQueue()
+  call void @copyDataToQueue(%Queue* %argsCopy, %QueueNode* %argsHead)
 
   %copy = call %Function* @createFunction(%Body %body, %Index %arity, %Queue* %argsCopy)
   ret %Function* %copy
 }
 
-define void @fSalvage(%Function* %f) {
-  %fCast = bitcast %Function* %f to i8*
-  call void @free(i8* %fCast) nounwind
-  ret void
-}
-
 define void @fDestroy(%Function* %f) {
   %args = call %Queue* @getArguments(%Function* %f)
   call void @qDestroy(%Queue* %args)
-  call void @fSalvage(%Function* %f)
+  %fCast = bitcast %Function* %f to i8*
+  call void @free(i8* %fCast) nounwind
   ret void
 }

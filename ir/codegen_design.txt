@@ -35,7 +35,6 @@ Queue** getArgumentsPointer(Function* f)
 ###QueueNode Functions
 
 Function* getData(QueueNode* qn)
-void setData(QueueNode* qn, Function* newData)
 
 QueueNode* getNext(QueueNode* qn)
 void setNext(QueueNode* qn, Function* newNext)
@@ -68,28 +67,19 @@ Function* dequeue(Queue* q)
 
 void enqueue(Queue* q, Function* toInsert)
   Effects: toInsert is wrapped in a QueueNode and appended to q
-  Exceptions: does nothing if toInsert is null
 
-Queue* cut(Queue* q, int toCut)
-  Effects: first <toCut> QueueNodes removed from q and returned
-  Exceptions: What happens if toCut > q.length?
-
-void paste(Queue* q, Queue* toPaste)
-  Effects: appends toPaste to end of q
-  Exceptions: does nothing if toPaste is null
+void transfer(Queue* recipient, Queue* sender, int n)
+  Effects: transfers first n nodes from the front of sender to the back of recipient
+  Exceptions: undefined behavior if n > sender.length
 
 void copyDataToQueue(Queue* q, QueueNode* qn)
-  Effects: deep copies qn onto the tail of q
+  Effects: deep copies qn (and successors) onto the tail of q
 
 ###Function Functions
 
-void setBody(Function* f, Body newBody)
-
 Index getArity(Function* f)
-void setArity(Function* f, Index newArity)
 
 Queue* getArguments(Function* f)
-void setArguments(Function* f, Queue* arguments)
 
 Function* substitute(Queue* q)
   Effects: returns (q[0] q[2] (q[1] q[2])); q is unchanged; q[2] is
@@ -133,9 +123,6 @@ Function* createKCombinator()
 Function* createSCombinator()
   Returns: { body: substitute, arity: 3, arguments: createEmptyQueue() }
 
-Queue* qCopy(Queue* q)
-  Returns: deep copy of q.
-
 Function* fCopy(Function* f)
   Returns: deep copy of f.
 
@@ -146,8 +133,8 @@ void qnDestroy(QueueNode* qn)
   Effects: frees memory of qn, qn.data (using fDestroy()) and qn.next (using qnDestroy())
   Exceptions: Does nothing if qn is LAST
 
-void qSalvage(Queue* q)
-  Effects: frees memory of q; does not destroy nodes
+void qnSalvage(Queue* q)
+  Effects: frees memory of qn but not qn.data or qn.next
 
 void qDestroy(Queue* q)
   Effects: frees memory of q and q.head (using qnDestroy()).
@@ -184,42 +171,8 @@ Use free
 Questions
 ---------
 
-The only outside entry points will be getICombinator(),
-getKCombinator(), getSCombinator(), and apply(). Therefore, we should
-be able to assume the other functions never receive unexpected null
-pointers. Do these function still need to guard against nulls?
-
-  * No.
-
-Should a Function have a name? How can we store character strings of
-variable length?
-
-What precautions should we take against non-halting programs? For
-instance, (S I I (S I I)).
-
-  * See next question. Don't try to solve the halting problem.
-
 How can we prevent deeply recursive (or even non-halting) functions
 from consuming all of our memory?
 
 Should we be worried about recursive data structures? Are they
 possible?
-
-How do we know when a Function needs to be instantiated? How do we
-know when a Function can be deleted? What part of the program is
-responsible for managing memory?
-
-  * evaluate() is responsible for freeing memory. After invoking
-    f.body, f.arguments may contain unused arguments; these should be
-    deleted.
-
-  * The Body functions (currently only substitute() and dequeue())
-    assume certain responsibilities for managing memory. If they
-    malloc a Function* or dequeue a Function* from their arguments
-    Queue, they must either free or return the pointer.
-
-Should destroy() be responsible for nullifying all of the Queue's
-constituent pointers?
-
-  * No, but we should guarantee that invalid pointers do not persist
-    within our code.

@@ -1,0 +1,3 @@
+#! /bin/sh
+
+cat types.ll queue_node.ll queue.ll function.ll test.ll

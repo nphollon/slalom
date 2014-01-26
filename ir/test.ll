@@ -66,17 +66,26 @@ define void @assertIsS(%Function* %f, %TestName* %name) {
   ret void
 }
 
+define void @setArity(%Function* %f, %Index %newArity) {
+  %arity_p = call %Index* @getArityPointer(%Function* %f)
+  store %Index %newArity, %Index* %arity_p
+  ret void
+}
+
+define void @addArgument(%Function* %app, %Function* %arg) {
+  %args = call %Queue* @getArguments(%Function* %app)
+  call void @enqueue(%Queue* %args, %Function* %arg)
+  ret void
+}
+
 define i1 @main() {
 entry:
   call void @testLast()
   call void @testCreateEmptyQueue()
   call void @testEnqueue()
   call void @testDequeue()
-  call void @testNullCut()
-  call void @testHappyCut()
-  call void @testPaste()
-  call void @testPasteToEmpty()
-  call void @testQCopy()
+  call void @testNullTransfer()
+  call void @testPartialTransfer()
 
   call void @testCreateICombinator()
   call void @testCreateKCombinator()
@@ -371,185 +380,73 @@ define void @testCreateKCombinator() {
   ret void
 }
 
-@.copyF1IsntF1 = private unnamed_addr constant %TestName c"CopyF1IsntF1\00"
-@.deepCopyN1   = private unnamed_addr constant %TestName c"Deep Copy F1\00"
-@.copyF2IsntF2 = private unnamed_addr constant %TestName c"CopyF2IsntF2\00"
-@.deepCopyN2   = private unnamed_addr constant %TestName c"Deep Copy F2\00"
-define void @testQCopy() {
-  %original = call %Queue* @createEmptyQueue()
-  %f1 = call %Function* @createICombinator()
-  call void @setArity(%Function* %f1, %Index 3)
-  %f2 = call %Function* @createICombinator()
-  call void @setArity(%Function* %f2, %Index 7)
-  call void @enqueue(%Queue* %original, %Function* %f1)
-  call void @enqueue(%Queue* %original, %Function* %f2)
-
-  ; Copy the original
-  %copy = call %Queue* @qCopy(%Queue* %original)
-  %cNode1 = call %QueueNode* @getHead(%Queue* %copy)
-  %cNode2 = call %QueueNode* @getTail(%Queue* %copy)
-
-  %oNode1 = call %QueueNode* @getHead(%Queue* %original)
-  %oNode2 = call %QueueNode* @getTail(%Queue* %original)
-
-  ; Assert that cNode1 and oNode1 are deep copies
-  %copyF1 = call %Function* @getData(%QueueNode* %cNode1)
-  %headsNotEqual = icmp ne %Function* %f1, %copyF1
-  call void @assertCond(i1 %headsNotEqual, %TestName* @.copyF1IsntF1)
-  %o1Arity = call %Index @getArity(%Function* %f1)
-  %c1Arity = call %Index @getArity(%Function* %copyF1)
-  call void @assertEqIndex(%Index %o1Arity, %Index %c1Arity, %TestName* @.deepCopyN1)
-
-  ; Assert that cNode2 and oNode2 are deep copies
-  %copyF2 = call %Function* @getData(%QueueNode* %cNode2)
-  %tailsNotEqual = icmp ne %Function* %f2, %copyF2
-  call void @assertCond(i1 %tailsNotEqual, %TestName* @.copyF2IsntF2)
-  %o2Arity = call %Index @getArity(%Function* %f2)
-  %c2Arity = call %Index @getArity(%Function* %copyF2)
-  call void @assertEqIndex(%Index %o2Arity, %Index %c2Arity, %TestName* @.deepCopyN2)
-
-  call void @qDestroy(%Queue* %original)
-  call void @qDestroy(%Queue* %copy)
-  ret void
-}
-
-@.pasteLength2 = private unnamed_addr constant %TestName c"PasteLength2\00"
-@.pasteTailF2  = private unnamed_addr constant %TestName c"PasteTailF2 \00"
-@.pasteHeadF1  = private unnamed_addr constant %TestName c"PasteHeadF1 \00"
-define void @testPasteToEmpty() {
-  %front = call %Queue* @createEmptyQueue()
-  %back = call %Queue* @createEmptyQueue()
-  %f1 = call %Function* @createICombinator()
-  %f2 = call %Function* @createICombinator()
-  call void @enqueue(%Queue* %back, %Function* %f1)
-  call void @enqueue(%Queue* %back, %Function* %f2)
-
-  ; Paste back into front
-  call void @paste(%Queue* %front, %Queue* %back)
-
-  ; Assert front has length 2
-  %pasteLength = call %Index @getLength(%Queue* %front)
-  call void @assertEqIndex(%Index %pasteLength, %Index 2, %TestName* @.pasteLength2)
-
-  ; Assert tail is f2
-  %pasteTail = call %QueueNode* @getTail(%Queue* %front)
-  %tailData = call %Function* @getData(%QueueNode* %pasteTail)
-  call void @assertEqFunction(%Function* %tailData, %Function* %f2, %TestName* @.pasteTailF2)
-
-  ; Assert head is f1
-  %pasteHead = call %QueueNode* @getHead(%Queue* %front)
-  %headData = call %Function* @getData(%QueueNode* %pasteHead)
-  call void @assertEqFunction(%Function* %headData, %Function* %f1, %TestName* @.pasteHeadF1)
-  
-  call void @qDestroy(%Queue* %front)
-  ret void
-}
-
-@.pasteLength4 = private unnamed_addr constant %TestName c"PasteLength4\00"
-@.pasteTailF4  = private unnamed_addr constant %TestName c"PasteTailF4 \00"
-@.pasteN3IsF3  = private unnamed_addr constant %TestName c"PasteN3IsF3 \00"
-define void @testPaste() {
-  %main = call %Queue* @createEmptyQueue()
-  %toPaste = call %Queue* @createEmptyQueue()
+@.transferLen2 = private unnamed_addr constant %TestName c"TransferLen2\00"
+@.transferF1   = private unnamed_addr constant %TestName c"Transfer F1 \00"
+@.transferF2   = private unnamed_addr constant %TestName c"Transfer F2 \00"
+@.n2NextIsLast = private unnamed_addr constant %TestName c"N2NextIsLast\00"
+@.f3Remains    = private unnamed_addr constant %TestName c"F3 Remains  \00"
+@.only1Left    = private unnamed_addr constant %TestName c"Only 1 Left \00"
+define void @testPartialTransfer() {
+  %receiver = call %Queue* @createEmptyQueue()
+  %sender = call %Queue* @createEmptyQueue()
   %f1 = call %Function* @createICombinator()
   %f2 = call %Function* @createICombinator()
   %f3 = call %Function* @createICombinator()
-  %f4 = call %Function* @createICombinator()
-  call void @enqueue(%Queue* %main, %Function* %f1)
-  call void @enqueue(%Queue* %main, %Function* %f2)
-  call void @enqueue(%Queue* %toPaste, %Function* %f3)
-  call void @enqueue(%Queue* %toPaste, %Function* %f4)
+  call void @enqueue(%Queue* %sender, %Function* %f1)
+  call void @enqueue(%Queue* %sender, %Function* %f2)
+  call void @enqueue(%Queue* %sender, %Function* %f3)
 
-  ; Paste toPaste into main
-  call void @paste(%Queue* %main, %Queue* %toPaste)
+  ; Transfer 2
+  call void @transfer(%Queue* %receiver, %Queue* %sender, %Index 2)
 
-  ; Assert main has length 4
-  %pasteLength = call %Index @getLength(%Queue* %main)
-  call void @assertEqIndex(%Index %pasteLength, %Index 4, %TestName* @.pasteLength4)
+  ; Assert that receiver has length 2
+  %receiverLength = call %Index @getLength(%Queue* %receiver)
+  call void @assertEqIndex(%Index %receiverLength, %Index 2, %TestName* @.transferLen2)
 
-  ; Assert that tail of main is f4
-  %pasteTail = call %QueueNode* @getTail(%Queue* %main)
-  %pasteTailData = call %Function* @getData(%QueueNode* %pasteTail)
-  call void @assertEqFunction(%Function* %pasteTailData, %Function* %f4, %TestName* @.pasteTailF4)
+  ; Assert that head of receiver contains f1
+  %receiverN1 = call %QueueNode* @getHead(%Queue* %receiver)
+  %n1Data = call %Function* @getData(%QueueNode* %receiverN1)
+  call void @assertEqFunction(%Function* %n1Data, %Function* %f1, %TestName* @.transferF1)
 
-  ; Assert that 3rd node in main contains f3
-  %pasteHead = call %QueueNode* @getHead(%Queue* %main)
-  %node3 = call %QueueNode* @getLink(%QueueNode* %pasteHead, %Index 3)
-  %node3Data = call %Function* @getData(%QueueNode* %node3)
-  call void @assertEqFunction(%Function* %node3Data, %Function* %f3, %TestName* @.pasteN3IsF3)
-
-  call void @qDestroy(%Queue* %main)
-  ret void
-}
-
-@.cutLength2   = private unnamed_addr constant %TestName c"Cut Length 2\00"
-@.cut2HeadF1   = private unnamed_addr constant %TestName c"Cut2 Head F1\00"
-@.cut2TailF2   = private unnamed_addr constant %TestName c"Cut2 Tail F2\00"
-@.cut2TailLast = private unnamed_addr constant %TestName c"Cut2TailLast\00"
-@.qHeadF3      = private unnamed_addr constant %TestName c"Q Head F3   \00"
-@.qLength1     = private unnamed_addr constant %TestName c"Q Length 1  \00"
-define void @testHappyCut() {
-  %q = call %Queue* @createEmptyQueue()
-  %f1 = call %Function* @createICombinator()
-  %f2 = call %Function* @createICombinator()
-  %f3 = call %Function* @createICombinator()
-  call void @enqueue(%Queue* %q, %Function* %f1)
-  call void @enqueue(%Queue* %q, %Function* %f2)
-  call void @enqueue(%Queue* %q, %Function* %f3)
-
-  ; Cut 2 from q
-  %cut2 = call %Queue* @cut(%Queue* %q, %Index 2)
-
-  ; Assert that cut2 has length 2
-  %cut2Length = call %Index @getLength(%Queue* %cut2)
-  call void @assertEqIndex(%Index %cut2Length, %Index 2, %TestName* @.cutLength2)
-
-  ; Assert that head of cut2 contains f1
-  %cut2N1 = call %QueueNode* @getHead(%Queue* %cut2)
-  %n1Data = call %Function* @getData(%QueueNode* %cut2N1)
-  call void @assertEqFunction(%Function* %n1Data, %Function* %f1, %TestName* @.cut2HeadF1)
-
-  ; Assert that tail of cut2 contains f2
-  %cut2N2 = call %QueueNode* @getTail(%Queue* %cut2)
-  %n2Data = call %Function* @getData(%QueueNode* %cut2N2)
-  call void @assertEqFunction(%Function* %n2Data, %Function* %f2, %TestName* @.cut2TailF2)
+  ; Assert that tail of receiver contains f2
+  %receiverN2 = call %QueueNode* @getTail(%Queue* %receiver)
+  %n2Data = call %Function* @getData(%QueueNode* %receiverN2)
+  call void @assertEqFunction(%Function* %n2Data, %Function* %f2, %TestName* @.transferF2)
 
   ; Assert that tail.next is LAST
-  %n2Next = call %QueueNode* @getNext(%QueueNode* %cut2N2)
-  call void @assertEqQueueNode(%QueueNode* %n2Next, %QueueNode* @.LAST, %TestName* @.cut2TailLast)
+  %n2Next = call %QueueNode* @getNext(%QueueNode* %receiverN2)
+  call void @assertEqQueueNode(%QueueNode* %n2Next, %QueueNode* @.LAST, %TestName* @.n2NextIsLast)
 
-  ; Assert that head of q contains f3
-  %qHead = call %QueueNode* @getHead(%Queue* %q)
-  %qHeadData = call %Function* @getData(%QueueNode* %qHead)
-  call void @assertEqFunction(%Function* %qHeadData, %Function* %f3, %TestName* @.qHeadF3)
+  ; Assert that head of sender contains f3
+  %senderHead = call %QueueNode* @getHead(%Queue* %sender)
+  %senderHeadData = call %Function* @getData(%QueueNode* %senderHead)
+  call void @assertEqFunction(%Function* %senderHeadData, %Function* %f3, %TestName* @.f3Remains)
 
   ; Assert that q has length 1
-  %qLength = call %Index @getLength(%Queue* %q)
-  call void @assertEqIndex(%Index %qLength, %Index 1, %TestName* @.qLength1)
+  %senderLength = call %Index @getLength(%Queue* %sender)
+  call void @assertEqIndex(%Index %senderLength, %Index 1, %TestName* @.only1Left)
 
-  call void @qDestroy(%Queue* %cut2)
-  call void @qDestroy(%Queue* %q)
+  call void @qDestroy(%Queue* %receiver)
+  call void @qDestroy(%Queue* %sender)
   ret void
 }
 
-@.cut0IsEmpty  = private unnamed_addr constant %TestName c"Cut0IsEmpty \00"
-@.cut0IsNotQ   = private unnamed_addr constant %TestName c"Cut0IsNotQ  \00"
-define void @testNullCut() {
-  %q = call %Queue* @createEmptyQueue()
+@.nullTransfer = private unnamed_addr constant %TestName c"NullTransfer\00"
+define void @testNullTransfer() {
+  %receiver = call %Queue* @createEmptyQueue()
+  %sender = call %Queue* @createEmptyQueue()
+  %f1 = call %Function* @createICombinator()
+  call void @enqueue(%Queue* %sender, %Function* %f1)
 
-  ; Cut 0 from q
-  %cut0 = call %Queue* @cut(%Queue* %q, %Index 0)
+  ; Transfer 0 from sender to receiver
+  call void @transfer(%Queue* %receiver, %Queue* %sender, %Index 0)
 
-  ; Assert that cut0 is empty
-  %cut0IsEmpty = call i1 @isEmpty(%Queue* %cut0)
-  call void @assertCond(i1 %cut0IsEmpty, %TestName* @.cut0IsEmpty)
+  ; Assert that receiver is still empty
+  %receiverIsEmpty = call i1 @isEmpty(%Queue* %receiver)
+  call void @assertCond(i1 %receiverIsEmpty, %TestName* @.nullTransfer)
 
-  ; Assert that cut0 and q are different
-  %cut0IsNotQ = icmp ne %Queue* %cut0, %q
-  call void @assertCond(i1 %cut0IsNotQ, %TestName* @.cut0IsNotQ) 
-
-  call void @qDestroy(%Queue* %cut0)
-  call void @qDestroy(%Queue* %q)
+  call void @qDestroy(%Queue* %sender)
+  call void @qDestroy(%Queue* %receiver)
   ret void
 }
 

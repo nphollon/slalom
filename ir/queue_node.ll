@@ -6,12 +6,6 @@ define %Function* @getData(%QueueNode* %qn) {
   ret %Function* %data
 }
 
-define void @setData(%QueueNode* %qn, %Function* %newData) {
-  %data_p = call %Function** @getDataPointer(%QueueNode* %qn)
-  store %Function* %newData, %Function** %data_p
-  ret void
-}
-
 define %QueueNode* @getNext(%QueueNode* %qn) {
   %next_p = call %QueueNode** @getNextPointer(%QueueNode* %qn)
   %next = load %QueueNode** %next_p
@@ -41,7 +35,10 @@ define %QueueNode* @createNode(%Function* %f) {
   %qn_size = load i32* @.QUEUENODE_SIZE
   %qn_i8 = tail call noalias i8* @malloc(i32 %qn_size) nounwind
   %qn = bitcast i8* %qn_i8 to %QueueNode*
-  call void @setData(%QueueNode* %qn, %Function* %f)
+
+  %data_p = call %Function** @getDataPointer(%QueueNode* %qn)
+  store %Function* %f, %Function** %data_p
+
   call void @setNext(%QueueNode* %qn, %QueueNode* @.LAST)
   ret %QueueNode* %qn
 }
@@ -55,9 +52,8 @@ recursiveFree:
   %next = call %QueueNode* @getNext(%QueueNode* %qn)
 
   %data = call %Function* @getData(%QueueNode* %qn)
-  %qnCast = bitcast %QueueNode* %qn to i8*
   call void @fDestroy(%Function* %data)
-  call void @free(i8* %qnCast) nounwind
+  call void @qnSalvage(%QueueNode* %qn)
 
   tail call void @qnDestroy(%QueueNode* %next)
   ret void
@@ -66,3 +62,8 @@ exit:
   ret void
 }
 
+define void @qnSalvage(%QueueNode* %qn) {
+  %qnCast = bitcast %QueueNode* %qn to i8*
+  call void @free(i8* %qnCast) nounwind
+  ret void 
+}

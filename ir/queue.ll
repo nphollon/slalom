@@ -97,67 +97,44 @@ setTailToLast:
   br label %freeOldHead
 
 freeOldHead:
-  %headCast = bitcast %QueueNode* %head to i8*
-  call void @free(i8* %headCast) nounwind
-  %.args = call %Queue* @getArguments(%Function* %data)
-  %.length = call %Index* @getLengthPointer(%Queue* %.args)
-  %.i = load %Index* %.length
-
+  call void @qnSalvage(%QueueNode* %head)
   ret %Function* %data
 
 returnNull:
   ret %Function* null
 }
 
-define %Queue* @cut(%Queue* %q, %Index %cutLength) {
+define void @transfer(%Queue* %receiver, %Queue* %sender, %Index %n) {
 entry:
-  %cutQ = call %Queue* @createEmptyQueue()
-  %isEmptyCut = icmp eq %Index %cutLength, 0
-  br i1 %isEmptyCut, label %exit, label %splitQueue
+  switch %Index %n, label %splitQueue [ %Index 0, label %exit ]
 
 splitQueue:
-  %cutHead = call %QueueNode* @getHead(%Queue* %q)
-  %cutTail = call %QueueNode* @getLink(%QueueNode* %cutHead, %Index %cutLength)
-  %qNewHead = call %QueueNode* @getNext(%QueueNode* %cutTail)
+  %receiverIsEmpty = call i1 @isEmpty(%Queue* %receiver)
 
-  call void @setHead(%Queue* %q, %QueueNode* %qNewHead)
-  call void @decreaseLength(%Queue* %q, %Index %cutLength)
+  %senderHead = call %QueueNode* @getHead(%Queue* %sender)
+  %receiverNewTail = call %QueueNode* @getLink(%QueueNode* %senderHead, %Index %n)
+  %senderNewHead = call %QueueNode* @getNext(%QueueNode* %receiverNewTail)
 
-  call void @setHead(%Queue* %cutQ, %QueueNode* %cutHead)
-  call void @setTail(%Queue* %cutQ, %QueueNode* %cutTail)
-  call void @setNext(%QueueNode* %cutTail, %QueueNode* @.LAST)
-  call void @setLength(%Queue* %cutQ, %Index %cutLength)
+  call void @setHead(%Queue* %sender, %QueueNode* %senderNewHead)
+  call void @decreaseLength(%Queue* %sender, %Index %n)
+  call void @increaseLength(%Queue* %receiver, %Index %n)
 
+  br i1 %receiverIsEmpty, label %joinAtHead, label %joinAtTail
+
+joinAtHead:
+  call void @setHead(%Queue* %receiver, %QueueNode* %senderHead)
+  br label %setNewTail
+
+joinAtTail:
+  %receiverTail = call %QueueNode* @getTail(%Queue* %receiver)
+  call void @setNext(%QueueNode* %receiverTail, %QueueNode* %senderHead)
+  br label %setNewTail
+
+setNewTail:
+  call void @setTail(%Queue* %receiver, %QueueNode* %receiverNewTail)
+  call void @setNext(%QueueNode* %receiverNewTail, %QueueNode* @.LAST)
   br label %exit
 exit:
-  ret %Queue* %cutQ
-}
-
-define void @paste(%Queue* %front, %Queue* %back) {
-entry:
-  %frontIsEmpty = call i1 @isEmpty(%Queue* %front)
-
-  %backHead = call %QueueNode* @getHead(%Queue* %back)
-  %backTail = call %QueueNode* @getTail(%Queue* %back)
-
-  %lengthBack = call %Index @getLength(%Queue* %back)
-  call void @increaseLength(%Queue* %front, %Index %lengthBack)
-
-  br i1 %frontIsEmpty, label %replaceFrontWithBack, label %joinBackToFront
-
-replaceFrontWithBack:
-  call void @setHead(%Queue* %front, %QueueNode* %backHead)
-  call void @setTail(%Queue* %front, %QueueNode* %backTail)
-  br label %salvageBack
-
-joinBackToFront:
-  %frontTail = call %QueueNode* @getTail(%Queue* %front)
-  call void @setNext(%QueueNode* %frontTail, %QueueNode* %backHead)
-  call void @setTail(%Queue* %front, %QueueNode* %backTail)
-  br label %salvageBack
-
-salvageBack:
-  call void @qSalvage(%Queue* %back)
   ret void
 }
 
@@ -186,22 +163,10 @@ exit:
   ret void  
 }
 
-define %Queue* @qCopy(%Queue* %original) {
-  %copy = call %Queue* @createEmptyQueue()
-  %originalHead = call %QueueNode* @getHead(%Queue* %original)
-  call void @copyDataToQueue(%Queue* %copy, %QueueNode* %originalHead)
-  ret %Queue* %copy
-}
-
-define void @qSalvage(%Queue* %q) {
-  %qCast = bitcast %Queue* %q to i8*
-  call void @free(i8* %qCast) nounwind
-  ret void
-}
-
 define void @qDestroy(%Queue* %q) {
   %head = call %QueueNode* @getHead(%Queue* %q)
   call void @qnDestroy(%QueueNode* %head)
-  call void @qSalvage(%Queue* %q)
+  %qCast = bitcast %Queue* %q to i8*
+  call void @free(i8* %qCast) nounwind
   ret void
 }
