@@ -65,6 +65,12 @@ doNothing:
   ret %Function* %f
 }
 
+define %Function* @apply(%Function* %applicator, %Function* %input) {
+  call void @addArgument(%Function* %applicator, %Function* %input)
+  %result = call %Function* @evaluate(%Function* %applicator)
+  ret %Function* %result
+}
+
 define %Function* @createFunction(%Body %body, %Index %arity, %Queue* %arguments) {
   %f_size = load i32* @.FUNCTION_SIZE
   %f_i8 = tail call noalias i8* @malloc(i32 %f_size) nounwind

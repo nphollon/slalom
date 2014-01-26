@@ -77,11 +77,47 @@ entry:
   call void @testEvaluate()
   call void @testEvaluateOverflow()
   call void @testEvaluateRecursive()
-;  call void @testApply()
-;  call void @testSubstitute()
+  call void @testApply()
+  call void @testSubstitute()
 
   call i32 @puts(i8* @.NULLC)
   ret i1 0
+}
+
+define void @testSubstitute() {
+  ; Call substitute(K, S, I)
+  ; Assert result is (K I (S I))
+  ret void
+}
+
+@.kiAppIsK     = private unnamed_addr constant %TestName c"Ki App Is K \00"
+@.kiHas1Arg    = private unnamed_addr constant %TestName c"Ki Has 1 Arg\00"
+@.kiArgIsI     = private unnamed_addr constant %TestName c"Ki Arg Is I \00"
+@.kisEvalToI   = private unnamed_addr constant %TestName c"KisEvalToI  \00"
+define void @testApply() {
+  ; Apply K to I
+  %applicator1 = call %Function* @createKCombinator()
+  %input1 = call %Function* @createICombinator()
+  %applicator2 = call %Function* @apply(%Function* %applicator1, %Function* %input1)
+
+  ; Assert result is K I
+  call void @assertEqFunction(%Function* %applicator1, %Function* %applicator2, %TestName* @.kiAppIsK)
+  %app2Args = call %Queue* @getArguments(%Function* %applicator2)
+  %app2ArgsLength = call %Index @getLength(%Queue* %app2Args)
+  call void @assertEqIndex(%Index %app2ArgsLength, %Index 1, %TestName* @.kiHas1Arg)
+  %app2Arg1 = call %QueueNode* @getHead(%Queue* %app2Args)
+  %app2Arg1Data = call %Function* @getData(%QueueNode* %app2Arg1)
+  call void @assertEqFunction(%Function* %app2Arg1Data, %Function* %input1, %TestName* @.kiArgIsI)
+
+  ; Apply S to (K I)
+  %input2 = call %Function* @createSCombinator()
+  %finalResult = call %Function* @apply(%Function* %applicator2, %Function* %input2)  
+
+  ; Assert result is I
+  call void @assertEqFunction(%Function* %finalResult, %Function* %input1, %TestName* @.kisEvalToI)
+
+  call void @fDestroy(%Function* %finalResult)
+  ret void
 }
 
 @.kiisEvalToS  = private unnamed_addr constant %TestName c"KiisEvalToS \00"
