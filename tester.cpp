@@ -8,14 +8,14 @@ string getProgramText(const string&);
 Tester::Tester() {}
 Tester::~Tester() {}
 
-void Tester::assert(const bool& testExpression, const string& errorMessage) {
+void Tester::verify(const bool& testExpression, const string& errorMessage) {
   if (!testExpression) {
     cout << "Failure. " << errorMessage << endl;
     errorCount++;
   }
 }
 
-void Tester::assertParse(const string& program, const Node *expectedParseTree) {
+void Tester::verifyParse(const string& program, const Node *expectedParseTree) {
   const Node *actualParseTree = parse(program);
 
   const string errorMessage = "Unexpected parse tree for program.\n" +
@@ -23,12 +23,12 @@ void Tester::assertParse(const string& program, const Node *expectedParseTree) {
     "\nExpected parse tree: " + expectedParseTree->getName() +
     "\nActual parse tree: " + actualParseTree->getName();
 
-  assert(*actualParseTree == *expectedParseTree, errorMessage);
+  verify(*actualParseTree == *expectedParseTree, errorMessage);
   delete actualParseTree;
 }
 
-void Tester::assertParseError(const string& program) {
-  assert(parse(program) == NULL, "Expected parse error.\n" + getProgramText(program));
+void Tester::verifyParseError(const string& program) {
+  verify(parse(program) == NULL, "Expected parse error.\n" + getProgramText(program));
 }
 
 void Tester::printReport() const {

@@ -1,8 +1,10 @@
+#include "llvm/IR/Module.h"
+
 #include "node.hpp"
 #include "parse.hpp"
 #include "tester.hpp"
+#include "codegenerator.hpp"
 
-using namespace std;
 
 int main() {
   Tester *tester = new Tester();
@@ -13,24 +15,24 @@ int main() {
     const Node *identicalNode = factory->buildNode("A");
     const Node *differentNode = factory->buildNode("B");
 
-    tester->assert(*aNode == *identicalNode, "Expected A == A to be true");
-    tester->assert(*identicalNode == *aNode, "Expected == to be commutative");
-    tester->assert(!(*aNode == *differentNode), "Expected A == B to be false");
+    tester->verify(*aNode == *identicalNode, "Expected A == A to be true");
+    tester->verify(*identicalNode == *aNode, "Expected == to be commutative");
+    tester->verify(!(*aNode == *differentNode), "Expected A == B to be false");
 
-    tester->assert(*aNode != *differentNode, "Expected A != B to be true");
-    tester->assert(*differentNode != *aNode, "Expected != to be commutative");
-    tester->assert(!(*aNode != *identicalNode), "Expected A != A to be false");
+    tester->verify(*aNode != *differentNode, "Expected A != B to be true");
+    tester->verify(*differentNode != *aNode, "Expected != to be commutative");
+    tester->verify(!(*aNode != *identicalNode), "Expected A != A to be false");
 
     factory->deleteNodes();
   }
 
   { // Test accessors of name node
     const Node *terminalNode = factory->buildNode("A");
-    tester->assert(terminalNode->getName() == "A", "Expected name of node A to be A");
-    tester->assert(terminalNode->isTerminal(), "Expected node A to be terminal");
-    tester->assert(terminalNode->getApplicator() == NULL,
+    tester->verify(terminalNode->getName() == "A", "Expected name of node A to be A");
+    tester->verify(terminalNode->isTerminal(), "Expected node A to be terminal");
+    tester->verify(terminalNode->getApplicator() == NULL,
                    "Expected node A to have no applicator");
-    tester->assert(terminalNode->getInput() == NULL, "Expected node A to have no input");
+    tester->verify(terminalNode->getInput() == NULL, "Expected node A to have no input");
 
     factory->deleteNodes();
   }
@@ -39,7 +41,7 @@ int main() {
     const Node *terminalNode = factory->buildNode("A");
     string nodeName = terminalNode->getName();
     nodeName += "more stuff";
-    tester->assert(terminalNode->getName() == "A",
+    tester->verify(terminalNode->getName() == "A",
                    "Expected name of node A to be immutable");
     factory->deleteNodes();
   }
@@ -50,15 +52,15 @@ int main() {
     const Node *parent12 = factory->buildNode(*child1, *child2);
     const Node *parent21 = factory->buildNode(*child2, *child1);
 
-    tester->assert(parent12->getName() == "(A B)",
+    tester->verify(parent12->getName() == "(A B)",
                    "Expected name of node `A B to be (A B)");
-    tester->assert(parent21->getName() == "(B A)",
+    tester->verify(parent21->getName() == "(B A)",
                    "Expected name of node `B A to be (B A)");
-    tester->assert(!parent12->isTerminal(),
+    tester->verify(!parent12->isTerminal(),
                    "Expected node `A B not to be terminal");
-    tester->assert(*parent12->getApplicator() == *child1,
+    tester->verify(*parent12->getApplicator() == *child1,
                    "Expected the applicator of `A B to be A");
-    tester->assert(*parent12->getInput() == *child2,
+    tester->verify(*parent12->getInput() == *child2,
                    "Expected the applicator of `A B to be B");
     factory->deleteNodes();
   }
@@ -71,11 +73,11 @@ int main() {
     const Node *grandparentABC = factory->buildNode(*parentAB, *childless);
     const Node *grandparentCAB = factory->buildNode(*childless, *parentAB);
 
-    tester->assert(*childless != *parentAB,
+    tester->verify(*childless != *parentAB,
                    "Expected node `A B to be != to terminal node whose name is (A B)");
-    tester->assert(*parentAB != *childless,
+    tester->verify(*parentAB != *childless,
                    "Expected terminal node whose name is (A B) to be != to node `A B");
-    tester->assert(*grandparentABC != *grandparentCAB,
+    tester->verify(*grandparentABC != *grandparentCAB,
                    "Expected Node::operator== to test equality of child nodes");
     factory->deleteNodes();
   }
@@ -87,18 +89,18 @@ int main() {
     const Node *copy = new Node(*original);
     factory->deleteNodes();
 
-    tester->assert(copy->getName() == "(A B)",
+    tester->verify(copy->getName() == "(A B)",
                    "Expected copy constructor to deep copy name string");
-    tester->assert(*copy->getApplicator() == *factory->buildNode("A"),
+    tester->verify(*copy->getApplicator() == *factory->buildNode("A"),
                    "Expected copy constructor to deep copy applicator");
-    tester->assert(*copy->getInput() == *factory->buildNode("B"),
+    tester->verify(*copy->getInput() == *factory->buildNode("B"),
                    "Expected copy constructor to deep copy input");
     delete copy;
   }
 
   { // Test parsing empty program
     const Node *expected = factory->buildNode("I");
-    tester->assertParse("", expected);
+    tester->verifyParse("", expected);
     factory->deleteNodes();
   }
   
@@ -106,9 +108,9 @@ int main() {
     const Node *nodeA = factory->buildNode("A");
     const Node *nodeB = factory->buildNode("B");
     const Node *nodeNode = factory->buildNode("Node");
-    tester->assertParse("A", nodeA);
-    tester->assertParse("B", nodeB);
-    tester->assertParse("Node", nodeNode);
+    tester->verifyParse("A", nodeA);
+    tester->verifyParse("B", nodeB);
+    tester->verifyParse("Node", nodeNode);
     factory->deleteNodes();
   }
   
@@ -117,8 +119,8 @@ int main() {
     const Node *nodeB = factory->buildNode("B");
     const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
     const Node *nodeBA = factory->buildNode(*nodeB, *nodeA);
-    tester->assertParse("Aa B", nodeAB);
-    tester->assertParse("B Aa", nodeBA);
+    tester->verifyParse("Aa B", nodeAB);
+    tester->verifyParse("B Aa", nodeBA);
     factory->deleteNodes();
   }
   
@@ -128,7 +130,7 @@ int main() {
     const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
     const Node *nodeC = factory->buildNode("Cc");
     const Node *nodeABC = factory->buildNode(*nodeAB, *nodeC);
-    tester->assertParse("Aa Bb Cc", nodeABC);
+    tester->verifyParse("Aa Bb Cc", nodeABC);
     factory->deleteNodes();
   }
 
@@ -138,7 +140,7 @@ int main() {
     const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
     const Node *nodeC = factory->buildNode("Cc");
     const Node *nodeABC = factory->buildNode(*nodeAB, *nodeC);
-    tester->assertParse("(Aa Bb) Cc", nodeABC);
+    tester->verifyParse("(Aa Bb) Cc", nodeABC);
     factory->deleteNodes();
   }
 
@@ -148,7 +150,7 @@ int main() {
     const Node *nodeC = factory->buildNode("Cc");
     const Node *nodeBC = factory->buildNode(*nodeB, *nodeC);
     const Node *nodeABC = factory->buildNode(*nodeA, *nodeBC);
-    tester->assertParse("Aa (Bb Cc)", nodeABC);
+    tester->verifyParse("Aa (Bb Cc)", nodeABC);
     factory->deleteNodes();
   }
 
@@ -162,7 +164,7 @@ int main() {
     const Node *nodeCD = factory->buildNode(*nodeC, *nodeD);
     
     const Node *nodeABCD = factory->buildNode(*nodeAB, *nodeCD);
-    tester->assertParse("(Aa Bb) (Cc Dd)", nodeABCD);
+    tester->verifyParse("(Aa Bb) (Cc Dd)", nodeABCD);
     factory->deleteNodes();
   }
 
@@ -171,24 +173,31 @@ int main() {
     const Node *nodeA = factory->buildNode("A");
     const Node *nodeB = factory->buildNode("B");
     const Node *nodeAB = factory->buildNode(*nodeA, *nodeB);
-    tester->assertParse("()", nodeI);
-    tester->assertParse(" ", nodeI);
-    tester->assertParse(" A", nodeA);
-    tester->assertParse("A ", nodeA);
-    tester->assertParse("\tA", nodeA);
-    tester->assertParse("( A )", nodeA);
-    tester->assertParse("A\tB", nodeAB);
-    tester->assertParse("A ((B))", nodeAB);
-    tester->assertParse("(A)(B)", nodeAB);
-    tester->assertParse("A(B)", nodeAB);
-    tester->assertParse("(A)B", nodeAB);
-    tester->assertParse("(\t A  )\t\t( ((B)  )\t)", nodeAB);
+    tester->verifyParse("()", nodeI);
+    tester->verifyParse(" ", nodeI);
+    tester->verifyParse(" A", nodeA);
+    tester->verifyParse("A ", nodeA);
+    tester->verifyParse("\tA", nodeA);
+    tester->verifyParse("( A )", nodeA);
+    tester->verifyParse("A\tB", nodeAB);
+    tester->verifyParse("A ((B))", nodeAB);
+    tester->verifyParse("(A)(B)", nodeAB);
+    tester->verifyParse("A(B)", nodeAB);
+    tester->verifyParse("(A)B", nodeAB);
+    tester->verifyParse("(\t A  )\t\t( ((B)  )\t)", nodeAB);
     factory->deleteNodes();
   }
 
   { // Test parsing erroneous programs
-    tester->assertParseError("(");
-    tester->assertParseError(") (");
+    tester->verifyParseError("(");
+    tester->verifyParseError(") (");
+  }
+
+  { // Test running code generator
+    const CodeGenerator *cg = new CodeGenerator();
+    cg->generate();
+    const llvm::Module* module = cg->getModule();
+    tester->verify(module != 0, "Expected code generator to have a module");
   }
 
   tester->printReport();

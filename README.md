@@ -6,8 +6,9 @@ Slalom is a simple functional language based on the [SKI combinator calculus](ht
 Dependencies
 ------------
 
-* [Rake](http://rake.rubyforge.org)
-* [Clang](http://clang.llvm.org)
+* [Rake](http://rake.rubyforge.org) v 10.1 or later
+* [LLVM] (http://llvm.org/releases/download.html#3.4) v 3.4
+* [Clang](http://clang.llvm.org) 
 
 Installing & Running
 --------------------

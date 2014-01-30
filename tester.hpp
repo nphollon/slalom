@@ -12,9 +12,9 @@ private:
 public:
   Tester();
   ~Tester();
-  void assert(const bool&, const string&);
-  void assertParse(const string&, const Node*);
-  void assertParseError(const string& program);
+  void verify(const bool&, const string&);
+  void verifyParse(const string&, const Node*);
+  void verifyParseError(const string& program);
   void printReport() const;
 };
 

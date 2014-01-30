@@ -12,20 +12,20 @@
 
 using namespace llvm;
 
-class CodeGenerator {
+class CodeGeneratorSpike {
 private:
   Module* module;
   IRBuilder<>* builder;
   Type* firstClassFunctionType;
   void buildBaseFunctions();
 public:
-  CodeGenerator();
-  ~CodeGenerator();
+  CodeGeneratorSpike();
+  ~CodeGeneratorSpike();
   Value* generateFromNode(const Node&) const;
   Module* getModule() const;
 };
 
-CodeGenerator::CodeGenerator() {
+CodeGeneratorSpike::CodeGeneratorSpike() {
   firstClassFunctionType = IntegerType::get(getGlobalContext(), 2); 
   //StructType::create(getGlobalContext());
   module = new Module("Slalom", getGlobalContext());
@@ -33,12 +33,12 @@ CodeGenerator::CodeGenerator() {
   buildBaseFunctions();
 }
 
-CodeGenerator::~CodeGenerator() {
+CodeGeneratorSpike::~CodeGeneratorSpike() {
   delete builder;
   delete module;
 }
 
-void CodeGenerator::buildBaseFunctions() {
+void CodeGeneratorSpike::buildBaseFunctions() {
   // Define I
   Function* iComb = cast<Function>
     (module->getOrInsertFunction("I", firstClassFunctionType,
@@ -91,7 +91,7 @@ void CodeGenerator::buildBaseFunctions() {
 }
 
 // Need to worry about circular dependency?
-Value* CodeGenerator::generateFromNode(const Node& node) const {
+Value* CodeGeneratorSpike::generateFromNode(const Node& node) const {
   if (!node.isTerminal()) {
     Value* applicatorCode = generateFromNode(*node.getApplicator());
     Value* inputCode = generateFromNode(*node.getInput());
@@ -111,14 +111,14 @@ Value* CodeGenerator::generateFromNode(const Node& node) const {
   return 0;
 }
 
-Module* CodeGenerator::getModule() const {
+Module* CodeGeneratorSpike::getModule() const {
   return module;
 }
 
 int main() {
-  CodeGenerator *cg = new CodeGenerator();
+  CodeGeneratorSpike *cg = new CodeGeneratorSpike();
   if (cg == NULL) {
-    cerr << "CodeGenerator object could not be instantiated.\n";
+    cerr << "CodeGeneratorSpike object could not be instantiated.\n";
     return 1;
   }
 
