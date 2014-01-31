@@ -1,14 +1,14 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
 
 #include "codegenerator.hpp"
 
-CodeGenerator::CodeGenerator() {
-  module = new Module("Slalom", llvm::getGlobalContext());
+CodeGenerator::CodeGenerator(Module* injectedModule) {
+  module = injectedModule;
 }
 
 CodeGenerator::~CodeGenerator() {
-  delete module;
 }
 
 void CodeGenerator::generate() const {
