@@ -1,6 +1,6 @@
 COMPILER = "clang++"
 AS_FLAGS = "`llvm-config --cxxflags`"
-LINK_FLAGS = "`llvm-config --cxxflags --libs core` `llvm-config --ldflags`"
+LINK_FLAGS = "`llvm-config --cxxflags --libs engine` `llvm-config --ldflags`"
 OBJECTS = ["parse.o", "node.o", "strutil.o", "codegenerator.o"]
 
 def compile(target)

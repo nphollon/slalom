@@ -8,12 +8,12 @@ using namespace llvm;
 
 class CodeGenerator {
  private:
-  const Module* module;
+  Module* module;
  public:
   CodeGenerator();
   ~CodeGenerator();
   void generate() const;
-  const Module* getModule() const;
+  Module* getModule() const;
 };
 
 #endif

@@ -1,4 +1,7 @@
 #include "llvm/IR/Module.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/Support/TargetSelect.h"
 
 #include "node.hpp"
 #include "parse.hpp"
@@ -194,10 +197,21 @@ int main() {
   }
 
   { // Test running code generator
+    llvm::InitializeNativeTarget();
     const CodeGenerator *cg = new CodeGenerator();
     cg->generate();
-    const llvm::Module* module = cg->getModule();
+    llvm::Module* module = cg->getModule();
     tester->verify(module != 0, "Expected code generator to have a module");
+
+    std::string errorString;
+    llvm::ExecutionEngine *engine = llvm::EngineBuilder(module).setErrorStr(&errorString).create();
+    Function *lf = module->getFunction("add");
+
+    tester->verify(lf != 0, "Expected module to have 'add' function");
+    void *fp = engine->getPointerToFunction(lf);
+    int (*add)(int, int) = (int (*)(int, int))(intptr_t)fp;
+    int theAnswer = add(1, 7);
+    tester->verify(theAnswer == 8, "Expected 1 + 7 = 8");
   }
 
   tester->printReport();
