@@ -9,7 +9,7 @@ end
 
 task :default => [:all]
 
-task :all => [:test, :repl, :codegen]
+task :all => [:test, :repl]
 
 task :test => ["bin", "bin/runtests"] do
   sh "./bin/runtests"
@@ -29,10 +29,6 @@ file "bin/repl" => ["slalom_repl.o"] + OBJECTS do |target|
 end
 
 file "bin/runtests" => ["slalom_test.o", "tester.o"] + OBJECTS do |target|
-  compile target
-end
-
-file "bin/codegen" => ["codegen_spike.o"] + OBJECTS do |target|
   compile target
 end
 
