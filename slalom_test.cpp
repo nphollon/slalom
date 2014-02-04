@@ -1,13 +1,6 @@
-#include "llvm/IR/Module.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/Support/TargetSelect.h"
-
 #include "node.hpp"
 #include "parse.hpp"
 #include "tester.hpp"
-#include "codegenerator.hpp"
 
 void testParser(Tester*, const NodeFactory*);
 void testGenerator(Tester*);
@@ -28,19 +21,12 @@ int main() {
 
 void testGenerator(Tester* tester) {
   { // Test running code generator
-    Module* module = new Module("Slalom Test", llvm::getGlobalContext());
-    const CodeGenerator *cg = new CodeGenerator(module);
-    cg->generate();
-
-    llvm::InitializeNativeTarget();
-    llvm::ExecutionEngine *engine = llvm::EngineBuilder(module).create();
-    Function *lf = module->getFunction("add");
-    void *fp = engine->getPointerToFunction(lf);
+    TestJIT *jit = new TestJIT();
+    void *fp = jit->getFunction("add");
     int (*add)(int, int) = (int (*)(int, int))(intptr_t)fp;
     int theAnswer = add(1, 7);
     tester->verify(theAnswer == 8, "Expected 1 + 7 = 8");
-
-    delete cg;
+    delete jit;
   }
 }
 

@@ -1,24 +1,27 @@
 #include "tester.hpp"
-
 #include <iostream>
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "codegenerator.hpp"
 #include "parse.hpp"
 
-string getProgramText(const string&);
+std::string getProgramText(const std::string&);
 
 Tester::Tester() {}
 Tester::~Tester() {}
 
-void Tester::verify(const bool& testExpression, const string& errorMessage) {
+void Tester::verify(const bool& testExpression, const std::string& errorMessage) {
   if (!testExpression) {
     cout << "Failure. " << errorMessage << endl;
     errorCount++;
   }
 }
 
-void Tester::verifyParse(const string& program, const Node *expectedParseTree) {
+void Tester::verifyParse(const std::string& program, const Node *expectedParseTree) {
   const Node *actualParseTree = parse(program);
 
-  const string errorMessage = "Unexpected parse tree for program.\n" +
+  const std::string errorMessage = "Unexpected parse tree for program.\n" +
     getProgramText(program) +
     "\nExpected parse tree: " + expectedParseTree->getName() +
     "\nActual parse tree: " + actualParseTree->getName();
@@ -27,7 +30,7 @@ void Tester::verifyParse(const string& program, const Node *expectedParseTree) {
   delete actualParseTree;
 }
 
-void Tester::verifyParseError(const string& program) {
+void Tester::verifyParseError(const std::string& program) {
   verify(parse(program) == NULL, "Expected parse error.\n" + getProgramText(program));
 }
 
@@ -39,6 +42,26 @@ void Tester::printReport() const {
   }
 }
 
-string getProgramText(const string& program) {
+std::string getProgramText(const std::string& program) {
   return "Program text: " + (program.empty() ? "<empty>" : program);
+}
+
+
+TestJIT::TestJIT() {
+  llvm::InitializeNativeTarget();
+  module = new llvm::Module("Slalom Test", llvm::getGlobalContext());
+  const CodeGenerator *cg = new CodeGenerator(module);
+  cg->generate();
+  engine = llvm::EngineBuilder(module).create();
+  delete cg;
+}
+
+TestJIT::~TestJIT() {
+  delete module;
+}
+
+void* TestJIT::getFunction(const std::string& name) const {
+  llvm::Function *lf = module->getFunction(name);
+  void *fp = engine->getPointerToFunction(lf);
+  return fp;
 }
