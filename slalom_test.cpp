@@ -1,3 +1,10 @@
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/Support/TargetSelect.h"
+
 #include "node.hpp"
 #include "parse.hpp"
 #include "tester.hpp"
@@ -21,12 +28,33 @@ int main() {
 
 void testGenerator(Tester* tester) {
   { // Test running code generator
-    TestJIT *jit = new TestJIT();
-    void *fp = jit->getFunction("add");
-    int (*add)(int, int) = (int (*)(int, int))(intptr_t)fp;
+    llvm::InitializeNativeTarget();
+    llvm::Module *module = new llvm::Module("Slalom Test", llvm::getGlobalContext());
+
+    llvm::Constant* c = module->getOrInsertFunction("add",
+                                                    llvm::IntegerType::get(llvm::getGlobalContext(), 32), 
+                                                    llvm::IntegerType::get(llvm::getGlobalContext(), 32),
+                                                    llvm::IntegerType::get(llvm::getGlobalContext(), 32),
+                                                    NULL);
+    llvm::Function* addIR = llvm::cast<llvm::Function>(c);
+    llvm::Function::arg_iterator args = addIR->arg_begin();
+    llvm::Value* x = args++;
+    llvm::Value* y = args++;
+
+    llvm::BasicBlock* block = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", addIR);
+    llvm::IRBuilder<> builder(block);
+    llvm::Value* tmp = builder.CreateBinOp(llvm::Instruction::Add, x, y, "tmp");
+    builder.CreateRet(tmp);
+
+    llvm::ExecutionEngine *engine = llvm::EngineBuilder(module).create();
+
+    llvm::Function *lf = module->getFunction("add");
+    void *underTest = engine->getPointerToFunction(lf);
+    int (*add)(int, int) = (int (*)(int, int))(intptr_t) underTest;
+
     int theAnswer = add(1, 7);
+
     tester->verify(theAnswer == 8, "Expected 1 + 7 = 8");
-    delete jit;
   }
 }
 

@@ -1,9 +1,7 @@
 #include "tester.hpp"
+
 #include <iostream>
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "codegenerator.hpp"
+
 #include "parse.hpp"
 
 std::string getProgramText(const std::string&);
@@ -44,24 +42,4 @@ void Tester::printReport() const {
 
 std::string getProgramText(const std::string& program) {
   return "Program text: " + (program.empty() ? "<empty>" : program);
-}
-
-
-TestJIT::TestJIT() {
-  llvm::InitializeNativeTarget();
-  module = new llvm::Module("Slalom Test", llvm::getGlobalContext());
-  const CodeGenerator *cg = new CodeGenerator(module);
-  cg->generate();
-  engine = llvm::EngineBuilder(module).create();
-  delete cg;
-}
-
-TestJIT::~TestJIT() {
-  delete module;
-}
-
-void* TestJIT::getFunction(const std::string& name) const {
-  llvm::Function *lf = module->getFunction(name);
-  void *fp = engine->getPointerToFunction(lf);
-  return fp;
 }
