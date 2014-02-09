@@ -1,0 +1,39 @@
+How do I develop this using TDD?
+
+I have a parser already. The parser accepts a string as input and
+translates it into a parse tree.
+
+Now I need to use that parse tree to generate LLVM IR code. The IR
+code is attached to an object in the LLVM API called Module.
+
+Two sorts of IR generation need to occur.
+
+1) Before the parse tree can be translated to IR, the module needs
+several functions and types. All of this code is static and can be
+generated within some sort of module factory.
+
+2) The parse tree is translated to IR using the pre-defined
+functions.
+
+Item 2 can be test-driven easily if there is a way of mocking the
+module. For this code, we care about the relationship between the
+nodes of the parse tree and the pre-defined functions. The
+static-generation step exists explicitly to make the
+dynamic-generation step as clean as possible.
+
+Items 1 and 2 should not be tested the same way. For static code
+generation, we care about the behavior of the functions, but not their
+implementation. As a result, we don't care about what explicitly gets
+built on the module (which is good, because the module is going to
+have A LOT of stuff built on it). For dynamic code generation, we care
+about the calls to module, but not the behavior of the code. We want
+to guarantee that each node of the parse tree gets properly translated
+to IR.
+
+Testing static code generation: compile the module, get pointers to
+the IR functions, and unit test them.
+
+Testing dynamic code generation: mock the module and verify the calls
+to it.
+
+Problem: IR structs
