@@ -33,6 +33,10 @@ file "bin/runtests" => TEST_OBJECTS + OBJECTS do |target|
   compile target
 end
 
+file "slalom_test.o" => "slalom_test.cpp" do |target|
+  sh "#{COMPILER} #{AS_FLAGS} -frtti -fexceptions -I /usr/local/boost_1_55_0 -c -o #{target.name} slalom_test.cpp"
+end
+
 rule ".o" => ".cpp" do |target|
   sh "#{COMPILER} #{AS_FLAGS} -c -o #{target.name} #{target.source}"
 end

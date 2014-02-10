@@ -1,29 +1,18 @@
+#define BOOST_TEST_MODULE SlalomTest
+#include <boost/test/included/unit_test.hpp>
+
 #include "node.hpp"
 #include "parse.hpp"
 #include "generate.hpp"
 #include "tester.hpp"
 #include "mock.hpp"
 
-void testParser(Tester&, const NodeFactory&);
-void testMock(Tester&);
-void testGenerator(Tester&);
-
-int main() {
-  Tester tester;
-  const NodeFactory factory;
-  testParser(tester, factory);
-  testMock(tester);
-  testGenerator(tester);
-  tester.printReport();
-  return 0;
+ModuleWriterMock writeToMock(const string& program) {
+  ModuleWriterMock mock;
+  generate(mock, parse(program));
+  return mock;
 }
 
-void testGenerator(Tester& tester) {
-  const Node *i = parse("I");
-  ModuleWriterMock writer;
-  generate(writer, i);
-  tester.verify(writer.didCreateI(), "Expected program 'I' to generate an I combinator.");
-}
 
 void testMock(Tester& tester) {
   ModuleWriterMock mock;
@@ -32,43 +21,60 @@ void testMock(Tester& tester) {
   tester.verify(mock.didCreateI(), "Expected mock.createICombinator() to be called");
 }
 
+BOOST_AUTO_TEST_SUITE( test_generator )
+
+BOOST_AUTO_TEST_CASE( writer_should_create_i_when_program_is_i ) {
+  ModuleWriterMock writer = writeToMock("I");
+  BOOST_CHECK( writer.didCreateI() );
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+struct NameNodeFixture {
+  NameNodeFixture() { aNode = NameNodeFixture::factory.buildNode("A"); }
+  ~NameNodeFixture() { factory.deleteNodes(); }
+
+  NodeFactory factory;
+  const Node *aNode;
+};
+
+BOOST_FIXTURE_TEST_SUITE( test_name_node, NameNodeFixture )
+
+BOOST_AUTO_TEST_CASE( node_should_equal_node_with_same_name ) {
+  const Node *identicalNode = factory.buildNode("A");
+  BOOST_CHECK( *aNode == *identicalNode );
+  BOOST_CHECK( *identicalNode == *aNode );
+  BOOST_CHECK( !(*aNode != *identicalNode) );
+}
+
+BOOST_AUTO_TEST_CASE( node_should_not_equal_node_with_different_name ) {
+  const Node *differentNode = factory.buildNode("B");
+  BOOST_CHECK( !(*aNode == *differentNode) );
+  BOOST_CHECK( *aNode != *differentNode );
+  BOOST_CHECK( *differentNode != *aNode );
+}
+
+BOOST_AUTO_TEST_CASE( name_node_should_be_terminal ) {
+  BOOST_CHECK( aNode->isTerminal() );
+  BOOST_CHECK( !aNode->getApplicator() );
+  BOOST_CHECK( !aNode->getInput() );
+}
+
+BOOST_AUTO_TEST_CASE( getName_on_name_node_should_return_name ) {
+  BOOST_CHECK_EQUAL( aNode->getName(), "A" );
+}
+
+BOOST_AUTO_TEST_CASE( name_node_should_be_immutable ) {
+  std::string mutatedName = aNode->getName();
+  mutatedName += "more stuff";
+  BOOST_CHECK_EQUAL( aNode->getName(), "A" );
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 void testParser(Tester& tester, const NodeFactory& factory) {
-  { // Test equality of name node
-    const Node *aNode = factory.buildNode("A");
-    const Node *identicalNode = factory.buildNode("A");
-    const Node *differentNode = factory.buildNode("B");
-
-    tester.verify(*aNode == *identicalNode, "Expected A == A to be true");
-    tester.verify(*identicalNode == *aNode, "Expected == to be commutative");
-    tester.verify(!(*aNode == *differentNode), "Expected A == B to be false");
-
-    tester.verify(*aNode != *differentNode, "Expected A != B to be true");
-    tester.verify(*differentNode != *aNode, "Expected != to be commutative");
-    tester.verify(!(*aNode != *identicalNode), "Expected A != A to be false");
-
-    factory.deleteNodes();
-  }
-
-  { // Test accessors of name node
-    const Node *terminalNode = factory.buildNode("A");
-    tester.verify(terminalNode->getName() == "A", "Expected name of node A to be A");
-    tester.verify(terminalNode->isTerminal(), "Expected node A to be terminal");
-    tester.verify(terminalNode->getApplicator() == NULL,
-                   "Expected node A to have no applicator");
-    tester.verify(terminalNode->getInput() == NULL, "Expected node A to have no input");
-
-    factory.deleteNodes();
-  }
-
-  { // Test mutability of name node
-    const Node *terminalNode = factory.buildNode("A");
-    string nodeName = terminalNode->getName();
-    nodeName += "more stuff";
-    tester.verify(terminalNode->getName() == "A",
-                   "Expected name of node A to be immutable");
-    factory.deleteNodes();
-  }
-
   { // Test accessors of apply node
     const Node *child1 = factory.buildNode("A");
     const Node *child2 = factory.buildNode("B");
