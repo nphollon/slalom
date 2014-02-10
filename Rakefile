@@ -1,7 +1,8 @@
 COMPILER = "clang++"
 AS_FLAGS = "`llvm-config --cxxflags`"
 LINK_FLAGS = "`llvm-config --cxxflags --libs engine` `llvm-config --ldflags`"
-OBJECTS = ["parse.o", "node.o", "strutil.o"]
+OBJECTS = ["generate.o", "parse.o", "node.o", "strutil.o"]
+TEST_OBJECTS = ["slalom_test.o", "tester.o", "mock.o"]
 
 def compile(target)
   sh "#{COMPILER} #{target.prerequisites.join(' ')} #{LINK_FLAGS} -o #{target.name}"
@@ -28,7 +29,7 @@ file "bin/repl" => ["slalom_repl.o"] + OBJECTS do |target|
   compile target
 end
 
-file "bin/runtests" => ["slalom_test.o", "tester.o"] + OBJECTS do |target|
+file "bin/runtests" => TEST_OBJECTS + OBJECTS do |target|
   compile target
 end
 

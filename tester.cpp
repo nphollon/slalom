@@ -6,7 +6,10 @@
 
 std::string getProgramText(const std::string&);
 
-Tester::Tester() {}
+Tester::Tester() {
+  errorCount = 0;
+}
+
 Tester::~Tester() {}
 
 void Tester::verify(const bool& testExpression, const std::string& errorMessage) {

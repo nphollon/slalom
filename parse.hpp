@@ -8,7 +8,4 @@ using namespace std;
 
 const Node* parse(const string&);
 
-class ParseError {};
-class ParenthesesDoNotMatch : public ParseError {};
-
 #endif
