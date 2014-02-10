@@ -61,6 +61,10 @@ bool Node::operator!=(const Node& n) const {
   return !(*this == n);
 }
 
+std::ostream& operator<<(std::ostream& os, const Node& obj) {
+  os << obj.getName();
+  return os;
+}
 
 
 NodeFactory::NodeFactory() {

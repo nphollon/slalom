@@ -32,11 +32,15 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 struct NameNodeFixture {
-  NameNodeFixture() { aNode = NameNodeFixture::factory.buildNode("A"); }
-  ~NameNodeFixture() { factory.deleteNodes(); }
-
   NodeFactory factory;
   const Node *aNode;
+
+  NameNodeFixture() {
+    aNode = factory.buildNode("A");
+  }
+  ~NameNodeFixture() {
+    factory.deleteNodes();
+  }
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_name_node, NameNodeFixture )
@@ -74,59 +78,94 @@ BOOST_AUTO_TEST_CASE( name_node_should_be_immutable ) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
-void testParser(Tester& tester, const NodeFactory& factory) {
-  { // Test accessors of apply node
-    const Node *child1 = factory.buildNode("A");
-    const Node *child2 = factory.buildNode("B");
-    const Node *parent12 = factory.buildNode(*child1, *child2);
-    const Node *parent21 = factory.buildNode(*child2, *child1);
+struct ApplyNodeFixture {
+  NodeFactory factory;
+  const Node *childA;
+  const Node *childB;
+  const Node *parentAB;
 
-    tester.verify(parent12->getName() == "(A B)",
-                   "Expected name of node `A B to be (A B)");
-    tester.verify(parent21->getName() == "(B A)",
-                   "Expected name of node `B A to be (B A)");
-    tester.verify(!parent12->isTerminal(),
-                   "Expected node `A B not to be terminal");
-    tester.verify(*parent12->getApplicator() == *child1,
-                   "Expected the applicator of `A B to be A");
-    tester.verify(*parent12->getInput() == *child2,
-                   "Expected the applicator of `A B to be B");
+  ApplyNodeFixture() {
+    childA = factory.buildNode("A");
+    childB = factory.buildNode("B");
+    parentAB = factory.buildNode(*childA, *childB);
+  }
+  ~ApplyNodeFixture() {
     factory.deleteNodes();
   }
-  
-  { // Test inequality of name nodes and apply nodes
-    const Node *childless = factory.buildNode("(A B)");
-    const Node *childA = factory.buildNode("A");
-    const Node *childB = factory.buildNode("B");
-    const Node *parentAB = factory.buildNode(*childA, *childB);
-    const Node *grandparentABC = factory.buildNode(*parentAB, *childless);
-    const Node *grandparentCAB = factory.buildNode(*childless, *parentAB);
+};
 
-    tester.verify(*childless != *parentAB,
-                   "Expected node `A B to be != to terminal node whose name is (A B)");
-    tester.verify(*parentAB != *childless,
-                   "Expected terminal node whose name is (A B) to be != to node `A B");
-    tester.verify(*grandparentABC != *grandparentCAB,
-                   "Expected Node::operator== to test equality of child nodes");
+BOOST_FIXTURE_TEST_SUITE( test_apply_node, ApplyNodeFixture )
+
+BOOST_AUTO_TEST_CASE( getName_on_apply_node_should_combine_names_of_children ) {
+  BOOST_CHECK_EQUAL( parentAB->getName(), "(A B)" );
+
+  const Node *parentBA = factory.buildNode(*childB, *childA);
+  BOOST_CHECK_EQUAL( parentBA->getName(), "(B A)" );
+}
+
+BOOST_AUTO_TEST_CASE( apply_node_should_not_be_terminal ) {
+  BOOST_CHECK( !parentAB->isTerminal() );
+}
+
+BOOST_AUTO_TEST_CASE( apply_node_applicator_should_be_first_child ) {
+  BOOST_CHECK_EQUAL( *parentAB->getApplicator(), *childA );
+}
+
+BOOST_AUTO_TEST_CASE( apply_node_input_should_be_second_child ) {
+  BOOST_CHECK_EQUAL( *parentAB->getInput(), *childB );
+}
+
+BOOST_AUTO_TEST_CASE( apply_node_should_not_equal_name_node ) {
+  const Node *childless = factory.buildNode("(A B)");
+  BOOST_CHECK_NE( *childless, *parentAB );
+  BOOST_CHECK_NE( *parentAB, *childless );
+}
+
+BOOST_AUTO_TEST_CASE( apply_node_should_check_equality_of_children ) {
+  // This test ensures that the node equality operator does a deep comparison,
+  // not merely comparing results of getName()
+  const Node *childless = factory.buildNode("(A B)");
+  const Node *grandparentABC = factory.buildNode(*parentAB, *childless);
+  const Node *grandparentCAB = factory.buildNode(*childless, *parentAB);
+  BOOST_CHECK_NE( *grandparentABC, *grandparentCAB );
+}
+
+BOOST_AUTO_TEST_CASE( copy_constructor_should_create_deep_copy ) {
+  const Node *copy = new Node(*parentAB);
+  factory.deleteNodes(); // deletes childA, childB, and parentAB
+
+  BOOST_CHECK_EQUAL( copy->getName(), "(A B)" );
+  BOOST_CHECK_EQUAL( *copy->getApplicator(), *factory.buildNode("A") );
+  BOOST_CHECK_EQUAL( *copy->getInput(), *factory.buildNode("B") );
+
+  delete copy;
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+struct ParserFixture {
+  NodeFactory factory;
+  const Node *nodeA;
+  const Node *nodeB;
+
+  ParserFixture() {
+    nodeA = factory.buildNode("Aa");
+    nodeB = factory.buildNode("Bb");
+  }
+
+  ~ParserFixture() {
     factory.deleteNodes();
   }
 
-  { // Test copy constructor
-    const Node *child1 = factory.buildNode("A");
-    const Node *child2 = factory.buildNode("B");
-    const Node *original = factory.buildNode(*child1, *child2);
-    const Node *copy = new Node(*original);
-    factory.deleteNodes();
-
-    tester.verify(copy->getName() == "(A B)",
-                   "Expected copy constructor to deep copy name string");
-    tester.verify(*copy->getApplicator() == *factory.buildNode("A"),
-                   "Expected copy constructor to deep copy applicator");
-    tester.verify(*copy->getInput() == *factory.buildNode("B"),
-                   "Expected copy constructor to deep copy input");
-    delete copy;
+  void verifyParse(const std::string& program, const Node *expectedParseTree) {
+    const Node *actualParseTree = parse(program);
+    BOOST_CHECK_EQUAL(*actualParseTree, *expectedParseTree);
+    delete actualParseTree;
   }
+};
 
+void testParser(Tester& tester, const NodeFactory& factory) {  
   { // Test parsing empty program
     const Node *expected = factory.buildNode("I");
     tester.verifyParse("", expected);

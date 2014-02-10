@@ -26,6 +26,8 @@ public:
   bool operator!=(const Node&) const;
 };
 
+std::ostream& operator<<(std::ostream& os, const Node& obj);
+
 class NodeFactory {
 private:
   vector<Node *> *nodes;
