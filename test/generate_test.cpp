@@ -1,19 +1,31 @@
 #include <boost/test/unit_test.hpp>
 
+#include "hippomocks.h"
+
 #include "../src/parse.hpp"
-#include "mock.hpp"
+#include "../src/generate.hpp"
 
-ModuleWriterMock writeToMock(const std::string& program) {
-  ModuleWriterMock mock;
-  generate(mock, parse(program));
-  return mock;
-}
+static MockRepository mocks;
 
-BOOST_AUTO_TEST_SUITE( test_generator )
+struct GeneratorFixture {
+  ModuleWriter *writer;
+
+  GeneratorFixture() {
+    writer = mocks.InterfaceMock<ModuleWriter>();
+  };
+
+  ~GeneratorFixture() {};
+
+  void generateFromProgram(const std::string &program) {
+    generate(writer, parse(program));
+  }
+};
+
+BOOST_FIXTURE_TEST_SUITE( test_generator, GeneratorFixture )
 
 BOOST_AUTO_TEST_CASE( writer_should_create_i_when_program_is_i ) {
-  ModuleWriterMock writer = writeToMock("I");
-  BOOST_CHECK( writer.didCreateI() );
+  mocks.ExpectCall(writer, ModuleWriter::createICombinator);
+  generateFromProgram("I");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -12,9 +12,8 @@ TEST_OBJECTS = ["test/test_main.o",
                 "test/name_node_test.o",
                 "test/apply_node_test.o",
                 "test/parse_test.o",
-                "test/generate_test.o",
-                "test/mock_test.o",
-                "test/mock.o"]
+                "test/generate_test.o"
+              ]
 
 def compile(target, flags)
   sh "#{COMPILER} #{target.prerequisites.join(' ')} #{flags} -o #{target.name}"
