@@ -18,8 +18,13 @@ TEST_OBJECTS = OBJECTS + [
                           "#{BOOST_ROOT}/lib/libboost_unit_test_framework.a"
                          ]
 
-def compile(target, flags)
-  sh "#{COMPILER} #{target.prerequisites.join(' ')} #{flags} -o #{target.name}"
+def objects_in_directory(dir)
+  # regex matches files in dir/ ending in .o
+  /#{dir}\/.*\.o$/
+end
+
+def source_file_for_object
+  proc { |f| f.sub(/\.o$/, ".cpp") }
 end
 
 task :default => [:all]
@@ -46,10 +51,14 @@ file "bin/runtests" => TEST_OBJECTS do |target|
   compile target, LINK_FLAGS
 end
 
-rule /test\/.*\.o$/ => [proc {|f| f.sub(/\.o$/, ".cpp") }] do |target|
+rule objects_in_directory("test") => [ source_file_for_object ] do |target|
   compile target, TEST_FLAGS
 end
 
-rule /src\/.*\.o$/ => [proc {|f| f.sub(/\.o$/, ".cpp") }] do |target|
+rule objects_in_directory("src") => [ source_file_for_object ] do |target|
   compile target, AS_FLAGS
+end
+
+def compile(target, flags)
+  sh "#{COMPILER} #{target.prerequisites.join(' ')} #{flags} -o #{target.name}"
 end
