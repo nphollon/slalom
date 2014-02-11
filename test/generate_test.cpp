@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "../parse.hpp"
+#include "../src/parse.hpp"
 #include "mock.hpp"
 
 ModuleWriterMock writeToMock(const std::string& program) {

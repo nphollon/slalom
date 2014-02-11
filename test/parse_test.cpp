@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
-#include "../node.hpp"
-#include "../parse.hpp"
+#include "../src/node.hpp"
+#include "../src/parse.hpp"
 
 struct ParserFixture {
   NodeFactory factory;
