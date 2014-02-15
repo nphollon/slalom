@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../src/node.hpp"
+#include "node_factory.hpp"
 
 struct NameNodeFixture {
   NodeFactory factory;

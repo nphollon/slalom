@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../src/node.hpp"
-#include "../src/parse.hpp"
+#include "node_factory.hpp"
 
 struct ParserFixture {
   NodeFactory factory;
@@ -18,7 +18,7 @@ struct ParserFixture {
   }
 
   void checkParse(const std::string& program, const Node *expectedParseTree) {
-    const Node *actualParseTree = parse(program);
+    const Node *actualParseTree = Node::parse(program);
     BOOST_CHECK_EQUAL(*actualParseTree, *expectedParseTree);
     delete actualParseTree;
   }
@@ -96,9 +96,9 @@ BOOST_AUTO_TEST_CASE( parser_should_ignore_unnecessary_whitespace_and_parens ) {
 }
 
 BOOST_AUTO_TEST_CASE( parser_should_return_null_if_mismatched_parens ) {
-  BOOST_CHECK( ! parse("(") );
-  BOOST_CHECK( ! parse(") (") );
-  BOOST_CHECK( ! parse(")") );
+  BOOST_CHECK( ! Node::parse("(") );
+  BOOST_CHECK( ! Node::parse(") (") );
+  BOOST_CHECK( ! Node::parse(")") );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "node.hpp"
-#include "parse.hpp"
 
 using namespace std;
 
@@ -26,7 +25,7 @@ int main() {
 }
 
 void processLine(const string& line) {
-  const Node *parseTree = parse(line);
+  const Node *parseTree = Node::parse(line);
   if (parseTree) {
     cout << parseTree->getName() << endl;
     delete parseTree;

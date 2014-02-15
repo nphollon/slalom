@@ -5,7 +5,6 @@ LINK_FLAGS = "`llvm-config --cxxflags --libs engine` `llvm-config --ldflags`"
 TEST_FLAGS = AS_FLAGS + " -frtti -fexceptions -I #{BOOST_ROOT}/boost_1_55_0"
 
 OBJECTS = ["src/generate.o",
-           "src/parse.o",
            "src/node.o",
            "src/strutil.o"]
 

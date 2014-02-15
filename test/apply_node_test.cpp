@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../src/node.hpp"
+#include "node_factory.hpp"
 
 struct ApplyNodeFixture {
   NodeFactory factory;
@@ -52,17 +53,6 @@ BOOST_AUTO_TEST_CASE( apply_node_should_check_equality_of_children ) {
   const Node *grandparentABC = factory.buildNode(*parentAB, *childless);
   const Node *grandparentCAB = factory.buildNode(*childless, *parentAB);
   BOOST_CHECK_NE( *grandparentABC, *grandparentCAB );
-}
-
-BOOST_AUTO_TEST_CASE( copy_constructor_should_create_deep_copy ) {
-  const Node *copy = new Node(*parentAB);
-  factory.deleteNodes(); // deletes childA, childB, and parentAB
-
-  BOOST_CHECK_EQUAL( copy->getName(), "(A B)" );
-  BOOST_CHECK_EQUAL( *copy->getApplicator(), *factory.buildNode("A") );
-  BOOST_CHECK_EQUAL( *copy->getInput(), *factory.buildNode("B") );
-
-  delete copy;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
