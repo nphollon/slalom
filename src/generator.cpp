@@ -1,4 +1,4 @@
-#include "generate.hpp"
+#include "generator.hpp"
 
 Generator::Generator(ModuleWriter &mw) {
   writer = &mw;

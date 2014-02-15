@@ -4,7 +4,7 @@ AS_FLAGS = "-c `llvm-config --cxxflags`"
 LINK_FLAGS = "`llvm-config --cxxflags --libs engine` `llvm-config --ldflags`"
 TEST_FLAGS = AS_FLAGS + " -frtti -fexceptions -I #{BOOST_ROOT}/boost_1_55_0"
 
-OBJECTS = ["src/generate.o",
+OBJECTS = ["src/generator.o",
            "src/node.o",
            "src/strutil.o"]
 
@@ -13,7 +13,7 @@ TEST_OBJECTS = OBJECTS + [
                           "test/name_node_test.o",
                           "test/apply_node_test.o",
                           "test/parse_test.o",
-                          "test/generate_test.o",
+                          "test/generator_test.o",
                           "#{BOOST_ROOT}/lib/libboost_unit_test_framework.a"
                          ]
 

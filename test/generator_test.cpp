@@ -3,7 +3,7 @@
 #include "hippomocks.h"
 
 #include "../src/node.hpp"
-#include "../src/generate.hpp"
+#include "../src/generator.hpp"
 
 static MockRepository mocks;
 
@@ -44,6 +44,10 @@ BOOST_AUTO_TEST_CASE( generic_name_node_should_generate_generic_combinator ) {
   mocks.ExpectCall(writer, ModuleWriter::createDerivedCombinator).With("name2");
   generator->generate("name1");
   generator->generate("name2");
+}
+
+BOOST_AUTO_TEST_CASE( program_k_i_should_generate_2_combs_and_apply_them ) {
+//mocks.ExpectCall(writer, ModuleWriter::createICombinator);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
