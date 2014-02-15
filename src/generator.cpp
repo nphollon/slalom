@@ -10,7 +10,6 @@ void Generator::generate(const std::string &program) const {
   generateFromParseTree(Node::parse(program));
 }
 
-
 SlalomFunction* Generator::generateFromParseTree(const Node *parseTree) const {
   if (parseTree->isTerminal()) {
     return generateFromName(parseTree->getName());
