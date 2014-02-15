@@ -12,6 +12,14 @@ public:
   virtual void createDerivedCombinator(const std::string&) = 0;
 };
 
-void generate(ModuleWriter*, const Node*);
+class Generator {
+public:
+  Generator(ModuleWriter&);
+  ~Generator();
+  void generate(const std::string&) const;
+private:
+  ModuleWriter* writer;
+  void generateFromParseTree(const Node*) const;
+};
 
 #endif

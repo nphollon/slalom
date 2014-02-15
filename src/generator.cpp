@@ -1,8 +1,17 @@
-#include <map>
-
 #include "generate.hpp"
 
-void generate(ModuleWriter *writer, const Node *parseTree) {
+Generator::Generator(ModuleWriter &mw) {
+  writer = &mw;
+}
+
+Generator::~Generator() {}
+
+void Generator::generate(const std::string &program) const {
+  generateFromParseTree(Node::parse(program));
+}
+
+
+void Generator::generateFromParseTree(const Node *parseTree) const {
   const std::string name = parseTree->getName();
   if (name == "I") {
     writer->createICombinator();
@@ -13,4 +22,4 @@ void generate(ModuleWriter *writer, const Node *parseTree) {
   } else {
     writer->createDerivedCombinator(name);
   }
-};
+}
