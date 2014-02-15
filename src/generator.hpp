@@ -23,9 +23,13 @@ public:
   Generator(ModuleWriter&);
   ~Generator();
   void generate(const std::string&) const;
+
 private:
   ModuleWriter* writer;
-  void generateFromParseTree(const Node*) const;
+
+  SlalomFunction* generateFromParseTree(const Node*) const;
+  SlalomFunction* generateFromName(const std::string&) const;
+  SlalomFunction* generateApplication(const Node*, const Node*) const;
 };
 
 #endif

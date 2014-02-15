@@ -2,6 +2,7 @@
 #define H_NODE_FACTORY
 
 #include "../src/node.hpp"
+#include "../src/generator.hpp"
 
 class NodeFactory {
 private:
@@ -30,6 +31,32 @@ public:
     while (!nodes->empty()) {
       delete nodes->back();
       nodes->pop_back();
+    }
+  }
+};
+
+class FunctionFactory {
+private:
+  vector<SlalomFunction *> *funcs;
+public:
+  FunctionFactory() {
+    funcs = new vector<SlalomFunction*>();
+  }
+
+  ~FunctionFactory() {
+    deleteFuncs();
+    delete funcs;
+  }
+
+  SlalomFunction* buildFunction() {
+    funcs->push_back(new SlalomFunction());
+    return funcs->back();
+  }
+
+  void deleteFuncs() {
+    while (!funcs->empty()) {
+      delete funcs->back();
+      funcs->pop_back();
     }
   }
 };

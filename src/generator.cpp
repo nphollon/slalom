@@ -11,21 +11,28 @@ void Generator::generate(const std::string &program) const {
 }
 
 
-void Generator::generateFromParseTree(const Node *parseTree) const {
+SlalomFunction* Generator::generateFromParseTree(const Node *parseTree) const {
   if (parseTree->isTerminal()) {
-    const std::string name = parseTree->getName();
-    if (name == "I") {
-      writer->createICombinator();
-    } else if (name == "K") {
-      writer->createKCombinator();
-    } else if (name == "S") {
-      writer->createSCombinator();
-    } else {
-      writer->createDerivedCombinator(name);
-    }
+    return generateFromName(parseTree->getName());
   } else {
-    SlalomFunction* k = writer->createKCombinator();
-    SlalomFunction* i = writer->createICombinator();
-    writer->createApplication(k, i);
+    return generateApplication(parseTree->getApplicator(), parseTree->getInput());
   }
+}
+
+SlalomFunction* Generator::generateFromName(const std::string& name) const {
+  if (name == "I") {
+    return writer->createICombinator();
+  } else if (name == "K") {
+    return writer->createKCombinator();
+  } else if (name == "S") {
+    return writer->createSCombinator();
+  } else {
+    return writer->createDerivedCombinator(name);
+  }
+}
+
+SlalomFunction* Generator::generateApplication(const Node *applicator, const Node *input) const {
+  SlalomFunction* appFunc = generateFromParseTree(applicator);
+  SlalomFunction* inpFunc = generateFromParseTree(input);
+  return writer->createApplication(appFunc, inpFunc);
 }
