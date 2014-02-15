@@ -12,14 +12,20 @@ void Generator::generate(const std::string &program) const {
 
 
 void Generator::generateFromParseTree(const Node *parseTree) const {
-  const std::string name = parseTree->getName();
-  if (name == "I") {
-    writer->createICombinator();
-  } else if (name == "K") {
-    writer->createKCombinator();
-  } else if (name == "S") {
-    writer->createSCombinator();
+  if (parseTree->isTerminal()) {
+    const std::string name = parseTree->getName();
+    if (name == "I") {
+      writer->createICombinator();
+    } else if (name == "K") {
+      writer->createKCombinator();
+    } else if (name == "S") {
+      writer->createSCombinator();
+    } else {
+      writer->createDerivedCombinator(name);
+    }
   } else {
-    writer->createDerivedCombinator(name);
+    SlalomFunction* k = writer->createKCombinator();
+    SlalomFunction* i = writer->createICombinator();
+    writer->createApplication(k, i);
   }
 }

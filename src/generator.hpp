@@ -3,13 +3,19 @@
 
 #include "node.hpp"
 
+class SlalomFunction {
+public:
+  SlalomFunction() {}
+};
+
 class ModuleWriter {
 public:
   virtual ~ModuleWriter() {}
-  virtual void createICombinator() = 0;
-  virtual void createKCombinator() = 0;
-  virtual void createSCombinator() = 0;
-  virtual void createDerivedCombinator(const std::string&) = 0;
+  virtual SlalomFunction* createICombinator() = 0;
+  virtual SlalomFunction* createKCombinator() = 0;
+  virtual SlalomFunction* createSCombinator() = 0;
+  virtual SlalomFunction* createDerivedCombinator(const std::string&) = 0;
+  virtual SlalomFunction* createApplication(SlalomFunction*, SlalomFunction*) = 0;
 };
 
 class Generator {
