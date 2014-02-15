@@ -5,10 +5,10 @@
 
 class NodeFactory {
 private:
-  vector<Node *> *nodes;
+  vector<const Node *> *nodes;
 public:
   NodeFactory() {
-    nodes = new vector<Node *>();
+    nodes = new vector<const Node *>();
   }
 
   ~NodeFactory() {
