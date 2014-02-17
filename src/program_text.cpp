@@ -3,20 +3,23 @@
 const std::string ProgramText::WHITESPACE = "\t ";
 const std::string ProgramText::NON_NAME_CHARS = WHITESPACE + "()";
 
-ProgramText::ProgramText(const std::string& t) {
-  text = new std::string(t);
+ProgramText::ProgramText(const std::string t) {
+  text = t;
+  length = text.length();
 }
 
-ProgramText::~ProgramText() {
-  delete text;
+ProgramText::~ProgramText() {}
+
+std::string ProgramText::toString() const {
+  return text;
 }
 
 bool ProgramText::isValid() const {
   int nestLevel = 0;
-  for (int i = 0; i < text->length() && nestLevel <= 0; i++) {
-    if (text->at(i) == '(') {
+  for (int i = 0; i < length && nestLevel <= 0; i++) {
+    if (text.at(i) == '(') {
       nestLevel--;
-    } else if (text->at(i) == ')') {
+    } else if (text.at(i) == ')') {
       nestLevel++;
     }
   }
@@ -25,7 +28,12 @@ bool ProgramText::isValid() const {
 }
 
 bool ProgramText::isEmpty() const {
-  return text->empty();
+  return text.empty();
+}
+
+// Returns true if expression is wrapped in parens
+bool ProgramText::isWrapped() const {
+  return (length > 0) && (findLastOpenParen() == 0);
 }
 
 // Identifies last token in expression, as delimited by whitespace or parens
@@ -36,18 +44,17 @@ bool ProgramText::isEmpty() const {
 // "A (B C)" returns {"A", "(B C)"}
 // "A" returns {"A"}
 // "(A (B C))" returns {"(A (B C))"}
-std::vector<std::string> ProgramText::splitAtLastToken() const {
+std::vector<ProgramText> ProgramText::splitAtLastToken() const {
   int lastTokenPos = findLastOpenParen();
   
-  if (lastTokenPos == text->length()) {
-    lastTokenPos = text->find_last_of(NON_NAME_CHARS) + 1;
+  if (lastTokenPos == length) {
+    lastTokenPos = text.find_last_of(NON_NAME_CHARS) + 1;
   }
 
-  std::string lastToken = text->substr(lastTokenPos);
-
-  std::vector<std::string> tokens;
-  if (lastToken != *text) {
-    std::string firstToken = text->substr(0, lastTokenPos);
+  ProgramText lastToken = cropFromEnds(lastTokenPos, 0);
+  std::vector<ProgramText> tokens;
+  if (lastToken.text != text) {
+    ProgramText firstToken = cropFromStart(0, lastTokenPos-1);
     tokens.push_back(firstToken);
   }
   tokens.push_back(lastToken);
@@ -55,30 +62,21 @@ std::vector<std::string> ProgramText::splitAtLastToken() const {
 }
 
 // Returns expression without leading/trailing whitespace and wrapping parens
-ProgramText* ProgramText::trim() const {
-  size_t firstCharPos = text->find_first_not_of(WHITESPACE);
+ProgramText ProgramText::trim() const {
+  size_t firstCharPos = text.find_first_not_of(WHITESPACE);
 
-  if (text->empty() || firstCharPos == std::string::npos) {
-    return new ProgramText("");
+  if (isEmpty() || firstCharPos == std::string::npos) {
+    return ProgramText("");
   }
 
-  size_t lastCharPos = text->find_last_not_of(WHITESPACE);
-  std::string trimmed = substrFromStart(firstCharPos, lastCharPos);
+  size_t lastCharPos = text.find_last_not_of(WHITESPACE);
+  ProgramText trimmed = cropFromStart(firstCharPos, lastCharPos) ;
 
-  ProgramText *pTrimmed = new ProgramText(trimmed);
-  if (pTrimmed->isWrapped()) {
-    ProgramText pNoParens = ProgramText(pTrimmed->substrFromEnds(1, 1));
-    ProgramText *recurseTrimmed = pNoParens.trim();
-    delete pTrimmed;
-    return recurseTrimmed;
+  if (trimmed.isWrapped()) {
+    return trimmed.cropFromEnds(1, 1).trim();
   }
 
-  return pTrimmed;
-}
-
-// Returns true if expression is wrapped in parens
-bool ProgramText::isWrapped() const {
-  return (text->length() > 0) && (findLastOpenParen() == 0);
+  return trimmed;
 }
 
 // If last character of expression is not ')',
@@ -89,36 +87,32 @@ bool ProgramText::isWrapped() const {
 //    return position of '(' matching last ')'
 int ProgramText::findLastOpenParen() const {
   if (lastChar() != ')') {
-    return text->length();
+    return length;
   }
 
   int nestLevel = 1;
-  int i = text->length() - 1;
+  int i = length - 1;
   while (nestLevel > 0 && i > 0) {
     i--;
-    if (text->at(i) == '(') {
+    if (text.at(i) == '(') {
       nestLevel--;
-    } else if (text->at(i) == ')') {
+    } else if (text.at(i) == ')') {
       nestLevel++;
     }
   }
   return i;
 }
 
-std::string ProgramText::substrFromEnds(size_t startPos, size_t lenFromEnd) const {
-  int length = text->length() - lenFromEnd - startPos;
-  return text->substr(startPos, length);
+ProgramText ProgramText::cropFromEnds(size_t startPos, size_t lengthFromEnd) const {
+  int substrLength = length - lengthFromEnd - startPos;
+  return ProgramText(text.substr(startPos, substrLength));
 }
 
-std::string ProgramText::substrFromStart(size_t firstCharPos, size_t lastCharPos) const {
-  int length = lastCharPos - firstCharPos + 1;
-  return text->substr(firstCharPos, length);
+ProgramText ProgramText::cropFromStart(size_t firstCharPos, size_t lastCharPos) const {
+  int substrLength = lastCharPos - firstCharPos + 1;
+  return ProgramText(text.substr(firstCharPos, substrLength));
 }
 
 char ProgramText::lastChar() const {
-  return text->at(text->length() - 1);
-}
-
-const std::string ProgramText::toString() const {
-  return *text;
+  return text.at(length - 1);
 }

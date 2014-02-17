@@ -80,20 +80,20 @@ const Node* Node::copy(const Node& original) {
 // Recursively construct parse tree
 // Assumes valid program syntax
 const Node* Node::constructParseTree(const ProgramText& program) {
-  ProgramText *trimmed = program.trim();
+  ProgramText trimmed = program.trim();
 
-  if (trimmed->isEmpty()) {
+  if (trimmed.isEmpty()) {
     return Node::byName("I");
   }
 
-  const vector<string> tokens = trimmed->splitAtLastToken();
+  const vector<ProgramText> tokens = trimmed.splitAtLastToken();
 
   if (tokens.size() == 1) {
-    return Node::byName(tokens[0]);
+    return Node::byName(tokens[0].toString());
   }
 
-  const Node *input = constructParseTree(ProgramText(tokens[1]));
-  const Node *applicator = constructParseTree(ProgramText(tokens[0]));
+  const Node *input = constructParseTree(tokens[1]);
+  const Node *applicator = constructParseTree(tokens[0]);
   const Node *composed = Node::byChildren(*applicator, *input);
   delete applicator;
   delete input;
