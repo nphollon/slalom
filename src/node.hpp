@@ -2,7 +2,8 @@
 #define H_NODE
 
 #include <string>
-#include <vector>
+
+#include "program_text.hpp"
 
 using namespace std;
 
@@ -30,18 +31,9 @@ private:
   Node(const string&, const Node*, const Node*);
 
   static const Node* copy(const Node& n);
-
-  static const string WHITESPACE;
-  static const string NON_NAME_CHARS;
-
-  static const Node* constructParseTree(const string&);
-  static bool validateParens(const string&);
-  static vector<string> splitAtLastToken(const string&);
-  static string trim(const string&);
-  static bool isWrapped(const string&);
-  static int findLastOpenParen(const string&);
+  static const Node* constructParseTree(const ProgramText&);
 };
 
-std::ostream& operator<<(std::ostream& os, const Node& obj);
+ostream& operator<<(ostream& os, const Node& obj);
 
 #endif
