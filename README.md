@@ -6,9 +6,28 @@ Slalom is a simple functional language based on the [SKI combinator calculus](ht
 Dependencies
 ------------
 
+### Runtime Dependencies
+
 * [Rake](http://rake.rubyforge.org) v 10.1 or later
-* [LLVM] (http://llvm.org/releases/download.html#3.4) v 3.4
-* [Clang](http://clang.llvm.org) 
+* [Clang & LLVM](http://llvm.org/releases/download.html#3.4) v 3.4
+
+### Test Dependencies
+
+* [Boost Unit Test Framework](http://sourceforge.net/projects/boost/files/boost/1.55.0/) v 1.55.0
+* [Hippo Mocks](https://www.assembla.com/wiki/show/hippomocks) v 3.1 (You don't need to install this separately. It's included in the Slalom repository.)
+
+License
+-------
+
+Copyright (C) 2014  Nicholas Hollon
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the [GNU General Public License](https://www.gnu.org/licenses/gpl.html), for more details.
+
+The full text of the GPLv3 is available in the LICENSE file of this project.
+
+All dependencies are subject to free software licenses compatible with the GPLv3. Rake is licensed under the [MIT "Expat" License](http://rake.rubyforge.org/MIT-LICENSE.html). Clang and LLVM are license under the [University of Illinois/NCSA Open Source License](http://opensource.org/licenses/UoI-NCSA.php). Boost is licensed under the [Boost Software License](http://www.boost.org/users/license.html). Hippo Mocks is licensed under the [GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl.html).
 
 Installing & Running
 --------------------

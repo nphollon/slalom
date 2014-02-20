@@ -99,4 +99,3 @@ const Node* Node::constructParseTree(const ProgramText& program) {
   delete input;
   return composed;
 }
-
