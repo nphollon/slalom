@@ -6,7 +6,8 @@ TEST_FLAGS = AS_FLAGS + " -frtti -fexceptions -I #{BOOST_ROOT}/boost_1_55_0"
 
 OBJECTS = ["src/generator.o",
            "src/node.o",
-           "src/program_text.o"
+           "src/program_text.o",
+           "src/module_writer.o"
           ]
 
 TEST_OBJECTS = OBJECTS + [
@@ -15,6 +16,8 @@ TEST_OBJECTS = OBJECTS + [
                           "test/apply_node_test.o",
                           "test/parse_test.o",
                           "test/generator_test.o",
+                          "test/module_test.o",
+                          "test/test_jit.o",
                           "#{BOOST_ROOT}/lib/libboost_unit_test_framework.a"
                          ]
 
