@@ -7,7 +7,7 @@ TEST_FLAGS = AS_FLAGS + " -frtti -fexceptions -I #{BOOST_ROOT}/boost_1_55_0"
 OBJECTS = ["src/generator.o",
            "src/node.o",
            "src/program_text.o",
-           "src/module_writer.o"
+           "src/ir_module_writer.o"
           ]
 
 TEST_OBJECTS = OBJECTS + [

@@ -23,7 +23,7 @@ private:
 
 public:
   TestJIT();
-  FactoryFunction getFunctionPointer(const std::string&);
+  FactoryFunction getFactoryFunctionPointer(const std::string&);
   ~TestJIT();
 };
 
