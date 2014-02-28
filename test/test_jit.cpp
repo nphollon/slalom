@@ -9,7 +9,7 @@
 TestJIT::TestJIT() {
   llvm::InitializeNativeTarget();
   module = new llvm::Module("JIT", llvm::getGlobalContext());
-  writer = IRModuleWriter::createModuleWriter(module, &llvm::getGlobalContext());
+  writer = IRModuleWriter::createModuleWriter(module);
   engine = llvm::EngineBuilder(module).create();
 }
 

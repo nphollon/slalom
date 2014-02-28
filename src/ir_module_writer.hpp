@@ -9,9 +9,21 @@
 
 using namespace llvm;
 
+class IRSlalomFunction : public SlalomFunction {
+public:
+  IRSlalomFunction(Function*, IRBuilder<>&);
+  ~IRSlalomFunction();
+  Type* type();
+  Value* value();
+  void setArity(int);
+private:
+  Type* irStructType;
+  Value* irStruct;
+};
+
 class IRModuleWriter : public ModuleWriter {
 public:
-  static ModuleWriter* createModuleWriter(Module*, LLVMContext*);
+  static ModuleWriter* createModuleWriter(Module*);
   
   SlalomFunction* createICombinator();
   SlalomFunction* createKCombinator();
@@ -20,13 +32,18 @@ public:
   SlalomFunction* createApplication(SlalomFunction*, SlalomFunction*);
 private:
   Module *module;
-  LLVMContext *context;
   IRBuilder<> builder;
 
-  IRModuleWriter(Module*, LLVMContext*);
+  IRModuleWriter(Module*);
   
+  StructType* sfTy;
+  Function* malloc;
+
   void generateFramework();
-  Value* createSlalomFunctionStruct(Type*);
+  void declareMalloc();
+  void defineSlalomFunctionStruct();
+  Value* newSlalomFunctionStruct();
+  void setArity(Value*, int);
 };
 
 #endif
