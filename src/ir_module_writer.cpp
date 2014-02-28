@@ -2,8 +2,10 @@
 
 #include <vector>
 
-IRSlalomFunction::IRSlalomFunction(Function* malloc, IRBuilder<> &builder) {
-  Type* arityTy = Type::getInt32Ty(malloc->getContext());
+IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
+  IRBuilder<> builder(block);
+
+  Type* arityTy = Type::getInt32Ty(block->getContext());
   irStructType = StructType::create("sf", arityTy, NULL);
 
   Value* allocSize = ConstantExpr::getSizeOf(irStructType);
@@ -22,14 +24,15 @@ Value* IRSlalomFunction::value() {
   return irStruct;
 }
 
-void IRSlalomFunction::setArity(int arity) {
+void IRSlalomFunction::setArity(int arity, BasicBlock* block) {
   // Get a pointer to the arity element
-  Value* idxZero = ConstantInt::get(Type::getInt32Ty(module->getContext()), 0);
+  IRBuilder<> builder(block);
+  Value* idxZero = ConstantInt::get(Type::getInt32Ty(block->getContext()), 0);
   std::vector<Value*> idxList(2, idxZero);
-  Value* arityPtr = builder.CreateGEP(, idxList);
+  Value* arityPtr = builder.CreateGEP(irStruct, idxList);
 
   // Set the arity to 1
-  Type* arityTy = sfTy->getElementType(0);
+  Type* arityTy = irStructType->getElementType(0);
   Value* arity1 = ConstantInt::get(arityTy, arity);
   builder.CreateStore(arity1, arityPtr);
 }
@@ -40,7 +43,7 @@ ModuleWriter* IRModuleWriter::createModuleWriter(Module *module) {
   return writer;
 }
 
-IRModuleWriter::IRModuleWriter(Module *m) : module(m), builder(m->getContext()) {
+IRModuleWriter::IRModuleWriter(Module *m) : module(m) {
 }
 
 SlalomFunction* IRModuleWriter::createICombinator() {
@@ -61,9 +64,6 @@ SlalomFunction* IRModuleWriter::createDerivedCombinator(const std::string&) {
 
 SlalomFunction* IRModuleWriter::createApplication(SlalomFunction*, SlalomFunction*) {
   return NULL;
-}
-
-void IRModuleWriter::setArity(Value* slalomFunction, int arity) {
 }
 
 void IRModuleWriter::declareMalloc() {
@@ -91,15 +91,13 @@ void IRModuleWriter::generateFramework() {
 
   // Create IRBuilder for the function
   BasicBlock* block = BasicBlock::Create(module->getContext(), "entry", cic);
-  builder.SetInsertPoint(block);
 
-  IRSlalomFunction* sfs = new IRSlalomFunction(module->getFunction("malloc"), builder);
-  sfs->setArity(1);
-  Value* retVal = sfs->value();
-  setArity(retVal, 1);
+  IRSlalomFunction* sfs = new IRSlalomFunction(module->getFunction("malloc"), block);
+  sfs->setArity(1, block);
   
   // Return pointer to the struct
-  builder.CreateRet(retVal);
+  IRBuilder<> builder(block);
+  builder.CreateRet(sfs->value());
 
   module->dump();
 }

@@ -11,13 +11,13 @@ using namespace llvm;
 
 class IRSlalomFunction : public SlalomFunction {
 public:
-  IRSlalomFunction(Function*, IRBuilder<>&);
+  IRSlalomFunction(Function*, BasicBlock*);
   ~IRSlalomFunction();
   Type* type();
   Value* value();
-  void setArity(int);
+  void setArity(int, BasicBlock*);
 private:
-  Type* irStructType;
+  StructType* irStructType;
   Value* irStruct;
 };
 
@@ -32,7 +32,6 @@ public:
   SlalomFunction* createApplication(SlalomFunction*, SlalomFunction*);
 private:
   Module *module;
-  IRBuilder<> builder;
 
   IRModuleWriter(Module*);
   
@@ -43,7 +42,6 @@ private:
   void declareMalloc();
   void defineSlalomFunctionStruct();
   Value* newSlalomFunctionStruct();
-  void setArity(Value*, int);
 };
 
 #endif
