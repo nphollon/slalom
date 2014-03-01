@@ -11,15 +11,17 @@ using namespace llvm;
 
 class IRSlalomFunction : public SlalomFunction {
 public:
+  static StructType* type(LLVMContext&);
+
   IRSlalomFunction(Function*, BasicBlock*);
   ~IRSlalomFunction();
-  Type* type();
   Value* value();
   void setArity(int, BasicBlock*);
 private:
-  StructType* irStructType;
   Value* irStruct;
 };
+
+
 
 class IRModuleWriter : public ModuleWriter {
 public:
@@ -35,12 +37,10 @@ private:
 
   IRModuleWriter(Module*);
   
-  StructType* sfTy;
   Function* malloc;
 
   void generateFramework();
   void declareMalloc();
-  void defineSlalomFunctionStruct();
   Value* newSlalomFunctionStruct();
 };
 

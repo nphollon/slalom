@@ -5,9 +5,7 @@
 IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
   IRBuilder<> builder(block);
 
-  Type* arityTy = Type::getInt32Ty(block->getContext());
-  irStructType = StructType::create("sf", arityTy, NULL);
-
+  Type* irStructType = type(block->getContext());
   Value* allocSize = ConstantExpr::getSizeOf(irStructType);
   Value* mallocResult = builder.CreateCall(malloc, allocSize);
 
@@ -16,8 +14,9 @@ IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
 
 IRSlalomFunction::~IRSlalomFunction() {}
 
-Type* IRSlalomFunction::type() {
-  return irStructType;
+StructType* IRSlalomFunction::type(LLVMContext& context) {
+  Type* arityTy = Type::getInt32Ty(context);
+  return StructType::get(arityTy, NULL);
 }
 
 Value* IRSlalomFunction::value() {
@@ -32,7 +31,7 @@ void IRSlalomFunction::setArity(int arity, BasicBlock* block) {
   Value* arityPtr = builder.CreateGEP(irStruct, idxList);
 
   // Set the arity to 1
-  Type* arityTy = irStructType->getElementType(0);
+  Type* arityTy = type(block->getContext())->getElementType(0);
   Value* arity1 = ConstantInt::get(arityTy, arity);
   builder.CreateStore(arity1, arityPtr);
 }
@@ -73,25 +72,18 @@ void IRModuleWriter::declareMalloc() {
   malloc = cast<Function>(mallocC);
 }
 
-void IRModuleWriter::defineSlalomFunctionStruct() {
-  Type* arityTy = Type::getInt32Ty(module->getContext());
-  sfTy = StructType::create("sf", arityTy, NULL);
-}
-
 void IRModuleWriter::generateFramework() {
   declareMalloc();
-  defineSlalomFunctionStruct();
 
-  Type* arityTy = Type::getInt32Ty(malloc->getContext());
-  Type* retTy = StructType::create("sf", arityTy, NULL)->getPointerTo();
+  Type* retTy = IRSlalomFunction::type(module->getContext())->getPointerTo();
 
   // Create createICombinator() function
   Constant* f = module->getOrInsertFunction("createICombinator", retTy, NULL);
   Function* cic = cast<Function>(f);
-
-  // Create IRBuilder for the function
   BasicBlock* block = BasicBlock::Create(module->getContext(), "entry", cic);
 
+  // Create IRBuilder for the function
+ 
   IRSlalomFunction* sfs = new IRSlalomFunction(module->getFunction("malloc"), block);
   sfs->setArity(1, block);
   
