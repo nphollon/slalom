@@ -1,11 +1,22 @@
 #include "ir_module_writer.hpp"
 
+#include "llvm/Support/Casting.h"
+
 #include <vector>
+
+Type* IRSlalomFunction::getType(LLVMContext& context) {
+  Type* arityTy = Type::getInt32Ty(context);
+  return StructType::get(arityTy, NULL);
+}
+
+Type* IRSlalomFunction::getPointerType(LLVMContext& context) {
+  return getType(context)->getPointerTo();
+}
 
 IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
   IRBuilder<> builder(block);
 
-  Type* irStructType = type(block->getContext());
+  Type* irStructType = getType(block->getContext());
   Value* allocSize = ConstantExpr::getSizeOf(irStructType);
   Value* mallocResult = builder.CreateCall(malloc, allocSize);
 
@@ -14,26 +25,30 @@ IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
 
 IRSlalomFunction::~IRSlalomFunction() {}
 
-StructType* IRSlalomFunction::type(LLVMContext& context) {
-  Type* arityTy = Type::getInt32Ty(context);
-  return StructType::get(arityTy, NULL);
-}
-
-Value* IRSlalomFunction::value() {
-  return irStruct;
-}
-
 void IRSlalomFunction::setArity(int arity, BasicBlock* block) {
-  // Get a pointer to the arity element
+  Value* arityPtr = getArityPointer(block);
+
+  // Set the arity to 1
+  IRBuilder<> builder(block);
+  Type* arityTy = arityPtr->getType()->getPointerElementType();
+  Value* arity1 = ConstantInt::get(arityTy, arity);
+  builder.CreateStore(arity1, arityPtr);
+}
+
+void IRSlalomFunction::setReturn(BasicBlock* block) {
+  IRBuilder<> builder(block);
+  builder.CreateRet(irStruct);
+}
+
+Type* IRSlalomFunction::getType() {
+  return irStruct->getType();
+}
+
+Value* IRSlalomFunction::getArityPointer(BasicBlock* block) {
   IRBuilder<> builder(block);
   Value* idxZero = ConstantInt::get(Type::getInt32Ty(block->getContext()), 0);
   std::vector<Value*> idxList(2, idxZero);
-  Value* arityPtr = builder.CreateGEP(irStruct, idxList);
-
-  // Set the arity to 1
-  Type* arityTy = type(block->getContext())->getElementType(0);
-  Value* arity1 = ConstantInt::get(arityTy, arity);
-  builder.CreateStore(arity1, arityPtr);
+  return builder.CreateGEP(irStruct, idxList);
 }
 
 ModuleWriter* IRModuleWriter::createModuleWriter(Module *module) {
@@ -75,21 +90,15 @@ void IRModuleWriter::declareMalloc() {
 void IRModuleWriter::generateFramework() {
   declareMalloc();
 
-  Type* retTy = IRSlalomFunction::type(module->getContext())->getPointerTo();
+  Type* retTy = IRSlalomFunction::getPointerType(module->getContext());
 
-  // Create createICombinator() function
   Constant* f = module->getOrInsertFunction("createICombinator", retTy, NULL);
   Function* cic = cast<Function>(f);
   BasicBlock* block = BasicBlock::Create(module->getContext(), "entry", cic);
 
-  // Create IRBuilder for the function
- 
   IRSlalomFunction* sfs = new IRSlalomFunction(module->getFunction("malloc"), block);
   sfs->setArity(1, block);
-  
-  // Return pointer to the struct
-  IRBuilder<> builder(block);
-  builder.CreateRet(sfs->value());
+  sfs->setReturn(block);
 
   module->dump();
 }

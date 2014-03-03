@@ -11,14 +11,19 @@ using namespace llvm;
 
 class IRSlalomFunction : public SlalomFunction {
 public:
-  static StructType* type(LLVMContext&);
+  static Type* getType(LLVMContext&);
+  static Type* getPointerType(LLVMContext&);
 
   IRSlalomFunction(Function*, BasicBlock*);
   ~IRSlalomFunction();
-  Value* value();
+
   void setArity(int, BasicBlock*);
+  void setReturn(BasicBlock*);
 private:
   Value* irStruct;
+
+  Type* getType();
+  Value* getArityPointer(BasicBlock*);
 };
 
 
