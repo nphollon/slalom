@@ -4,35 +4,24 @@
 
 #include <vector>
 
-Type* IRSlalomFunction::getType(LLVMContext& context) {
-  Type* arityTy = Type::getInt32Ty(context);
-  return StructType::get(arityTy, NULL);
-}
-
 Type* IRSlalomFunction::getPointerType(LLVMContext& context) {
   return getType(context)->getPointerTo();
 }
 
 IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
+  LLVMContext *context = &block->getContext();
+  Value* allocSize = getSize(*context);
   IRBuilder<> builder(block);
-
-  Type* irStructType = getType(block->getContext());
-  Value* allocSize = ConstantExpr::getSizeOf(irStructType);
   Value* mallocResult = builder.CreateCall(malloc, allocSize);
-
-  irStruct = builder.CreateBitCast(mallocResult, irStructType->getPointerTo());
+  irStruct = builder.CreateBitCast(mallocResult, getPointerType(*context));
 }
 
 IRSlalomFunction::~IRSlalomFunction() {}
 
 void IRSlalomFunction::setArity(int arity, BasicBlock* block) {
-  Value* arityPtr = getArityPointer(block);
-
-  // Set the arity to 1
+  Value* arityValue = ConstantInt::get(getArityType(), arity);
   IRBuilder<> builder(block);
-  Type* arityTy = arityPtr->getType()->getPointerElementType();
-  Value* arity1 = ConstantInt::get(arityTy, arity);
-  builder.CreateStore(arity1, arityPtr);
+  builder.CreateStore(arityValue, getArityPointer(block));
 }
 
 void IRSlalomFunction::setReturn(BasicBlock* block) {
@@ -40,8 +29,21 @@ void IRSlalomFunction::setReturn(BasicBlock* block) {
   builder.CreateRet(irStruct);
 }
 
+Value* IRSlalomFunction::getSize(LLVMContext& context) {
+  return ConstantExpr::getSizeOf(getType(context));
+}
+
+Type* IRSlalomFunction::getType(LLVMContext& context) {
+  Type* arityTy = Type::getInt32Ty(context);
+  return StructType::get(arityTy, NULL);
+}
+
 Type* IRSlalomFunction::getType() {
   return irStruct->getType();
+}
+
+Type* IRSlalomFunction::getArityType() {
+  return getType()->getPointerElementType()->getStructElementType(0);
 }
 
 Value* IRSlalomFunction::getArityPointer(BasicBlock* block) {
@@ -80,23 +82,24 @@ SlalomFunction* IRModuleWriter::createApplication(SlalomFunction*, SlalomFunctio
   return NULL;
 }
 
-void IRModuleWriter::declareMalloc() {
+Function* IRModuleWriter::declareMalloc(Module* module) {
   Type* intPtrTy = Type::getInt8PtrTy(module->getContext());
   Type* allocTy = Type::getInt64Ty(module->getContext());
   Constant* mallocC = module->getOrInsertFunction("malloc", intPtrTy, allocTy, NULL);
-  malloc = cast<Function>(mallocC);
+  return cast<Function>(mallocC);
+}
+
+BasicBlock* IRModuleWriter::openFactoryFunction(const std::string& name, Module* module) {
+  Type* retTy = IRSlalomFunction::getPointerType(module->getContext());
+  Constant* functionAsConstant = module->getOrInsertFunction(name, retTy, NULL);
+  Function* function = cast<Function>(functionAsConstant);
+  return BasicBlock::Create(module->getContext(), "entry", function);
 }
 
 void IRModuleWriter::generateFramework() {
-  declareMalloc();
-
-  Type* retTy = IRSlalomFunction::getPointerType(module->getContext());
-
-  Constant* f = module->getOrInsertFunction("createICombinator", retTy, NULL);
-  Function* cic = cast<Function>(f);
-  BasicBlock* block = BasicBlock::Create(module->getContext(), "entry", cic);
-
-  IRSlalomFunction* sfs = new IRSlalomFunction(module->getFunction("malloc"), block);
+  Function* malloc = declareMalloc(module);
+  BasicBlock* block = openFactoryFunction("createICombinator", module);
+  IRSlalomFunction* sfs = new IRSlalomFunction(malloc, block);
   sfs->setArity(1, block);
   sfs->setReturn(block);
 

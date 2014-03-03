@@ -11,7 +11,6 @@ using namespace llvm;
 
 class IRSlalomFunction : public SlalomFunction {
 public:
-  static Type* getType(LLVMContext&);
   static Type* getPointerType(LLVMContext&);
 
   IRSlalomFunction(Function*, BasicBlock*);
@@ -20,9 +19,13 @@ public:
   void setArity(int, BasicBlock*);
   void setReturn(BasicBlock*);
 private:
+  static Type* getType(LLVMContext&);
+  static Value* getSize(LLVMContext&);
+
   Value* irStruct;
 
   Type* getType();
+  Type* getArityType();
   Value* getArityPointer(BasicBlock*);
 };
 
@@ -42,11 +45,9 @@ private:
 
   IRModuleWriter(Module*);
   
-  Function* malloc;
-
   void generateFramework();
-  void declareMalloc();
-  Value* newSlalomFunctionStruct();
+  Function* declareMalloc(Module*);
+  BasicBlock* openFactoryFunction(const std::string&, Module*);
 };
 
 #endif
