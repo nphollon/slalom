@@ -8,6 +8,30 @@
 
 using namespace llvm;
 
+class IRArity {
+public:
+  static Type* getType(LLVMContext&);
+};
+
+class IRArgumentsQueue {
+public:
+  static Type* getPointerType(LLVMContext&);
+
+  IRArgumentsQueue(Function*, BasicBlock*);
+  ~IRArgumentsQueue();
+
+  void setLength(int, BasicBlock*);
+  Value* getValue();
+private:
+  static Value* getSize(LLVMContext&);
+  static Type* getType(LLVMContext&);
+
+  Value* irStruct;
+
+  Type* getType();
+  Type* getLengthType();
+};
+
 class IRSlalomFunction : public SlalomFunction {
 public:
   static Type* getPointerType(LLVMContext&);
@@ -17,6 +41,7 @@ public:
 
   void setArity(int, BasicBlock*);
   void setName(const std::string&, BasicBlock*);
+  void setArguments(IRArgumentsQueue*, BasicBlock*);
   void setReturn(BasicBlock*);
 private:
   static Value* getSize(LLVMContext&);

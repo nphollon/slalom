@@ -14,19 +14,6 @@ IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
   IRBuilder<> builder(block);
   Value* mallocResult = builder.CreateCall(malloc, allocSize);
   irStruct = builder.CreateBitCast(mallocResult, getPointerType(*context));
-
-  Value* argsAllocSize = ConstantExpr::getSizeOf(getType()->getStructElementType(2)->getPointerElementType());
-  Value* argsMallocResult = builder.CreateCall(malloc, argsAllocSize);
-  Value* argsValue = builder.CreateBitCast(argsMallocResult, getType()->getStructElementType(2));
-  Value* argsPtr = getElementPointer(2, block);
-  builder.CreateStore(argsValue, argsPtr);
-
-  std::vector<Value*> idxList(2);
-  idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
-  idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), 0);
-  Value* argsLengthPtr = builder.CreateGEP(argsValue, idxList);  
-  Value* argsLengthValue = ConstantInt::get(getArityType(), 0);
-  builder.CreateStore(argsLengthValue, argsLengthPtr);
 }
 
 IRSlalomFunction::~IRSlalomFunction() {}
@@ -45,6 +32,13 @@ void IRSlalomFunction::setName(const std::string& name, BasicBlock* block) {
   builder.CreateStore(nameValue, getNamePointer(block));
 }
 
+void IRSlalomFunction::setArguments(IRArgumentsQueue* args, BasicBlock* block) {
+  Value* argsValue = args->getValue();
+  Value* argsPtr = getElementPointer(2, block);
+  IRBuilder<> builder(block);
+  builder.CreateStore(argsValue, argsPtr);
+}
+
 void IRSlalomFunction::setReturn(BasicBlock* block) {
   IRBuilder<> builder(block);
   builder.CreateRet(irStruct);
@@ -57,9 +51,9 @@ Value* IRSlalomFunction::getSize(LLVMContext& context) {
 }
 
 Type* IRSlalomFunction::getType(LLVMContext& context) {
-  Type* arityTy = Type::getInt32Ty(context);
+  Type* arityTy = IRArity::getType(context);
   Type* nameTy = Type::getInt8PtrTy(context);
-  Type* argsType = StructType::get(arityTy, NULL)->getPointerTo();
+  Type* argsType = IRArgumentsQueue::getPointerType(context);
 
   return StructType::get(arityTy, nameTy, argsType, NULL);
 }
@@ -75,11 +69,11 @@ Type* IRSlalomFunction::getPointerType() {
 }
 
 Type* IRSlalomFunction::getArityType() {
-  return getPointerType()->getPointerElementType()->getStructElementType(0);
+  return getType()->getStructElementType(0);
 }
 
 Type* IRSlalomFunction::getNameType() {
-  return getPointerType()->getPointerElementType()->getStructElementType(1);
+  return getType()->getStructElementType(1);
 }
 
 Value* IRSlalomFunction::getArityPointer(BasicBlock* block) {
@@ -96,4 +90,56 @@ Value* IRSlalomFunction::getElementPointer(int i, BasicBlock* block) {
   idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
   idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), i);
   return builder.CreateGEP(irStruct, idxList);
+}
+
+
+
+Type* IRArgumentsQueue::getPointerType(LLVMContext& context) {
+  return getType(context)->getPointerTo();
+}
+
+
+IRArgumentsQueue::IRArgumentsQueue(Function* malloc, BasicBlock* block) {
+  LLVMContext *context = &block->getContext();
+  Value* argsAllocSize = getSize(*context);
+  IRBuilder<> builder(block);
+  Value* mallocResult = builder.CreateCall(malloc, argsAllocSize);
+  irStruct = builder.CreateBitCast(mallocResult, getPointerType(*context));
+}
+
+IRArgumentsQueue::~IRArgumentsQueue() {}
+
+void IRArgumentsQueue::setLength(int length, BasicBlock* block) {
+  std::vector<Value*> idxList(2);
+  idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
+  idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), 0);
+  IRBuilder<> builder(block);
+  Value* argsLengthPtr = builder.CreateGEP(irStruct, idxList);  
+  Value* argsLengthValue = ConstantInt::get(getLengthType(), 0);
+  builder.CreateStore(argsLengthValue, argsLengthPtr);
+}
+
+Value* IRArgumentsQueue::getValue() {
+  return irStruct;
+}
+
+Value* IRArgumentsQueue::getSize(LLVMContext& context) {
+  return ConstantExpr::getSizeOf(getType(context));
+}
+
+Type* IRArgumentsQueue::getType(LLVMContext& context) {
+  return StructType::get(IRArity::getType(context), NULL);
+}
+
+Type* IRArgumentsQueue::getType() {
+  return irStruct->getType()->getPointerElementType();
+}
+
+Type* IRArgumentsQueue::getLengthType() {
+  return getType()->getStructElementType(0);
+}
+
+
+Type* IRArity::getType(LLVMContext& context) {
+  return Type::getInt32Ty(context);
 }

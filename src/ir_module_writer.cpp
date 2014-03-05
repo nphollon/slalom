@@ -53,5 +53,10 @@ void IRModuleWriter::generateFramework() {
   IRSlalomFunction* sfs = new IRSlalomFunction(malloc, block);
   sfs->setArity(1, block);
   sfs->setName("I", block);
+
+  IRArgumentsQueue* q = new IRArgumentsQueue(malloc, block);
+  q->setLength(0, block);
+  sfs->setArguments(q, block);
+
   sfs->setReturn(block);
 }
