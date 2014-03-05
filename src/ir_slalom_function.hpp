@@ -16,16 +16,20 @@ public:
   ~IRSlalomFunction();
 
   void setArity(int, BasicBlock*);
+  void setName(const std::string&, BasicBlock*);
   void setReturn(BasicBlock*);
 private:
-  static Type* getType(LLVMContext&);
   static Value* getSize(LLVMContext&);
+  static Type* getType(LLVMContext&);
 
   Value* irStruct;
 
   Type* getType();
+  Type* getPointerType();
   Type* getArityType();
+  Type* getNameType();
   Value* getArityPointer(BasicBlock*);
+  Value* getNamePointer(BasicBlock*);
 };
 
 #endif

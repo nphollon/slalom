@@ -52,7 +52,6 @@ void IRModuleWriter::generateFramework() {
   BasicBlock* block = openFactoryFunction("createICombinator", module);
   IRSlalomFunction* sfs = new IRSlalomFunction(malloc, block);
   sfs->setArity(1, block);
+  sfs->setName("I", block);
   sfs->setReturn(block);
-
-  module->dump();
 }

@@ -11,6 +11,7 @@
 
 struct SlalomFunctionStruct {
   int arity;
+  char* name;
 };
 
 typedef SlalomFunctionStruct*(*FactoryFunction)();
@@ -23,8 +24,10 @@ private:
 
 public:
   TestJIT();
-  FactoryFunction getFactoryFunctionPointer(const std::string&);
   ~TestJIT();
+
+  FactoryFunction getFactoryFunctionPointer(const std::string&);
+  void dumpModule();
 };
 
 #endif

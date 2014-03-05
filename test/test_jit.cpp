@@ -13,11 +13,16 @@ TestJIT::TestJIT() {
   engine = llvm::EngineBuilder(module).create();
 }
 
+TestJIT:: ~TestJIT() {
+  delete module;
+  delete writer;
+}
+
 FactoryFunction TestJIT::getFactoryFunctionPointer(const std::string& name) {
   llvm::Function *function = module->getFunction(name);
   return (FactoryFunction)(intptr_t)engine->getPointerToFunction(function);
 }
 
-TestJIT:: ~TestJIT() {
+void TestJIT::dumpModule() {
+  module->dump();
 }
-

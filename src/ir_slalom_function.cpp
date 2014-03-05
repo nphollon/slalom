@@ -22,10 +22,17 @@ void IRSlalomFunction::setArity(int arity, BasicBlock* block) {
   builder.CreateStore(arityValue, getArityPointer(block));
 }
 
+void IRSlalomFunction::setName(const std::string& name, BasicBlock* block) {
+  IRBuilder<> builder(block);
+  Value* nameValue = builder.CreateGlobalStringPtr(name);
+  builder.CreateStore(nameValue, getNamePointer(block));
+}
+
 void IRSlalomFunction::setReturn(BasicBlock* block) {
   IRBuilder<> builder(block);
   builder.CreateRet(irStruct);
 }
+
 
 Value* IRSlalomFunction::getSize(LLVMContext& context) {
   return ConstantExpr::getSizeOf(getType(context));
@@ -33,21 +40,39 @@ Value* IRSlalomFunction::getSize(LLVMContext& context) {
 
 Type* IRSlalomFunction::getType(LLVMContext& context) {
   Type* arityTy = Type::getInt32Ty(context);
-  return StructType::get(arityTy, NULL);
+  Type* nameTy = Type::getInt8PtrTy(context);
+  return StructType::get(arityTy, nameTy, NULL);
 }
 
 Type* IRSlalomFunction::getType() {
+  return getPointerType()->getPointerElementType();
+}
+
+Type* IRSlalomFunction::getPointerType() {
   return irStruct->getType();
 }
 
 Type* IRSlalomFunction::getArityType() {
-  return getType()->getPointerElementType()->getStructElementType(0);
+  return getPointerType()->getPointerElementType()->getStructElementType(0);
+}
+
+Type* IRSlalomFunction::getNameType() {
+  return getPointerType()->getPointerElementType()->getStructElementType(1);
 }
 
 Value* IRSlalomFunction::getArityPointer(BasicBlock* block) {
   IRBuilder<> builder(block);
-  Value* idxZero = ConstantInt::get(Type::getInt32Ty(block->getContext()), 0);
-  std::vector<Value*> idxList(2, idxZero);
+  std::vector<Value*> idxList(2);
+  idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
+  idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), 0);
+  return builder.CreateGEP(irStruct, idxList);
+}
+
+Value* IRSlalomFunction::getNamePointer(BasicBlock* block) {
+  IRBuilder<> builder(block);
+  std::vector<Value*> idxList(2);
+  idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
+  idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), 1);
   return builder.CreateGEP(irStruct, idxList);
 }
 
