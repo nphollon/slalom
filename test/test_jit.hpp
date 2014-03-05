@@ -9,9 +9,14 @@
 
 #include "../src/module_writer.hpp"
 
+struct QueueStruct {
+  int length;
+};
+
 struct SlalomFunctionStruct {
   int arity;
   char* name;
+  QueueStruct* arguments;
 };
 
 typedef SlalomFunctionStruct*(*FactoryFunction)();

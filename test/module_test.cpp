@@ -33,5 +33,13 @@ BOOST_AUTO_TEST_CASE( i_comb_name_is_I ) {
   delete sfs;
 }
 
+BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_of_length_0 ) {
+  SlalomFunctionStruct *sfs = createI();
+  QueueStruct *args = sfs->arguments;
+  BOOST_CHECK_EQUAL(args->length, 0);
+  delete args;
+  delete sfs;
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
