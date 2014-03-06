@@ -5,32 +5,9 @@
 #include "llvm/IR/LLVMContext.h"
 
 #include "module_writer.hpp"
+#include "ir_arguments_queue.hpp"
 
 using namespace llvm;
-
-class IRArity {
-public:
-  static Type* getType(LLVMContext&);
-};
-
-class IRArgumentsQueue {
-public:
-  static Type* getPointerType(LLVMContext&);
-
-  IRArgumentsQueue(Function*, BasicBlock*);
-  ~IRArgumentsQueue();
-
-  void setLength(int, BasicBlock*);
-  Value* getValue();
-private:
-  static Value* getSize(LLVMContext&);
-  static Type* getType(LLVMContext&);
-
-  Value* irStruct;
-
-  Type* getType();
-  Type* getLengthType();
-};
 
 class IRSlalomFunction : public SlalomFunction {
 public:
