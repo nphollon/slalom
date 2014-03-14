@@ -52,7 +52,7 @@ void IRModuleWriter::generateFramework() {
   BasicBlock* block = openFactoryFunction("createICombinator", module);
 
   IRQueueNode* qn = new IRQueueNode(malloc, block);
-  qn->setData(NULL, block);
+  qn->setData(IRSlalomFunction::getNull(module->getContext()), block);
 
   IRArgumentsQueue* q = new IRArgumentsQueue(malloc, block);
   q->setLength(0, block);

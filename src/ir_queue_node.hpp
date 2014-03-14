@@ -17,6 +17,7 @@ public:
   
   void setData(IRSlalomFunction*, BasicBlock*);
   Value* getValue();
+
 private:
   static const std::string NAME;
 
@@ -25,6 +26,9 @@ private:
 
   static Value* getSize(LLVMContext&);
   static Type* getType(LLVMContext&);
+
+  Value* getDataPointer(BasicBlock*);
+  Value* getElementPointer(int i, BasicBlock*);
 };
 
 #endif

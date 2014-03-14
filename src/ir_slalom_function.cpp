@@ -4,7 +4,11 @@
 
 // Public static methods
 
-Type* IRSlalomFunction::getPointerType(LLVMContext& context) {
+IRSlalomFunction* IRSlalomFunction::getNull(LLVMContext& context) {
+  return new IRSlalomFunction(context);
+}
+
+PointerType* IRSlalomFunction::getPointerType(LLVMContext& context) {
   return getType(context)->getPointerTo();
 }
 
@@ -19,6 +23,10 @@ IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
 IRSlalomFunction::~IRSlalomFunction() {}
 
 // Public methods
+
+Value* IRSlalomFunction::getValue() {
+  return irStruct;
+}
 
 void IRSlalomFunction::setArity(int arity, BasicBlock* block) {
   Value* arityValue = ConstantInt::get(getArityType(), arity);
@@ -56,6 +64,10 @@ Type* IRSlalomFunction::getType(LLVMContext& context) {
   Type* argsType = IRArgumentsQueue::getPointerType(context);
 
   return StructType::get(arityTy, nameTy, argsType, NULL);
+}
+
+IRSlalomFunction::IRSlalomFunction(LLVMContext& context) {
+  irStruct = ConstantPointerNull::get(getPointerType(context));
 }
 
 // Private methods
