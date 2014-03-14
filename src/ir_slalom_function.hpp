@@ -9,6 +9,8 @@
 
 using namespace llvm;
 
+class IRArgumentsQueue;
+
 class IRSlalomFunction : public SlalomFunction {
 public:
   static Type* getPointerType(LLVMContext&);

@@ -9,8 +9,15 @@
 
 #include "../src/module_writer.hpp"
 
+struct SlalomFunctionStruct;
+
+struct QueueNodeStruct {
+  SlalomFunctionStruct* data;
+};
+
 struct QueueStruct {
   int length;
+  QueueNodeStruct* head;
 };
 
 struct SlalomFunctionStruct {

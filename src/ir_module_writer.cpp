@@ -50,12 +50,17 @@ BasicBlock* IRModuleWriter::openFactoryFunction(const std::string& name, Module*
 void IRModuleWriter::generateFramework() {
   Function* malloc = declareMalloc(module);
   BasicBlock* block = openFactoryFunction("createICombinator", module);
-  IRSlalomFunction* sfs = new IRSlalomFunction(malloc, block);
-  sfs->setArity(1, block);
-  sfs->setName("I", block);
+
+  IRQueueNode* qn = new IRQueueNode(malloc, block);
+  qn->setData(NULL, block);
 
   IRArgumentsQueue* q = new IRArgumentsQueue(malloc, block);
   q->setLength(0, block);
+  q->setHead(qn, block);
+
+  IRSlalomFunction* sfs = new IRSlalomFunction(malloc, block);
+  sfs->setArity(1, block);
+  sfs->setName("I", block);
   sfs->setArguments(q, block);
 
   sfs->setReturn(block);

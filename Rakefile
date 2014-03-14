@@ -9,7 +9,8 @@ OBJECTS = ["src/generator.o",
            "src/program_text.o",
            "src/ir_module_writer.o",
            "src/ir_slalom_function.o",
-           "src/ir_arguments_queue.o"
+           "src/ir_arguments_queue.o",
+           "src/ir_queue_node.o"
           ]
 
 TEST_OBJECTS = OBJECTS + [

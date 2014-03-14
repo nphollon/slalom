@@ -22,13 +22,17 @@ IRArgumentsQueue::IRArgumentsQueue(Function* malloc, BasicBlock* block) {
 IRArgumentsQueue::~IRArgumentsQueue() {}
 
 void IRArgumentsQueue::setLength(int length, BasicBlock* block) {
-  std::vector<Value*> idxList(2);
-  idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
-  idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), 0);
   IRBuilder<> builder(block);
-  Value* argsLengthPtr = builder.CreateGEP(irStruct, idxList);  
+  Value* argsLengthPtr = getElementPointer(0, block);
   Value* argsLengthValue = ConstantInt::get(getLengthType(), 0);
   builder.CreateStore(argsLengthValue, argsLengthPtr);
+}
+
+void IRArgumentsQueue::setHead(IRQueueNode* head, BasicBlock* block) {
+  IRBuilder<> builder(block);
+  Value* headPtr = getElementPointer(1, block);
+  Value* headValue = head->getValue();
+  builder.CreateStore(headValue, headPtr);
 }
 
 Value* IRArgumentsQueue::getValue() {
@@ -40,7 +44,9 @@ Value* IRArgumentsQueue::getSize(LLVMContext& context) {
 }
 
 Type* IRArgumentsQueue::getType(LLVMContext& context) {
-  return StructType::get(IRArity::getType(context), NULL);
+  Type* arityType = IRArity::getType(context);
+  Type* headType = IRQueueNode::getPointerType(context);
+  return StructType::get(arityType, headType, NULL);
 }
 
 Type* IRArgumentsQueue::getType() {
@@ -49,4 +55,12 @@ Type* IRArgumentsQueue::getType() {
 
 Type* IRArgumentsQueue::getLengthType() {
   return getType()->getStructElementType(0);
+}
+
+Value* IRArgumentsQueue::getElementPointer(int i, BasicBlock* block) {
+  IRBuilder<> builder(block);
+  std::vector<Value*> idxList(2);
+  idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
+  idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), i);
+  return builder.CreateGEP(irStruct, idxList);
 }

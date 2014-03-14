@@ -41,5 +41,13 @@ BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_of_length_0 ) {
   delete sfs;
 }
 
+BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_with_head_null ) {
+  SlalomFunctionStruct *sfs = createI();
+  QueueStruct *args = sfs->arguments;
+  QueueNodeStruct *head = args->head;
+  BOOST_CHECK(!head->data);
+  
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
