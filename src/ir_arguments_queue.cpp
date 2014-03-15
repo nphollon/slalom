@@ -6,10 +6,12 @@ Type* IRArity::getType(LLVMContext& context) {
   return Type::getInt32Ty(context);
 }
 
-Type* IRArgumentsQueue::getPointerType(LLVMContext& context) {
-  return getType(context)->getPointerTo();
-}
+StructType* IRArgumentsQueue::type = NULL;
 
+Type* IRArgumentsQueue::getPointerType(LLVMContext& context) {
+  defineType(context);
+  return type->getPointerTo();
+}
 
 IRArgumentsQueue::IRArgumentsQueue(Function* malloc, BasicBlock* block) {
   LLVMContext *context = &block->getContext();
@@ -44,9 +46,8 @@ Value* IRArgumentsQueue::getSize(LLVMContext& context) {
 }
 
 Type* IRArgumentsQueue::getType(LLVMContext& context) {
-  Type* arityType = IRArity::getType(context);
-  Type* headType = IRQueueNode::getPointerType(context);
-  return StructType::get(arityType, headType, NULL);
+  describeType(context);
+  return type;
 }
 
 Type* IRArgumentsQueue::getType() {
@@ -63,4 +64,19 @@ Value* IRArgumentsQueue::getElementPointer(int i, BasicBlock* block) {
   idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
   idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), i);
   return builder.CreateGEP(irStruct, idxList);
+}
+
+void IRArgumentsQueue::defineType(LLVMContext& context) {
+  if (!type) {
+    type = StructType::create(context, "arguments_queue");
+  }
+}
+
+void IRArgumentsQueue::describeType(LLVMContext& context) {
+  defineType(context);
+  if (type->isOpaque()) {
+    Type* arityType = IRArity::getType(context);
+    Type* headType = IRQueueNode::getPointerType(context);
+    type->setBody(arityType, headType, NULL);
+  }
 }

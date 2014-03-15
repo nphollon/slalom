@@ -3,13 +3,15 @@
 #include "llvm/IR/IRBuilder.h"
 
 // Public static methods
+StructType* IRSlalomFunction::type = NULL;
 
 IRSlalomFunction* IRSlalomFunction::getNull(LLVMContext& context) {
   return new IRSlalomFunction(context);
 }
 
 PointerType* IRSlalomFunction::getPointerType(LLVMContext& context) {
-  return getType(context)->getPointerTo();
+  defineType(context);
+  return type->getPointerTo();
 }
 
 IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
@@ -59,11 +61,8 @@ Value* IRSlalomFunction::getSize(LLVMContext& context) {
 }
 
 Type* IRSlalomFunction::getType(LLVMContext& context) {
-  Type* arityTy = IRArity::getType(context);
-  Type* nameTy = Type::getInt8PtrTy(context);
-  Type* argsType = IRArgumentsQueue::getPointerType(context);
-
-  return StructType::get(arityTy, nameTy, argsType, NULL);
+  describeType(context);
+  return type;
 }
 
 IRSlalomFunction::IRSlalomFunction(LLVMContext& context) {
@@ -102,4 +101,21 @@ Value* IRSlalomFunction::getElementPointer(int i, BasicBlock* block) {
   idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
   idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), i);
   return builder.CreateGEP(irStruct, idxList);
+}
+
+
+void IRSlalomFunction::defineType(LLVMContext& context) {
+  if (!type) {
+    type = StructType::create(context, "slalom_function");
+  }
+}
+
+void IRSlalomFunction::describeType(LLVMContext& context) {
+  defineType(context);
+  if (type->isOpaque()) {
+    Type* arityTy = IRArity::getType(context);
+    Type* nameTy = Type::getInt8PtrTy(context);
+    Type* argsType = IRArgumentsQueue::getPointerType(context);
+    type->setBody(arityTy, nameTy, argsType, NULL);
+  }
 }

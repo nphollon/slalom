@@ -25,15 +25,20 @@ public:
   void setLength(int, BasicBlock*);
   void setHead(IRQueueNode*, BasicBlock*);
   Value* getValue();
+
 private:
+  static StructType* type;
+  Value* irStruct;
+
   static Value* getSize(LLVMContext&);
   static Type* getType(LLVMContext&);
-
-  Value* irStruct;
 
   Type* getType();
   Type* getLengthType();
   Value* getElementPointer(int, BasicBlock*);
+
+  static void defineType(LLVMContext&);
+  static void describeType(LLVMContext&);
 };
 
 #endif

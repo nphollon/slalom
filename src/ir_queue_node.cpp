@@ -2,14 +2,10 @@
 
 #include "ir_queue_node.hpp"
 
-const std::string IRQueueNode::NAME = "queue_node";
-
 StructType* IRQueueNode::type = NULL;
 
 Type* IRQueueNode::getPointerType(LLVMContext& context) {
-  if (!type) {
-    type = StructType::create(context, NAME);
-  }
+  defineType(context);
   return type->getPointerTo();
 }
 
@@ -36,10 +32,7 @@ Value* IRQueueNode::getSize(LLVMContext& context) {
 }
 
 Type* IRQueueNode::getType(LLVMContext& context) {
-  if (type->isOpaque()) {
-    Type* dataType = IRSlalomFunction::getPointerType(context);
-    type->setBody(dataType, NULL, NULL); // need 2 nulls to disambiguate function call
-  }
+  describeType(context);
   return type;
 }
 
@@ -53,4 +46,18 @@ Value* IRQueueNode::getElementPointer(int i, BasicBlock* block) {
   idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
   idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), i);
   return builder.CreateGEP(irStruct, idxList);
+}
+
+void IRQueueNode::defineType(LLVMContext& context) {
+  if (!type) {
+    type = StructType::create(context, "queue_node");
+  }
+}
+
+void IRQueueNode::describeType(LLVMContext& context) {
+  defineType(context);
+  if (type->isOpaque()) {
+    Type* dataType = IRSlalomFunction::getPointerType(context);
+    type->setBody(dataType, NULL, NULL); // need 2 nulls to disambiguate function call
+  }
 }

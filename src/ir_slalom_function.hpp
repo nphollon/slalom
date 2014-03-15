@@ -30,6 +30,7 @@ private:
 
   IRSlalomFunction(LLVMContext&);
 
+  static StructType* type;
   Value* irStruct;
 
   Type* getType();
@@ -39,6 +40,9 @@ private:
   Value* getArityPointer(BasicBlock*);
   Value* getNamePointer(BasicBlock*);
   Value* getElementPointer(int, BasicBlock*);
+
+  static void defineType(LLVMContext&);
+  static void describeType(LLVMContext&);
 };
 
 #endif

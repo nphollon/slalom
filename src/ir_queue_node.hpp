@@ -19,8 +19,6 @@ public:
   Value* getValue();
 
 private:
-  static const std::string NAME;
-
   static StructType* type;
   Value* irStruct;
 
@@ -29,6 +27,9 @@ private:
 
   Value* getDataPointer(BasicBlock*);
   Value* getElementPointer(int i, BasicBlock*);
+
+  static void defineType(LLVMContext&);
+  static void describeType(LLVMContext&);
 };
 
 #endif
