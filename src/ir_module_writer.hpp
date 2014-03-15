@@ -7,6 +7,18 @@
 
 using namespace llvm;
 
+class IRTypeManager {
+public:
+  IRTypeManager(Module*);
+
+  Function* getMalloc();
+private:
+  Module *module;
+  Function *malloc;
+
+  Function* declareMalloc();
+};
+
 class IRModuleWriter : public ModuleWriter {
 public:
   static ModuleWriter* createModuleWriter(Module*);
@@ -22,7 +34,6 @@ private:
   IRModuleWriter(Module*);
   
   void generateFramework();
-  Function* declareMalloc(Module*);
   BasicBlock* openFactoryFunction(const std::string&, Module*);
 };
 

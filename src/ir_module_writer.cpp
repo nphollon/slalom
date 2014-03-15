@@ -33,13 +33,6 @@ SlalomFunction* IRModuleWriter::createApplication(SlalomFunction*, SlalomFunctio
   return NULL;
 }
 
-Function* IRModuleWriter::declareMalloc(Module* module) {
-  Type* intPtrTy = Type::getInt8PtrTy(module->getContext());
-  Type* allocTy = Type::getInt64Ty(module->getContext());
-  Constant* mallocC = module->getOrInsertFunction("malloc", intPtrTy, allocTy, NULL);
-  return cast<Function>(mallocC);
-}
-
 BasicBlock* IRModuleWriter::openFactoryFunction(const std::string& name, Module* module) {
   Type* retTy = IRSlalomFunction::getPointerType(module->getContext());
   Constant* functionAsConstant = module->getOrInsertFunction(name, retTy, NULL);
@@ -48,8 +41,10 @@ BasicBlock* IRModuleWriter::openFactoryFunction(const std::string& name, Module*
 }
 
 void IRModuleWriter::generateFramework() {
-  Function* malloc = declareMalloc(module);
   BasicBlock* block = openFactoryFunction("createICombinator", module);
+
+  IRTypeManager* tm = new IRTypeManager(module);
+  Function* malloc = tm->getMalloc();
 
   IRQueueNode* qn = new IRQueueNode(malloc, block);
   qn->setData(IRSlalomFunction::getNull(module->getContext()), block);
@@ -64,4 +59,21 @@ void IRModuleWriter::generateFramework() {
   sfs->setArguments(q, block);
 
   sfs->setReturn(block);
+}
+
+
+IRTypeManager::IRTypeManager(Module* newModule) {
+  module = newModule;
+  malloc = declareMalloc();
+}
+
+Function* IRTypeManager::getMalloc() {
+  return malloc;
+}
+
+Function* IRTypeManager::declareMalloc() {
+  Type* intPtrTy = Type::getInt8PtrTy(module->getContext());
+  Type* allocTy = Type::getInt64Ty(module->getContext());
+  Constant* mallocC = module->getOrInsertFunction("malloc", intPtrTy, allocTy, NULL);
+  return cast<Function>(mallocC);
 }
