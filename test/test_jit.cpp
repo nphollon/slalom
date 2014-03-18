@@ -4,7 +4,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Support/TargetSelect.h"
 
-#include "../src/ir_module_writer.hpp"
+#include "../src/ir/ir_module_writer.hpp"
 
 TestJIT::TestJIT() {
   llvm::InitializeNativeTarget();

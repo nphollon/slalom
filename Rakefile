@@ -7,10 +7,11 @@ TEST_FLAGS = AS_FLAGS + " -frtti -fexceptions -I #{BOOST_ROOT}/boost_1_55_0"
 OBJECTS = ["src/generator.o",
            "src/node.o",
            "src/program_text.o",
-           "src/ir_module_writer.o",
-           "src/ir_slalom_function.o",
-           "src/ir_arguments_queue.o",
-           "src/ir_queue_node.o"
+           "src/ir/ir_module_writer.o",
+           "src/ir/ir_slalom_function.o",
+           "src/ir/ir_arguments_queue.o",
+           "src/ir/ir_queue_node.o",
+           "src/ir/ir_type_manager.o"
           ]
 
 TEST_OBJECTS = OBJECTS + [

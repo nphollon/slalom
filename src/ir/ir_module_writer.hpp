@@ -3,21 +3,10 @@
 
 #include "llvm/IR/Module.h"
 
-#include "module_writer.hpp"
+#include "../module_writer.hpp"
+#include "ir_type_manager.hpp"
 
 using namespace llvm;
-
-class IRTypeManager {
-public:
-  IRTypeManager(Module*);
-
-  Function* getMalloc();
-private:
-  Module *module;
-  Function *malloc;
-
-  Function* declareMalloc();
-};
 
 class IRModuleWriter : public ModuleWriter {
 public:

@@ -4,7 +4,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/LLVMContext.h"
 
-#include "module_writer.hpp"
+#include "../module_writer.hpp"
 #include "ir_arguments_queue.hpp"
 
 using namespace llvm;
