@@ -5,10 +5,6 @@ IRTypeManager::IRTypeManager(Module* newModule) {
   malloc = declareMalloc();
 }
 
-Function* IRTypeManager::getMalloc() {
-  return malloc;
-}
-
 Function* IRTypeManager::declareMalloc() {
   Type* intPtrTy = Type::getInt8PtrTy(module->getContext());
   Type* allocTy = Type::getInt64Ty(module->getContext());
@@ -16,3 +12,14 @@ Function* IRTypeManager::declareMalloc() {
   return cast<Function>(mallocC);
 }
 
+IRQueueNode* IRTypeManager::buildQueueNode(BasicBlock* block) {
+  return new IRQueueNode(malloc, block);
+}
+
+IRArgumentsQueue* IRTypeManager::buildArgumentsQueue(BasicBlock* block) {
+  return new IRArgumentsQueue(malloc, block);
+}
+
+IRSlalomFunction* IRTypeManager::buildSlalomFunction(BasicBlock* block) {
+  return new IRSlalomFunction(malloc, block);
+}

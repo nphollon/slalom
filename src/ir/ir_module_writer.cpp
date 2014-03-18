@@ -44,16 +44,15 @@ void IRModuleWriter::generateFramework() {
   BasicBlock* block = openFactoryFunction("createICombinator", module);
 
   IRTypeManager* tm = new IRTypeManager(module);
-  Function* malloc = tm->getMalloc();
 
-  IRQueueNode* qn = new IRQueueNode(malloc, block);
+  IRQueueNode* qn = tm->buildQueueNode(block);
   qn->setData(IRSlalomFunction::getNull(module->getContext()), block);
 
-  IRArgumentsQueue* q = new IRArgumentsQueue(malloc, block);
+  IRArgumentsQueue* q = tm->buildArgumentsQueue(block);
   q->setLength(0, block);
   q->setHead(qn, block);
 
-  IRSlalomFunction* sfs = new IRSlalomFunction(malloc, block);
+  IRSlalomFunction* sfs = tm->buildSlalomFunction(block);
   sfs->setArity(1, block);
   sfs->setName("I", block);
   sfs->setArguments(q, block);
