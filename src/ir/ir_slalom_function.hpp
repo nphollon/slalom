@@ -13,10 +13,7 @@ class IRArgumentsQueue;
 
 class IRSlalomFunction : public SlalomFunction {
 public:
-  static PointerType* getPointerType(LLVMContext&);
-  static IRSlalomFunction* getNull(LLVMContext&);
-
-  IRSlalomFunction(Function*, BasicBlock*);
+  IRSlalomFunction(Value*);
   ~IRSlalomFunction();
 
   Value* getValue();
@@ -25,12 +22,6 @@ public:
   void setArguments(IRArgumentsQueue*, BasicBlock*);
   void setReturn(BasicBlock*);
 private:
-  static Value* getSize(LLVMContext&);
-  static Type* getType(LLVMContext&);
-
-  IRSlalomFunction(LLVMContext&);
-
-  static StructType* type;
   Value* irStruct;
 
   Type* getType();
@@ -40,9 +31,6 @@ private:
   Value* getArityPointer(BasicBlock*);
   Value* getNamePointer(BasicBlock*);
   Value* getElementPointer(int, BasicBlock*);
-
-  static void defineType(LLVMContext&);
-  static void describeType(LLVMContext&);
 };
 
 #endif

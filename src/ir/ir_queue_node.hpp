@@ -11,25 +11,16 @@ class IRSlalomFunction;
 
 class IRQueueNode {
 public:
-  static Type* getPointerType(LLVMContext&);
-
-  IRQueueNode(Function*, BasicBlock*);
+  IRQueueNode(Value*);
   
   void setData(IRSlalomFunction*, BasicBlock*);
   Value* getValue();
 
 private:
-  static StructType* type;
   Value* irStruct;
-
-  static Value* getSize(LLVMContext&);
-  static Type* getType(LLVMContext&);
 
   Value* getDataPointer(BasicBlock*);
   Value* getElementPointer(int i, BasicBlock*);
-
-  static void defineType(LLVMContext&);
-  static void describeType(LLVMContext&);
 };
 
 #endif

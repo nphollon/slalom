@@ -1,25 +1,60 @@
 #include "ir_type_manager.hpp"
 
+#include "llvm/IR/IRBuilder.h"
+
 IRTypeManager::IRTypeManager(Module* newModule) {
   module = newModule;
-  malloc = declareMalloc();
+  declareMalloc();
+  describeTypes();
 }
 
-Function* IRTypeManager::declareMalloc() {
+void IRTypeManager::declareMalloc() {
   Type* intPtrTy = Type::getInt8PtrTy(module->getContext());
   Type* allocTy = Type::getInt64Ty(module->getContext());
   Constant* mallocC = module->getOrInsertFunction("malloc", intPtrTy, allocTy, NULL);
-  return cast<Function>(mallocC);
+  malloc = cast<Function>(mallocC);
 }
 
 IRQueueNode* IRTypeManager::buildQueueNode(BasicBlock* block) {
-  return new IRQueueNode(malloc, block);
+  return new IRQueueNode(allocate(queueNodeType, block));
 }
 
 IRArgumentsQueue* IRTypeManager::buildArgumentsQueue(BasicBlock* block) {
-  return new IRArgumentsQueue(malloc, block);
+  return new IRArgumentsQueue(allocate(queueType, block));
 }
 
 IRSlalomFunction* IRTypeManager::buildSlalomFunction(BasicBlock* block) {
-  return new IRSlalomFunction(malloc, block);
+  return new IRSlalomFunction(allocate(functionType, block));
+}
+
+IRSlalomFunction* IRTypeManager::nullSlalomFunction() {
+  return new IRSlalomFunction(nullPointer(functionType));
+}
+
+Type* IRTypeManager::getFunctionPointerType() {
+  return functionType->getPointerTo();
+}
+
+Value* IRTypeManager::allocate(Type* type, BasicBlock* block) {
+  IRBuilder<> builder(block);
+  Value* size = ConstantExpr::getSizeOf(type);
+  Value* mallocResult = builder.CreateCall(malloc, size);
+  return builder.CreateBitCast(mallocResult, type->getPointerTo());
+}
+
+Value* IRTypeManager::nullPointer(Type* type) {
+  return ConstantPointerNull::get(type->getPointerTo());
+}
+
+void IRTypeManager::describeTypes() {
+  queueNodeType = StructType::create(module->getContext(), "queue_node");
+  queueType = StructType::create(module->getContext(), "arguments_queue");
+  functionType = StructType::create(module->getContext(), "slalom_function");
+  Type* arityType = Type::getInt32Ty(module->getContext());
+  Type* nameType = Type::getInt8PtrTy(module->getContext());
+  
+  queueNodeType->setBody(functionType->getPointerTo(),
+                         NULL, NULL); // need 2 nulls to disambiguate setBody()
+  queueType->setBody(arityType, queueNodeType->getPointerTo(), NULL);
+  functionType->setBody(arityType, nameType, queueType->getPointerTo(), NULL);
 }

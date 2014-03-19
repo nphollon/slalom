@@ -2,29 +2,11 @@
 
 #include "llvm/IR/IRBuilder.h"
 
-// Public static methods
-StructType* IRSlalomFunction::type = NULL;
-
-IRSlalomFunction* IRSlalomFunction::getNull(LLVMContext& context) {
-  return new IRSlalomFunction(context);
-}
-
-PointerType* IRSlalomFunction::getPointerType(LLVMContext& context) {
-  defineType(context);
-  return type->getPointerTo();
-}
-
-IRSlalomFunction::IRSlalomFunction(Function* malloc, BasicBlock* block) {
-  LLVMContext *context = &block->getContext();
-  Value* allocSize = getSize(*context);
-  IRBuilder<> builder(block);
-  Value* mallocResult = builder.CreateCall(malloc, allocSize);
-  irStruct = builder.CreateBitCast(mallocResult, getPointerType(*context));
+IRSlalomFunction::IRSlalomFunction(Value* dataStruct) {
+  irStruct = dataStruct;
 }
 
 IRSlalomFunction::~IRSlalomFunction() {}
-
-// Public methods
 
 Value* IRSlalomFunction::getValue() {
   return irStruct;
@@ -53,23 +35,6 @@ void IRSlalomFunction::setReturn(BasicBlock* block) {
   IRBuilder<> builder(block);
   builder.CreateRet(irStruct);
 }
-
-// Private static methods
-
-Value* IRSlalomFunction::getSize(LLVMContext& context) {
-  return ConstantExpr::getSizeOf(getType(context));
-}
-
-Type* IRSlalomFunction::getType(LLVMContext& context) {
-  describeType(context);
-  return type;
-}
-
-IRSlalomFunction::IRSlalomFunction(LLVMContext& context) {
-  irStruct = ConstantPointerNull::get(getPointerType(context));
-}
-
-// Private methods
 
 Type* IRSlalomFunction::getType() {
   return getPointerType()->getPointerElementType();
@@ -101,21 +66,4 @@ Value* IRSlalomFunction::getElementPointer(int i, BasicBlock* block) {
   idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
   idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), i);
   return builder.CreateGEP(irStruct, idxList);
-}
-
-
-void IRSlalomFunction::defineType(LLVMContext& context) {
-  if (!type) {
-    type = StructType::create(context, "slalom_function");
-  }
-}
-
-void IRSlalomFunction::describeType(LLVMContext& context) {
-  defineType(context);
-  if (type->isOpaque()) {
-    Type* arityTy = IRArity::getType(context);
-    Type* nameTy = Type::getInt8PtrTy(context);
-    Type* argsType = IRArgumentsQueue::getPointerType(context);
-    type->setBody(arityTy, nameTy, argsType, NULL);
-  }
 }

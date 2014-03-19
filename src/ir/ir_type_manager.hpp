@@ -13,11 +13,19 @@ public:
   IRQueueNode* buildQueueNode(BasicBlock*);
   IRArgumentsQueue* buildArgumentsQueue(BasicBlock*);
   IRSlalomFunction* buildSlalomFunction(BasicBlock*);
+  IRSlalomFunction* nullSlalomFunction();
+  Type* getFunctionPointerType();
 private:
   Module *module;
   Function *malloc;
+  StructType *queueNodeType;
+  StructType *queueType;
+  StructType *functionType;
 
-  Function* declareMalloc();
+  void declareMalloc();
+  void describeTypes();
+  Value* allocate(Type*, BasicBlock*);
+  Value* nullPointer(Type*);
 };
 
 #endif

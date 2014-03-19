@@ -2,19 +2,8 @@
 
 #include "ir_queue_node.hpp"
 
-StructType* IRQueueNode::type = NULL;
-
-Type* IRQueueNode::getPointerType(LLVMContext& context) {
-  defineType(context);
-  return type->getPointerTo();
-}
-
-IRQueueNode::IRQueueNode(Function* malloc, BasicBlock* block) {
-  LLVMContext *context = &block->getContext();
-  IRBuilder<> builder(block);
-  Value* allocSize = getSize(*context);
-  Value* mallocResult = builder.CreateCall(malloc, allocSize);
-  irStruct = builder.CreateBitCast(mallocResult, getPointerType(*context));
+IRQueueNode::IRQueueNode(Value* dataStruct) {
+  irStruct = dataStruct;
 }
 
 void IRQueueNode::setData(IRSlalomFunction* data, BasicBlock* block) {
@@ -27,15 +16,6 @@ Value* IRQueueNode::getValue() {
   return irStruct;
 }
 
-Value* IRQueueNode::getSize(LLVMContext& context) {
-  return ConstantExpr::getSizeOf(getType(context));
-}
-
-Type* IRQueueNode::getType(LLVMContext& context) {
-  describeType(context);
-  return type;
-}
-
 Value* IRQueueNode::getDataPointer(BasicBlock* block) {
   return getElementPointer(0, block);
 }
@@ -46,18 +26,4 @@ Value* IRQueueNode::getElementPointer(int i, BasicBlock* block) {
   idxList[0] = ConstantInt::get(Type::getInt64Ty(block->getContext()), 0);
   idxList[1] = ConstantInt::get(Type::getInt32Ty(block->getContext()), i);
   return builder.CreateGEP(irStruct, idxList);
-}
-
-void IRQueueNode::defineType(LLVMContext& context) {
-  if (!type) {
-    type = StructType::create(context, "queue_node");
-  }
-}
-
-void IRQueueNode::describeType(LLVMContext& context) {
-  defineType(context);
-  if (type->isOpaque()) {
-    Type* dataType = IRSlalomFunction::getPointerType(context);
-    type->setBody(dataType, NULL, NULL); // need 2 nulls to disambiguate function call
-  }
 }

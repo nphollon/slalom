@@ -10,16 +10,9 @@ using namespace llvm;
 
 class IRQueueNode;
 
-class IRArity {
-public:
-  static Type* getType(LLVMContext&);
-};
-
 class IRArgumentsQueue {
 public:
-  static Type* getPointerType(LLVMContext&);
-
-  IRArgumentsQueue(Function*, BasicBlock*);
+  IRArgumentsQueue(Value*);
   ~IRArgumentsQueue();
 
   void setLength(int, BasicBlock*);
@@ -27,18 +20,11 @@ public:
   Value* getValue();
 
 private:
-  static StructType* type;
   Value* irStruct;
-
-  static Value* getSize(LLVMContext&);
-  static Type* getType(LLVMContext&);
 
   Type* getType();
   Type* getLengthType();
   Value* getElementPointer(int, BasicBlock*);
-
-  static void defineType(LLVMContext&);
-  static void describeType(LLVMContext&);
 };
 
 #endif
