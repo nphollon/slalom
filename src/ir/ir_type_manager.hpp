@@ -11,6 +11,7 @@ public:
   IRTypeManager(Module*);
 
   IRQueueNode* buildQueueNode(BasicBlock*);
+  IRQueueNode* nullQueueNode();
   IRArgumentsQueue* buildArgumentsQueue(BasicBlock*);
   IRSlalomFunction* buildSlalomFunction(BasicBlock*);
   IRSlalomFunction* nullSlalomFunction();

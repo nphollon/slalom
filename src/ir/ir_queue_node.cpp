@@ -9,15 +9,17 @@ IRQueueNode::IRQueueNode(Value* dataStruct) {
 void IRQueueNode::setData(IRSlalomFunction* data, BasicBlock* block) {
   Value* dataValue = data->getValue();
   IRBuilder<> builder(block);
-  builder.CreateStore(dataValue, getDataPointer(block));
+  builder.CreateStore(dataValue, getElementPointer(0, block));
+}
+
+void IRQueueNode::setNext(IRQueueNode* next, BasicBlock* block) {
+  Value* nextValue = next->getValue();
+  IRBuilder<> builder(block);
+  builder.CreateStore(nextValue, getElementPointer(1, block));
 }
 
 Value* IRQueueNode::getValue() {
   return irStruct;
-}
-
-Value* IRQueueNode::getDataPointer(BasicBlock* block) {
-  return getElementPointer(0, block);
 }
 
 Value* IRQueueNode::getElementPointer(int i, BasicBlock* block) {

@@ -14,12 +14,12 @@ public:
   IRQueueNode(Value*);
   
   void setData(IRSlalomFunction*, BasicBlock*);
+  void setNext(IRQueueNode*, BasicBlock*);
   Value* getValue();
 
 private:
   Value* irStruct;
 
-  Value* getDataPointer(BasicBlock*);
   Value* getElementPointer(int i, BasicBlock*);
 };
 

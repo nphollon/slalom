@@ -40,6 +40,7 @@ void IRModuleWriter::generateFramework() {
 
   IRQueueNode* qn = tm->buildQueueNode(block);
   qn->setData(tm->nullSlalomFunction(), block);
+  qn->setNext(tm->nullQueueNode(), block);
   
   IRArgumentsQueue* q = tm->buildArgumentsQueue(block);
   q->setLength(0, block);

@@ -38,14 +38,15 @@ BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_of_length_0 ) {
 BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_with_head_null ) {
   QueueStruct *args = sfs->arguments;
   QueueNodeStruct *head = args->head;
-  BOOST_CHECK(!head->data);  
+  BOOST_CHECK(!head->data);
+  BOOST_CHECK(!head->next);
 }
 
 BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_with_tail_null ) {
   QueueStruct *args = sfs->arguments;
   QueueNodeStruct *tail = args->tail;
   BOOST_CHECK(!tail->data);  
+  BOOST_CHECK(!tail->next);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

@@ -13,22 +13,21 @@ Value* IRSlalomFunction::getValue() {
 }
 
 void IRSlalomFunction::setArity(int arity, BasicBlock* block) {
-  Value* arityValue = ConstantInt::get(getArityType(), arity);
   IRBuilder<> builder(block);
-  builder.CreateStore(arityValue, getArityPointer(block));
+  Value* arityValue = ConstantInt::get(getArityType(), arity);
+  builder.CreateStore(arityValue, getElementPointer(0, block));
 }
 
 void IRSlalomFunction::setName(const std::string& name, BasicBlock* block) {
   IRBuilder<> builder(block);
   Value* nameValue = builder.CreateGlobalStringPtr(name);
-  builder.CreateStore(nameValue, getNamePointer(block));
+  builder.CreateStore(nameValue, getElementPointer(1, block));
 }
 
 void IRSlalomFunction::setArguments(IRArgumentsQueue* args, BasicBlock* block) {
-  Value* argsValue = args->getValue();
-  Value* argsPtr = getElementPointer(2, block);
   IRBuilder<> builder(block);
-  builder.CreateStore(argsValue, argsPtr);
+  Value* argsValue = args->getValue();
+  builder.CreateStore(argsValue, getElementPointer(2, block));
 }
 
 void IRSlalomFunction::setReturn(BasicBlock* block) {
@@ -50,14 +49,6 @@ Type* IRSlalomFunction::getArityType() {
 
 Type* IRSlalomFunction::getNameType() {
   return getType()->getStructElementType(1);
-}
-
-Value* IRSlalomFunction::getArityPointer(BasicBlock* block) {
-  return getElementPointer(0, block);
-}
-
-Value* IRSlalomFunction::getNamePointer(BasicBlock* block) {
-  return getElementPointer(1, block);
 }
 
 Value* IRSlalomFunction::getElementPointer(int i, BasicBlock* block) {

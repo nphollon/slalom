@@ -13,6 +13,7 @@ struct SlalomFunctionStruct;
 
 struct QueueNodeStruct {
   SlalomFunctionStruct* data;
+  QueueNodeStruct* next;
 };
 
 struct QueueStruct {

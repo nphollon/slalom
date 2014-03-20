@@ -19,6 +19,10 @@ IRQueueNode* IRTypeManager::buildQueueNode(BasicBlock* block) {
   return new IRQueueNode(allocate(queueNodeType, block));
 }
 
+IRQueueNode* IRTypeManager::nullQueueNode() {
+  return new IRQueueNode(nullPointer(queueNodeType));
+}
+
 IRArgumentsQueue* IRTypeManager::buildArgumentsQueue(BasicBlock* block) {
   return new IRArgumentsQueue(allocate(queueType, block));
 }
@@ -61,6 +65,7 @@ void IRTypeManager::describeTypes() {
   Type* nameType = Type::getInt8PtrTy(module->getContext());
   
   queueNodeType->setBody(functionType->getPointerTo(),
+                         queueNodeType->getPointerTo(),
                          NULL, NULL); // need 2 nulls to disambiguate setBody()
   queueType->setBody(arityType,
                      queueNodeType->getPointerTo(),

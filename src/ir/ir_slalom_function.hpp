@@ -28,8 +28,6 @@ private:
   Type* getPointerType();
   Type* getArityType();
   Type* getNameType();
-  Value* getArityPointer(BasicBlock*);
-  Value* getNamePointer(BasicBlock*);
   Value* getElementPointer(int, BasicBlock*);
 };
 
