@@ -31,6 +31,13 @@ IRSlalomFunction* IRTypeManager::nullSlalomFunction() {
   return new IRSlalomFunction(nullPointer(functionType));
 }
 
+BasicBlock* IRTypeManager::openFactoryFunction(const std::string& name) {
+  Type* returnType = functionType->getPointerTo();
+  Constant* functionAsConstant = module->getOrInsertFunction(name, returnType, NULL);
+  Function* function = cast<Function>(functionAsConstant);
+  return BasicBlock::Create(module->getContext(), "entry", function);
+}
+
 Type* IRTypeManager::getFunctionPointerType() {
   return functionType->getPointerTo();
 }

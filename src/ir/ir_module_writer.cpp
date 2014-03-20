@@ -33,16 +33,10 @@ SlalomFunction* IRModuleWriter::createApplication(SlalomFunction*, SlalomFunctio
   return NULL;
 }
 
-BasicBlock* IRModuleWriter::openFactoryFunction(const std::string& name, Module* module, Type* retTy) {
-  Constant* functionAsConstant = module->getOrInsertFunction(name, retTy, NULL);
-  Function* function = cast<Function>(functionAsConstant);
-  return BasicBlock::Create(module->getContext(), "entry", function);
-}
-
 void IRModuleWriter::generateFramework() {
   IRTypeManager* tm = new IRTypeManager(module);
 
-  BasicBlock* block = openFactoryFunction("createICombinator", module, tm->getFunctionPointerType());
+  BasicBlock* block = tm->openFactoryFunction("createICombinator");
 
   IRQueueNode* qn = tm->buildQueueNode(block);
   qn->setData(tm->nullSlalomFunction(), block);
@@ -57,5 +51,4 @@ void IRModuleWriter::generateFramework() {
   sfs->setArguments(q, block);
   
   sfs->setReturn(block);
-  
 }

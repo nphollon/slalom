@@ -23,7 +23,6 @@ private:
   IRModuleWriter(Module*);
   
   void generateFramework();
-  BasicBlock* openFactoryFunction(const std::string&, Module*, Type*);
 };
 
 #endif

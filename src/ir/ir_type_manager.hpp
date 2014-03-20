@@ -14,6 +14,7 @@ public:
   IRArgumentsQueue* buildArgumentsQueue(BasicBlock*);
   IRSlalomFunction* buildSlalomFunction(BasicBlock*);
   IRSlalomFunction* nullSlalomFunction();
+  BasicBlock* openFactoryFunction(const std::string&);
   Type* getFunctionPointerType();
 private:
   Module *module;
