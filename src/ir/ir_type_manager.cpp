@@ -62,6 +62,12 @@ void IRTypeManager::describeTypes() {
   
   queueNodeType->setBody(functionType->getPointerTo(),
                          NULL, NULL); // need 2 nulls to disambiguate setBody()
-  queueType->setBody(arityType, queueNodeType->getPointerTo(), NULL);
-  functionType->setBody(arityType, nameType, queueType->getPointerTo(), NULL);
+  queueType->setBody(arityType,
+                     queueNodeType->getPointerTo(),
+                     queueNodeType->getPointerTo(),
+                     NULL);
+  functionType->setBody(arityType,
+                        nameType,
+                        queueType->getPointerTo(),
+                        NULL);
 }

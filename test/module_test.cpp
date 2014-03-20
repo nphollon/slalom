@@ -6,14 +6,16 @@
 
 struct ModuleFixture {
   TestJIT *jit;
-  FactoryFunction createI;
+  SlalomFunctionStruct *sfs;
 
   ModuleFixture() {
     jit = new TestJIT();
-    createI = jit->getFactoryFunctionPointer("createICombinator");
+    FactoryFunction createI = jit->getFactoryFunctionPointer("createICombinator");
+    sfs = createI();
   }
 
   ~ModuleFixture() {
+    delete sfs;
     delete jit;
   }
 };
@@ -21,32 +23,28 @@ struct ModuleFixture {
 BOOST_FIXTURE_TEST_SUITE( test_module_writer, ModuleFixture )
 
 BOOST_AUTO_TEST_CASE( i_comb_arity_is_1 ) {
-  SlalomFunctionStruct *sfs = createI();
   BOOST_CHECK_EQUAL(sfs->arity, 1);
-  delete sfs;
 }
 
 BOOST_AUTO_TEST_CASE( i_comb_name_is_I ) {
-  jit->dumpModule();
-  SlalomFunctionStruct *sfs = createI();
   BOOST_CHECK_EQUAL(sfs->name, "I");
-  delete sfs;
 }
 
 BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_of_length_0 ) {
-  SlalomFunctionStruct *sfs = createI();
   QueueStruct *args = sfs->arguments;
   BOOST_CHECK_EQUAL(args->length, 0);
-  delete args;
-  delete sfs;
 }
 
 BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_with_head_null ) {
-  SlalomFunctionStruct *sfs = createI();
   QueueStruct *args = sfs->arguments;
   QueueNodeStruct *head = args->head;
-  BOOST_CHECK(!head->data);
-  
+  BOOST_CHECK(!head->data);  
+}
+
+BOOST_AUTO_TEST_CASE( i_comb_has_a_queue_with_tail_null ) {
+  QueueStruct *args = sfs->arguments;
+  QueueNodeStruct *tail = args->tail;
+  BOOST_CHECK(!tail->data);  
 }
 
 BOOST_AUTO_TEST_SUITE_END()

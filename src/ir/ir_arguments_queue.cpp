@@ -22,6 +22,13 @@ void IRArgumentsQueue::setHead(IRQueueNode* head, BasicBlock* block) {
   builder.CreateStore(headValue, headPtr);
 }
 
+void IRArgumentsQueue::setTail(IRQueueNode* tail, BasicBlock* block) {
+  IRBuilder<> builder(block);
+  Value* tailPtr = getElementPointer(2, block);
+  Value* tailValue = tail->getValue();
+  builder.CreateStore(tailValue, tailPtr);
+}
+
 Value* IRArgumentsQueue::getValue() {
   return irStruct;
 }

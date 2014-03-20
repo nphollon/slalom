@@ -44,6 +44,7 @@ void IRModuleWriter::generateFramework() {
   IRArgumentsQueue* q = tm->buildArgumentsQueue(block);
   q->setLength(0, block);
   q->setHead(qn, block);
+  q->setTail(qn, block);
   
   IRSlalomFunction* sfs = tm->buildSlalomFunction(block);
   sfs->setArity(1, block);

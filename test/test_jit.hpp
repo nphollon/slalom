@@ -18,6 +18,7 @@ struct QueueNodeStruct {
 struct QueueStruct {
   int length;
   QueueNodeStruct* head;
+  QueueNodeStruct* tail;
 };
 
 struct SlalomFunctionStruct {

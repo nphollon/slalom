@@ -17,6 +17,7 @@ public:
 
   void setLength(int, BasicBlock*);
   void setHead(IRQueueNode*, BasicBlock*);
+  void setTail(IRQueueNode*, BasicBlock*);
   Value* getValue();
 
 private:
