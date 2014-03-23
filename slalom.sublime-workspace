@@ -3,31 +3,75 @@
 	{
 		"selected_items":
 		[
+			[
+				"BO",
+				"BOOST_CHECK_EQUAL"
+			],
+			[
+				"cre",
+				"createK"
+			],
+			[
+				"IR",
+				"IRBuilder"
+			],
+			[
+				"null",
+				"nullSlalomFunction"
+			],
+			[
+				"BOOS",
+				"BOOST_AUTO_TEST_CASE"
+			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": ".gitignore",
+			"file": "test/module_test.cpp",
 			"settings":
 			{
-				"buffer_size": 28,
+				"buffer_size": 1445,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "Rakefile",
+			"file": "test/test_jit.hpp",
 			"settings":
 			{
-				"buffer_size": 1927,
+				"buffer_size": 794,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/nhollon/.config/openbox/lubuntu-rc.xml",
+			"file": "test/test_jit.cpp",
 			"settings":
 			{
-				"buffer_size": 26793,
+				"buffer_size": 718,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_module_writer.cpp",
+			"settings":
+			{
+				"buffer_size": 1527,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_type_manager.cpp",
+			"settings":
+			{
+				"buffer_size": 2787,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_slalom_function.cpp",
+			"settings":
+			{
+				"buffer_size": 1720,
 				"line_ending": "Unix"
 			}
 		}
@@ -59,13 +103,30 @@
 	},
 	"file_history":
 	[
+		"/home/nick/.fluxbox/keys",
+		"/home/nick/slalom/src/ir/ir_type_manager.hpp",
+		"/home/nick/slalom/src/ir/ir_type_manager.cpp",
+		"/home/nick/slalom/src/ir_arguments_queue.cpp~",
+		"/home/nick/slalom/Rakefile",
+		"/home/nick/slalom/.gitignore",
+		"/home/nick/slalom/src/ir/ir_arguments_queue.cpp",
+		"/home/nick/slalom/src/generator.cpp",
+		"/home/nick/slalom/src/repl.cpp",
+		"/home/nick/slalom/slalom.sublime-project",
+		"/home/nick/slalom/scratch/ir_spike/test.ll",
+		"/home/nick/slalom/test/test_jit.cpp",
+		"/home/nick/slalom/test/apply_node_test.cpp",
+		"/home/nick/slalom/scratch/ir_spike/testconcat",
+		"/home/nick/slalom/scratch/toy/toy_llvm_api_summary.txt",
+		"/home/nick/.config/sublime-text-3/Packages/User/rake.sublime-build",
+		"/home/nhollon/.config/openbox/lubuntu-rc.xml",
 		"/home/~",
 		"/home/nhollon/slalom/Rakefile",
 		"/home/nhollon/.config/sublime-text-3/Packages/User/rake.sublime-build"
 	],
 	"find":
 	{
-		"height": 0.0
+		"height": 21.0
 	},
 	"find_in_files":
 	{
@@ -79,6 +140,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"sfs"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -96,59 +158,89 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": ".gitignore",
+					"file": "test/module_test.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 28,
+						"buffer_size": 1445,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								28,
-								28
+								1047,
+								1047
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 168.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "test/test_jit.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 794,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								636,
+								636
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "Rakefile",
+					"buffer": 2,
+					"file": "test/test_jit.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1927,
+						"buffer_size": 718,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								551,
-								551
+								419,
+								419
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Ruby/Ruby.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/C++/C++.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -158,33 +250,93 @@
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "/home/nhollon/.config/openbox/lubuntu-rc.xml",
+					"buffer": 3,
+					"file": "src/ir/ir_module_writer.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 26793,
+						"buffer_size": 1527,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6452,
-								6452
+								1480,
+								1480
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/XML/XML.tmLanguage",
+							"syntax": "Packages/C++/C++.tmLanguage",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 3043.0,
+						"translation.y": 351.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/ir/ir_type_manager.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2787,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2215,
+								2215
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 320.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/ir/ir_slalom_function.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1720,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1457,
+								1457
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 190.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
 					"type": "text"
 				}
 			]
@@ -192,7 +344,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 0.0
+		"height": 21.0
 	},
 	"input":
 	{
@@ -223,7 +375,7 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 186.0
+		"height": 208.0
 	},
 	"output.find_results":
 	{
@@ -232,7 +384,7 @@
 	"project": "slalom.sublime-project",
 	"replace":
 	{
-		"height": 0.0
+		"height": 38.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -240,6 +392,30 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"ir_slal",
+				"src/ir/ir_slalom_function.cpp"
+			],
+			[
+				"ir_typ",
+				"src/ir/ir_type_manager.cpp"
+			],
+			[
+				"src/ir/ir_mod",
+				"src/ir/ir_module_writer.cpp"
+			],
+			[
+				"test",
+				"test/test_jit.cpp"
+			],
+			[
+				"test_ji",
+				"test/test_jit.hpp"
+			],
+			[
+				"test/modu",
+				"test/module_test.cpp"
+			]
 		],
 		"width": 0.0
 	},

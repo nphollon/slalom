@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "llvm/IR/IRBuilder.h"
+
 #include "ir_slalom_function.hpp"
 
 ModuleWriter* IRModuleWriter::createModuleWriter(Module *module) {
@@ -53,4 +55,8 @@ void IRModuleWriter::generateFramework() {
   sfs->setArguments(q, block);
   
   sfs->setReturn(block);
+
+  BasicBlock* kblock = tm->openFactoryFunction("createKCombinator");
+  IRBuilder<> builder(kblock);
+  tm->nullSlalomFunction()->setReturn(kblock);
 }
