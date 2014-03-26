@@ -37,26 +37,6 @@ SlalomFunction* IRModuleWriter::createApplication(SlalomFunction*, SlalomFunctio
 
 void IRModuleWriter::generateFramework() {
   IRTypeManager* tm = new IRTypeManager(module);
-
-  BasicBlock* block = tm->openFactoryFunction("createICombinator");
-
-  IRQueueNode* qn = tm->buildQueueNode(block);
-  qn->setData(tm->nullSlalomFunction(), block);
-  qn->setNext(tm->nullQueueNode(), block);
-  
-  IRArgumentsQueue* q = tm->buildArgumentsQueue(block);
-  q->setLength(0, block);
-  q->setHead(qn, block);
-  q->setTail(qn, block);
-  
-  IRSlalomFunction* sfs = tm->buildSlalomFunction(block);
-  sfs->setArity(1, block);
-  sfs->setName("I", block);
-  sfs->setArguments(q, block);
-  
-  sfs->setReturn(block);
-
-  BasicBlock* kblock = tm->openFactoryFunction("createKCombinator");
-  IRBuilder<> builder(kblock);
-  tm->nullSlalomFunction()->setReturn(kblock);
+  tm->describeFactoryFunction("createICombinator", 1, "I");
+  tm->describeFactoryFunction("createKCombinator", 2, "K");
 }

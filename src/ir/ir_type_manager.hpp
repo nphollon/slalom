@@ -10,13 +10,7 @@ class IRTypeManager {
 public:
   IRTypeManager(Module*);
 
-  IRQueueNode* buildQueueNode(BasicBlock*);
-  IRQueueNode* nullQueueNode();
-  IRArgumentsQueue* buildArgumentsQueue(BasicBlock*);
-  IRSlalomFunction* buildSlalomFunction(BasicBlock*);
-  IRSlalomFunction* nullSlalomFunction();
-  BasicBlock* openFactoryFunction(const std::string&);
-  Type* getFunctionPointerType();
+  void describeFactoryFunction(const std::string&, int, const std::string&);
 private:
   Module *module;
   Function *malloc;
@@ -24,6 +18,11 @@ private:
   StructType *queueType;
   StructType *functionType;
 
+  IRQueueNode* buildQueueNode(BasicBlock*);
+  IRQueueNode* nullQueueNode();
+  IRArgumentsQueue* buildArgumentsQueue(BasicBlock*);
+  IRSlalomFunction* buildSlalomFunction(int, const std::string&, BasicBlock*);
+  IRSlalomFunction* nullSlalomFunction();
   void declareMalloc();
   void describeTypes();
   Value* allocate(Type*, BasicBlock*);

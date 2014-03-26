@@ -4,42 +4,182 @@
 		"selected_items":
 		[
 			[
+				"cr",
+				"createKCombinator"
+			],
+			[
+				"de",
+				"describeFactoryFunction"
+			],
+			[
+				"IRQ",
+				"IRQueueNode"
+			],
+			[
 				"BO",
-				"BOOST_CHECK_EQUAL"
+				"BOOST_CHECK"
 			],
 			[
-				"cre",
-				"createK"
+				"B",
+				"BOOST_CHECK"
 			],
 			[
-				"IR",
-				"IRBuilder"
+				"BOOST_",
+				"BOOST_AUTO_TEST_CASE"
 			],
 			[
-				"null",
-				"nullSlalomFunction"
+				"k",
+				"kblock"
+			],
+			[
+				"build",
+				"buildArgumentsQueue"
+			],
+			[
+				"IRQue",
+				"IRArgumentsQueue"
 			],
 			[
 				"BOOS",
-				"BOOST_AUTO_TEST_CASE"
+				"BOOST_CHECK_EQUAL"
+			],
+			[
+				"Qu",
+				"QueueStruct"
+			],
+			[
+				"ge",
+				"getDataPointer"
+			],
+			[
+				"ne",
+				"nextValue"
+			],
+			[
+				"C",
+				"CreateStore"
+			],
+			[
+				"get",
+				"getPointerTo"
+			],
+			[
+				"queue",
+				"queueNodeType"
+			],
+			[
+				"nu",
+				"nullPointer"
+			],
+			[
+				"Que",
+				"QueueNodeStruct"
+			],
+			[
+				"create",
+				"createI"
+			],
+			[
+				"retu",
+				"returnType"
+			],
+			[
+				"function",
+				"functionType"
+			],
+			[
+				"func",
+				"functionType"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "test/module_test.cpp",
+			"file": "src/ir/ir_module_writer.cpp",
 			"settings":
 			{
-				"buffer_size": 1445,
+				"buffer_size": 981,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "test/test_jit.hpp",
+			"file": "test/module_test.cpp",
 			"settings":
 			{
-				"buffer_size": 794,
+				"buffer_size": 1543,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_type_manager.cpp",
+			"settings":
+			{
+				"buffer_size": 3199,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_type_manager.hpp",
+			"settings":
+			{
+				"buffer_size": 751,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_slalom_function.cpp",
+			"settings":
+			{
+				"buffer_size": 1720,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_arguments_queue.cpp",
+			"settings":
+			{
+				"buffer_size": 1512,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_arguments_queue.hpp",
+			"settings":
+			{
+				"buffer_size": 553,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_module_writer.hpp",
+			"settings":
+			{
+				"buffer_size": 627,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_queue_node.cpp",
+			"settings":
+			{
+				"buffer_size": 927,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_queue_node.hpp",
+			"settings":
+			{
+				"buffer_size": 410,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/ir/ir_slalom_function.hpp",
+			"settings":
+			{
+				"buffer_size": 712,
 				"line_ending": "Unix"
 			}
 		},
@@ -52,26 +192,10 @@
 			}
 		},
 		{
-			"file": "src/ir/ir_module_writer.cpp",
+			"file": "test/test_jit.hpp",
 			"settings":
 			{
-				"buffer_size": 1527,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "src/ir/ir_type_manager.cpp",
-			"settings":
-			{
-				"buffer_size": 2787,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "src/ir/ir_slalom_function.cpp",
-			"settings":
-			{
-				"buffer_size": 1720,
+				"buffer_size": 794,
 				"line_ending": "Unix"
 			}
 		}
@@ -103,30 +227,45 @@
 	},
 	"file_history":
 	[
-		"/home/nick/.fluxbox/keys",
-		"/home/nick/slalom/src/ir/ir_type_manager.hpp",
-		"/home/nick/slalom/src/ir/ir_type_manager.cpp",
-		"/home/nick/slalom/src/ir_arguments_queue.cpp~",
-		"/home/nick/slalom/Rakefile",
-		"/home/nick/slalom/.gitignore",
-		"/home/nick/slalom/src/ir/ir_arguments_queue.cpp",
-		"/home/nick/slalom/src/generator.cpp",
-		"/home/nick/slalom/src/repl.cpp",
-		"/home/nick/slalom/slalom.sublime-project",
-		"/home/nick/slalom/scratch/ir_spike/test.ll",
-		"/home/nick/slalom/test/test_jit.cpp",
-		"/home/nick/slalom/test/apply_node_test.cpp",
-		"/home/nick/slalom/scratch/ir_spike/testconcat",
-		"/home/nick/slalom/scratch/toy/toy_llvm_api_summary.txt",
-		"/home/nick/.config/sublime-text-3/Packages/User/rake.sublime-build",
-		"/home/nhollon/.config/openbox/lubuntu-rc.xml",
-		"/home/~",
+		"/home/nhollon/slalom/src/ir/ir_type_manager.cpp~",
+		"/home/nhollon/slalom/src/ir/ir_type_manager.cpp",
+		"/home/nhollon/slalom/scratch/ir_spike/types.ll",
+		"/home/nhollon/slalom/test/test_jit.cpp",
+		"/home/nhollon/slalom/src/ir/ir_module_writer.cpp~",
+		"/home/nhollon/slalom/src/module_writer.hpp",
+		"/home/nhollon/slalom/test/test_jit.hpp",
+		"/home/nhollon/slalom/test/test_main.cpp",
+		"/home/nhollon/slalom/test/name_node_test.cpp",
+		"/home/nhollon/slalom/src/ir/ir_queue_node.hpp",
+		"/home/nhollon/slalom/src/ir/ir_slalom_function.hpp",
+		"/home/nhollon/slalom/src/ir/ir_slalom_function.cpp",
+		"/home/nhollon/slalom/.gitignore",
+		"/home/nhollon/slalom/LICENSE",
+		"/home/nhollon/slalom/src/ir/ir_queue_node.cpp",
+		"/home/nhollon/slalom/src/ir/ir_arguments_queue.hpp",
+		"/home/nhollon/slalom/src/ir/ir_type_manager.hpp",
+		"/home/nhollon/slalom/src/ir/ir_arguments_queue.cpp",
+		"/home/nhollon/slalom/src/ir/ir_module_writer.cpp",
+		"/home/nhollon/slalom/test/module_test.cpp",
+		"/home/nhollon/slalom/test/apply_node_test.cpp",
+		"/home/nhollon/slalom/scratch/ir_spike/testconcat",
+		"/home/nhollon/slalom/src/ir/ir_module_writer.hpp~",
+		"/home/nhollon/slalom/src/ir/ir_module_writer.hpp",
+		"/home/nhollon/slalom/scratch/malloc_example_opt.ll",
+		"/home/nhollon/slalom/scratch/malloc_example.c",
+		"/home/nhollon/slalom/src/ir/ir_type_manager.hpp~",
+		"/home/nhollon/slalom/src/generator.hpp",
 		"/home/nhollon/slalom/Rakefile",
-		"/home/nhollon/.config/sublime-text-3/Packages/User/rake.sublime-build"
+		"/home/nhollon/slalom/src/generator.cpp",
+		"/home/nhollon/slalom/src/repl.cpp",
+		"/home/nhollon/slalom/slalom.sublime-project",
+		"/home/nhollon/.config/sublime-text-3/Packages/User/rake.sublime-build",
+		"/home/~",
+		"/home/nhollon/.config/openbox/lubuntu-rc.xml"
 	],
 	"find":
 	{
-		"height": 21.0
+		"height": 22.0
 	},
 	"find_in_files":
 	{
@@ -140,7 +279,11 @@
 		"case_sensitive": false,
 		"find_history":
 		[
-			"sfs"
+			"tm->",
+			"name",
+			"sublime",
+			"project",
+			"src"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -158,58 +301,29 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "test/module_test.cpp",
+					"file": "src/ir/ir_module_writer.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1445,
+						"buffer_size": 981,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1047,
-								1047
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 168.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "test/test_jit.hpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 794,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								636,
-								636
-							]
-						],
-						"settings":
-						{
+							"history_list_is_closing": true,
 							"syntax": "Packages/C++/C++.tmLanguage",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
@@ -218,29 +332,93 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "test/test_jit.cpp",
+					"buffer": 1,
+					"file": "test/module_test.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 718,
+						"buffer_size": 1543,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								419,
-								419
+								1511,
+								1511
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.tmLanguage"
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 421.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/ir/ir_type_manager.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3199,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								684,
+								684
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 299.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/ir/ir_type_manager.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 751,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								739,
+								739
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -250,67 +428,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "src/ir/ir_module_writer.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1527,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1480,
-								1480
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 351.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
 					"buffer": 4,
-					"file": "src/ir/ir_type_manager.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2787,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2215,
-								2215
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 320.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
 					"file": "src/ir/ir_slalom_function.cpp",
 					"semi_transient": false,
 					"settings":
@@ -322,8 +440,8 @@
 						"selection":
 						[
 							[
-								1457,
-								1457
+								912,
+								912
 							]
 						],
 						"settings":
@@ -333,10 +451,349 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 190.0,
+						"translation.y": 117.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/ir/ir_arguments_queue.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1512,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								730,
+								730
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/ir/ir_arguments_queue.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 553,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								470,
+								470
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/ir/ir_module_writer.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 627,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								616,
+								616
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 3,
+			"sheets":
+			[
+				{
+					"buffer": 2,
+					"file": "src/ir/ir_type_manager.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3199,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2801,
+								2801
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 6.0,
+						"translation.y": 785.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "src/ir/ir_queue_node.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 927,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								597,
+								597
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/ir/ir_type_manager.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 751,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								193,
+								193
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 0,
+					"file": "src/ir/ir_module_writer.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 981,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								978,
+								978
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 324.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "src/ir/ir_queue_node.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 410,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "src/ir/ir_slalom_function.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 712,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								655,
+								655
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 70.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "test/test_jit.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 718,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								396,
+								396
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "test/test_jit.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 794,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								321,
+								321
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
 					"type": "text"
 				}
 			]
@@ -359,11 +816,18 @@
 				0,
 				1,
 				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
 			]
 		],
 		"cols":
 		[
 			0.0,
+			0.5,
 			1.0
 		],
 		"rows":
@@ -375,7 +839,7 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 208.0
+		"height": 222.0
 	},
 	"output.find_results":
 	{
@@ -384,7 +848,7 @@
 	"project": "slalom.sublime-project",
 	"replace":
 	{
-		"height": 38.0
+		"height": 40.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -393,28 +857,88 @@
 		"selected_items":
 		[
 			[
-				"ir_slal",
-				"src/ir/ir_slalom_function.cpp"
+				"ty",
+				"src/ir/ir_type_manager.hpp"
 			],
 			[
-				"ir_typ",
+				"typ",
 				"src/ir/ir_type_manager.cpp"
 			],
 			[
-				"src/ir/ir_mod",
+				"ir_mod",
 				"src/ir/ir_module_writer.cpp"
 			],
 			[
-				"test",
+				"test_j",
 				"test/test_jit.cpp"
 			],
 			[
-				"test_ji",
-				"test/test_jit.hpp"
+				"module_t",
+				"test/module_test.cpp"
 			],
 			[
-				"test/modu",
+				"irarg",
+				"src/ir/ir_arguments_queue.hpp"
+			],
+			[
+				"",
+				"src/ir/ir_arguments_queue.cpp"
+			],
+			[
+				"irsl",
+				"src/ir/ir_slalom_function.cpp"
+			],
+			[
+				"ir_sla",
+				"src/ir/ir_slalom_function.hpp"
+			],
+			[
+				"ir",
+				"src/ir/ir_queue_node.hpp"
+			],
+			[
+				"irqn",
+				"src/ir/ir_queue_node.cpp"
+			],
+			[
+				"ir_queun",
+				"src/ir/ir_queue_node.hpp"
+			],
+			[
+				"ir_ty",
+				"src/ir/ir_type_manager.hpp"
+			],
+			[
+				"ira",
+				"src/ir/ir_arguments_queue.cpp"
+			],
+			[
+				"ir_queu",
+				"src/ir/ir_arguments_queue.hpp"
+			],
+			[
+				"test/m",
 				"test/module_test.cpp"
+			],
+			[
+				"ir_mo.hp",
+				"src/ir/ir_module_writer.hpp"
+			],
+			[
+				"module_",
+				"src/module_writer.hpp"
+			],
+			[
+				"ir_ty.h",
+				"src/ir/ir_type_manager.hpp"
+			],
+			[
+				"src/ir/ir_ty",
+				"src/ir/ir_type_manager.cpp"
+			],
+			[
+				"src/",
+				"src/generator.hpp"
 			]
 		],
 		"width": 0.0
@@ -437,11 +961,26 @@
 	},
 	"settings":
 	{
+		"last_automatic_layout":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		]
 	},
-	"show_minimap": true,
+	"show_minimap": false,
 	"show_open_files": false,
 	"show_tabs": true,
-	"side_bar_visible": true,
+	"side_bar_visible": false,
 	"side_bar_width": 150.0,
 	"status_bar_visible": true,
 	"template_settings":

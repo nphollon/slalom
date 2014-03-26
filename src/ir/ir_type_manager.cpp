@@ -16,7 +16,10 @@ void IRTypeManager::declareMalloc() {
 }
 
 IRQueueNode* IRTypeManager::buildQueueNode(BasicBlock* block) {
-  return new IRQueueNode(allocate(queueNodeType, block));
+  IRQueueNode* qn = new IRQueueNode(allocate(queueNodeType, block));
+  qn->setData(nullSlalomFunction(), block);
+  qn->setNext(nullQueueNode(), block);
+  return qn;
 }
 
 IRQueueNode* IRTypeManager::nullQueueNode() {
@@ -24,26 +27,39 @@ IRQueueNode* IRTypeManager::nullQueueNode() {
 }
 
 IRArgumentsQueue* IRTypeManager::buildArgumentsQueue(BasicBlock* block) {
-  return new IRArgumentsQueue(allocate(queueType, block));
+  IRQueueNode* qn = buildQueueNode(block);
+  IRArgumentsQueue* q = new IRArgumentsQueue(allocate(queueType, block));
+  q->setLength(0, block);
+  q->setHead(qn, block);
+  q->setTail(qn, block);
+  return q;
 }
 
-IRSlalomFunction* IRTypeManager::buildSlalomFunction(BasicBlock* block) {
-  return new IRSlalomFunction(allocate(functionType, block));
+IRSlalomFunction* IRTypeManager::buildSlalomFunction(int arity, const std::string& combName,
+  BasicBlock* block) {
+
+  IRArgumentsQueue* q = buildArgumentsQueue(block);
+  IRSlalomFunction* function = new IRSlalomFunction(allocate(functionType, block));
+  function->setArity(arity, block);
+  function->setName(combName, block);
+  function->setArguments(q, block);
+  return function;
 }
 
 IRSlalomFunction* IRTypeManager::nullSlalomFunction() {
   return new IRSlalomFunction(nullPointer(functionType));
 }
 
-BasicBlock* IRTypeManager::openFactoryFunction(const std::string& name) {
-  Type* returnType = functionType->getPointerTo();
-  Constant* functionAsConstant = module->getOrInsertFunction(name, returnType, NULL);
-  Function* function = cast<Function>(functionAsConstant);
-  return BasicBlock::Create(module->getContext(), "entry", function);
-}
+void IRTypeManager::describeFactoryFunction(const std::string& factoryName, int arity,
+  const std::string& combName) {
 
-Type* IRTypeManager::getFunctionPointerType() {
-  return functionType->getPointerTo();
+  Type* returnType = functionType->getPointerTo();
+  Constant* functionAsConstant = module->getOrInsertFunction(factoryName, returnType, NULL);
+  Function* function = cast<Function>(functionAsConstant);
+
+  BasicBlock* block = BasicBlock::Create(module->getContext(), "entry", function);
+  IRSlalomFunction* sfs = buildSlalomFunction(arity, combName, block);
+  sfs->setReturn(block);
 }
 
 Value* IRTypeManager::allocate(Type* type, BasicBlock* block) {
